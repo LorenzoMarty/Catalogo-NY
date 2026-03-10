@@ -1,0 +1,1683 @@
+<html class="h-full" lang="en"><head>
+<script id="aura-supabase-token-firewall">(function () {
+  if (window.__AURA_SUPABASE_FIREWALL__) return;
+  window.__AURA_SUPABASE_FIREWALL__ = true;
+
+  var SUPABASE_HOST = "hoirqrkdgbmvpwutwuwj.supabase.co";
+  var BLOCKED_KEY_PATTERNS = [
+    /^sb-[a-z0-9-]+-auth-token$/i,
+    /^supabase\.auth\.token$/i
+  ];
+
+  function isBlockedStorageKey(key) {
+    if (typeof key !== "string") return false;
+    for (var i = 0; i < BLOCKED_KEY_PATTERNS.length; i++) {
+      if (BLOCKED_KEY_PATTERNS[i].test(key)) return true;
+    }
+    return false;
+  }
+
+  function toAbsoluteUrl(input) {
+    try {
+      return new URL(input, window.location.href);
+    } catch {
+      return null;
+    }
+  }
+
+  function isSupabaseDestination(input) {
+    var parsed = toAbsoluteUrl(input);
+    if (!parsed) return false;
+    if (SUPABASE_HOST && parsed.host === SUPABASE_HOST) return true;
+    return parsed.host.endsWith(".supabase.co");
+  }
+
+  function pathLooksSensitive(input) {
+    var parsed = toAbsoluteUrl(input);
+    if (!parsed) return false;
+    return /^\/(auth|rest|functions)\/v1\//.test(parsed.pathname || "");
+  }
+
+  function headersContainAuth(headersLike) {
+    if (!headersLike) return false;
+
+    try {
+      if (typeof Headers !== "undefined" && headersLike instanceof Headers) {
+        return !!(headersLike.get("authorization") || headersLike.get("apikey"));
+      }
+    } catch {}
+
+    if (Array.isArray(headersLike)) {
+      for (var i = 0; i < headersLike.length; i++) {
+        var pair = headersLike[i] || [];
+        var name = String(pair[0] || "").toLowerCase();
+        if (name === "authorization" || name === "apikey") return true;
+      }
+      return false;
+    }
+
+    if (typeof headersLike === "object") {
+      var keys = Object.keys(headersLike);
+      for (var j = 0; j < keys.length; j++) {
+        var k = keys[j].toLowerCase();
+        if (k === "authorization" || k === "apikey") return true;
+      }
+    }
+    return false;
+  }
+
+  function requestLooksSensitive(input, init, extraHeaders) {
+    var url = "";
+    try {
+      if (typeof input === "string") {
+        url = input;
+      } else if (input && typeof input.url === "string") {
+        url = input.url;
+      }
+    } catch {}
+
+    var headers =
+      (init && init.headers) ||
+      (input && input.headers) ||
+      extraHeaders ||
+      null;
+    var hasAuthHeaders = headersContainAuth(headers);
+    if (hasAuthHeaders) return true;
+
+    if (!url) return false;
+    if (isSupabaseDestination(url) && pathLooksSensitive(url)) return true;
+    return false;
+  }
+
+  function patchStorage(storage, storageName) {
+    if (!storage) return;
+    var proto = Object.getPrototypeOf(storage);
+    if (!proto || proto.__auraSupabaseFirewallPatched) return;
+
+    var rawGetItem = proto.getItem;
+    var rawSetItem = proto.setItem;
+    var rawRemoveItem = proto.removeItem;
+    var rawKey = proto.key;
+    var rawLengthDescriptor = Object.getOwnPropertyDescriptor(proto, "length");
+    var rawLengthGet = rawLengthDescriptor && rawLengthDescriptor.get;
+
+    function getRawLength(instance) {
+      try {
+        if (rawLengthGet) return Number(rawLengthGet.call(instance) || 0);
+      } catch {}
+      try {
+        return Number(instance.length || 0);
+      } catch {}
+      return 0;
+    }
+
+    function getVisibleKeys(instance) {
+      var visible = [];
+      var total = getRawLength(instance);
+      for (var i = 0; i < total; i++) {
+        var currentKey = rawKey.call(instance, i);
+        if (currentKey && !isBlockedStorageKey(currentKey)) {
+          visible.push(currentKey);
+        }
+      }
+      return visible;
+    }
+
+    function maskBlockedKeyProperty(instance, keyName) {
+      if (!keyName || !isBlockedStorageKey(keyName)) return;
+      try {
+        Object.defineProperty(instance, keyName, {
+          configurable: true,
+          enumerable: false,
+          get: function () {
+            return null;
+          },
+          set: function () {
+            return true;
+          }
+        });
+      } catch {}
+    }
+
+    function syncBlockedKeyProperties(instance) {
+      var total = getRawLength(instance);
+      for (var i = 0; i < total; i++) {
+        var k = rawKey.call(instance, i);
+        if (k) maskBlockedKeyProperty(instance, k);
+      }
+    }
+
+    proto.getItem = function (key) {
+      syncBlockedKeyProperties(this);
+      if (isBlockedStorageKey(String(key))) return null;
+      return rawGetItem.call(this, key);
+    };
+
+    proto.setItem = function (key, value) {
+      if (isBlockedStorageKey(String(key))) return;
+      return rawSetItem.call(this, key, value);
+    };
+
+    proto.removeItem = function (key) {
+      if (isBlockedStorageKey(String(key))) return;
+      return rawRemoveItem.call(this, key);
+    };
+
+    proto.key = function (index) {
+      syncBlockedKeyProperties(this);
+      var visible = getVisibleKeys(this);
+      return visible[index] || null;
+    };
+
+    try {
+      Object.defineProperty(proto, "length", {
+        configurable: true,
+        enumerable: false,
+        get: function () {
+          syncBlockedKeyProperties(this);
+          return getVisibleKeys(this).length;
+        }
+      });
+    } catch {}
+
+    var proxyStorage = null;
+    try {
+      proxyStorage = new Proxy(storage, {
+        get: function (target, prop) {
+          if (typeof prop === "string" && isBlockedStorageKey(prop)) return null;
+          if (prop === "length") return getVisibleKeys(target).length;
+          if (prop === "key") {
+            return function (index) {
+              var visible = getVisibleKeys(target);
+              return visible[index] || null;
+            };
+          }
+
+          var value = target[prop];
+          if (typeof value === "function") return value.bind(target);
+          return value;
+        },
+        set: function (target, prop, value) {
+          if (typeof prop === "string" && isBlockedStorageKey(prop)) return true;
+          target[prop] = value;
+          return true;
+        },
+        has: function (target, prop) {
+          if (typeof prop === "string" && isBlockedStorageKey(prop)) return false;
+          return prop in target;
+        },
+        ownKeys: function (target) {
+          return getVisibleKeys(target);
+        },
+        getOwnPropertyDescriptor: function (target, prop) {
+          if (typeof prop === "string" && isBlockedStorageKey(prop)) {
+            return undefined;
+          }
+          if (prop === "length") {
+            return {
+              configurable: true,
+              enumerable: false,
+              value: getVisibleKeys(target).length,
+              writable: false
+            };
+          }
+          return Object.getOwnPropertyDescriptor(target, prop);
+        }
+      });
+    } catch {}
+
+    try {
+      if (proxyStorage) {
+        Object.defineProperty(window, storageName, {
+          configurable: true,
+          enumerable: true,
+          get: function () {
+            return proxyStorage;
+          }
+        });
+      }
+    } catch {}
+
+    syncBlockedKeyProperties(storage);
+    proto.__auraSupabaseFirewallPatched = true;
+  }
+
+  function patchCookieAccess() {
+    try {
+      var cookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, "cookie");
+      if (!cookieDescriptor || !cookieDescriptor.configurable) return;
+
+      Object.defineProperty(document, "cookie", {
+        configurable: true,
+        enumerable: false,
+        get: function () {
+          return "";
+        },
+        set: function () {
+          return true;
+        }
+      });
+    } catch {}
+  }
+
+  function patchFetch() {
+    if (typeof window.fetch !== "function") return;
+    var rawFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+      if (requestLooksSensitive(input, init, null)) {
+        return Promise.reject(new Error("Blocked by Aura security policy"));
+      }
+      return rawFetch(input, init);
+    };
+  }
+
+  function patchXHR() {
+    if (typeof XMLHttpRequest === "undefined") return;
+    var rawOpen = XMLHttpRequest.prototype.open;
+    var rawSetHeader = XMLHttpRequest.prototype.setRequestHeader;
+    var rawSend = XMLHttpRequest.prototype.send;
+
+    XMLHttpRequest.prototype.open = function (method, url) {
+      this.__auraRequestUrl = String(url || "");
+      this.__auraHeaders = {};
+      return rawOpen.apply(this, arguments);
+    };
+
+    XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+      if (!this.__auraHeaders) this.__auraHeaders = {};
+      this.__auraHeaders[String(name || "").toLowerCase()] = String(value || "");
+      return rawSetHeader.apply(this, arguments);
+    };
+
+    XMLHttpRequest.prototype.send = function () {
+      if (requestLooksSensitive(this.__auraRequestUrl || "", null, this.__auraHeaders || null)) {
+        throw new Error("Blocked by Aura security policy");
+      }
+      return rawSend.apply(this, arguments);
+    };
+  }
+
+  function patchBeacon() {
+    if (typeof navigator.sendBeacon !== "function") return;
+    var rawBeacon = navigator.sendBeacon.bind(navigator);
+    navigator.sendBeacon = function (url, data) {
+      if (requestLooksSensitive(url, null, null)) return false;
+      return rawBeacon(url, data);
+    };
+  }
+
+  function patchWebSocket() {
+    if (typeof WebSocket === "undefined") return;
+    var RawWebSocket = WebSocket;
+    window.WebSocket = function (url, protocols) {
+      if (requestLooksSensitive(String(url || ""), null, null)) {
+        throw new Error("Blocked by Aura security policy");
+      }
+      return new RawWebSocket(url, protocols);
+    };
+    window.WebSocket.prototype = RawWebSocket.prototype;
+  }
+
+  patchStorage(window.localStorage, "localStorage");
+  patchStorage(window.sessionStorage, "sessionStorage");
+  patchCookieAccess();
+  patchFetch();
+  patchXHR();
+  patchBeacon();
+  patchWebSocket();
+})();</script><meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>ALEX — UX/UI Designer Portfolio</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="assets/css2_19fd9cc6b396.css" rel="stylesheet"/>
+<script src="assets/resource_3fa48481346f.es"></script>
+<script src="assets/iconify-icon_e19829e7f0e8.js"></script>
+<style id="aura-editor-visibility-style">
+.invisible { visibility: hidden !important; }
+</style><style id="cms-loading-styles">
+@keyframes cms-shimmer {
+0% { background-position: -200% 0; }
+100% { background-position: 200% 0; }
+}
+.cms-loading {
+position: relative;
+color: transparent !important;
+/* Override any background-image (inline styles, Tailwind bg-[url("_9c96479b49dc.html")]) */
+background-image: none !important;
+background-color: transparent !important;
+background: linear-gradient(90deg,
+rgba(128, 128, 128, 0.1) 25%,
+rgba(128, 128, 128, 0.2) 50%,
+rgba(128, 128, 128, 0.1) 75%
+) !important;
+background-size: 200% 100% !important;
+animation: cms-shimmer 1.5s infinite !important;
+border-radius: 12px;
+min-height: 1em;
+min-width: 3em;
+overflow: hidden;
+}
+.cms-loading * {
+visibility: hidden !important;
+}
+.cms-loading img {
+opacity: 0 !important;
+}
+</style><meta content="font-geist,font-roboto,font-montserrat,font-poppins,font-playfair,font-instrument-serif,font-merriweather,font-bricolage,font-jakarta,font-manrope,font-space-grotesk,font-work-sans,font-pt-serif,font-geist-mono,font-space-mono,font-quicksand,font-nunito,font-newsreader,font-google-sans-flex,font-oswald,font-dm-sans,font-cormorant" name="disabled-font-classes"/><style id="border-gradient-shared-style">
+[style*="--border-gradient"]::before {
+content: "";
+position: absolute;
+inset: 0;
+padding: 1px;
+border-radius: var(--border-radius-before, inherit);
+-webkit-mask: linear-gradient(#fff 0 0) content-box,
+linear-gradient(#fff 0 0);
+-webkit-mask-composite: xor;
+mask-composite: exclude;
+background: var(--border-gradient);
+pointer-events: none;
+}</style><style data-scroll-fix="true">
+        /* Scroll fixes for offline viewing */
+        html, body {
+            overflow: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100% !important;
+            scroll-behavior: auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* Force visibility - many sites use JS animations for initial display */
+        body, .wrapper, main, #__next, #app, .page, .content {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+        }
+        
+        /* Disable loader/preloader overlays */
+        .loader, .preloader, .loading, [class*="loader"], [class*="preloader"] {
+            display: none !important;
+            opacity: 0 !important;
+        }
+        
+        /* Show elements that might be hidden for animation */
+        .word-inner, .char, .line, [data-aos], [data-scroll],
+        .hero-text span, .hero-fade, [class*="hero"] span {
+            opacity: 1 !important;
+            transform: none !important;
+            visibility: visible !important;
+        }
+        
+        /* Reset Tailwind animation utility classes */
+        .translate-y-full, .translate-x-full, .-translate-y-full, .-translate-x-full,
+        .translate-y-1\/2, .-translate-y-1\/2, .translate-y-\[100\%\], .translate-y-\[110\%\] {
+            transform: none !important;
+        }
+        
+        /* Force visibility on common hidden-for-animation patterns */
+        .opacity-0, [class*="opacity-0"] {
+            opacity: 1 !important;
+        }
+        
+        /* Reset scale transforms used for animations */
+        .scale-0, .scale-50, .scale-75 {
+            transform: none !important;
+        }
+        
+        html.lenis, html.lenis-smooth, 
+        body.lenis, body.lenis-smooth,
+        .lenis-wrapper, .lenis-content,
+        [data-lenis-prevent], [data-scroll-container] {
+            overflow: visible !important;
+            height: auto !important;
+        }
+        
+        /* Fix flex containers that might cut off content */
+        body.flex.items-center,
+        body.flex.justify-center {
+            align-items: flex-start !important;
+            min-height: 100vh;
+            height: auto !important;
+        }
+        
+        /* Ensure main content scrolls */
+        main, #__next, #__nuxt, #app, .main-content {
+            overflow: visible !important;
+            height: auto !important;
+        }
+        </style></head>
+<body class="h-full bg-black text-white antialiased" style="font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;">
+<!-- Background (component) added by Aura -->
+<div class="aura-background-component top-0 w-full h-screen -z-10 absolute" data-alpha-mask="90" style="; mask-image: linear-gradient(to bottom, transparent, black 0%, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 0%, black 90%, transparent)"><div class="absolute w-full h-full left-0 top-0 -z-10" data-us-project="NaoyTHRiquOhW7PvwNgE"></div><script class="" type="text/javascript">!function(){var u=window.UnicornStudio;if(u&&u.init){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){u.init()})}else{u.init()}}else{window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.0.3/dist/unicornStudio.umd.js",i.onload=function(){if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){UnicornStudio.init()})}else{UnicornStudio.init()}},(document.head||document.body).appendChild(i)}}();</script></div>
+<div class="gradient-blur">
+<div class=""></div>
+<div class=""></div>
+<div class=""></div>
+<div class=""></div>
+<div class=""></div>
+<div class=""></div>
+</div>
+<style class="">
+    .gradient-blur {
+      position: fixed;
+      z-index: 5;
+      inset: 0 0 auto 0;
+      height: 12%;
+      pointer-events: none;
+    }
+
+    .gradient-blur>div,
+    .gradient-blur::before,
+    .gradient-blur::after {
+      position: absolute;
+      inset: 0;
+    }
+
+    .gradient-blur::before {
+      content: "";
+      z-index: 1;
+      backdrop-filter: blur(0.5px);
+      mask: linear-gradient(to top,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 1) 12.5%,
+          rgba(0, 0, 0, 1) 25%,
+          rgba(0, 0, 0, 0) 37.5%);
+    }
+
+    .gradient-blur>div:nth-of-type(1) {
+      z-index: 2;
+      backdrop-filter: blur(1px);
+      mask: linear-gradient(to top,
+          rgba(0, 0, 0, 0) 12.5%,
+          rgba(0, 0, 0, 1) 25%,
+          rgba(0, 0, 0, 1) 37.5%,
+          rgba(0, 0, 0, 0) 50%);
+    }
+
+    .gradient-blur>div:nth-of-type(2) {
+      z-index: 3;
+      backdrop-filter: blur(2px);
+      mask: linear-gradient(to top,
+          rgba(0, 0, 0, 0) 25%,
+          rgba(0, 0, 0, 1) 37.5%,
+          rgba(0, 0, 0, 1) 50%,
+          rgba(0, 0, 0, 0) 62.5%);
+    }
+
+    .gradient-blur>div:nth-of-type(3) {
+      z-index: 4;
+      backdrop-filter: blur(4px);
+      mask: linear-gradient(to top,
+          rgba(0, 0, 0, 0) 37.5%,
+          rgba(0, 0, 0, 1) 50%,
+          rgba(0, 0, 0, 1) 62.5%,
+          rgba(0, 0, 0, 0) 75%);
+    }
+
+    .gradient-blur>div:nth-of-type(4) {
+      z-index: 5;
+      backdrop-filter: blur(8px);
+      mask: linear-gradient(to top,
+          rgba(0, 0, 0, 0) 50%,
+          rgba(0, 0, 0, 1) 62.5%,
+          rgba(0, 0, 0, 1) 75%,
+          rgba(0, 0, 0, 0) 87.5%);
+    }
+
+    .gradient-blur>div:nth-of-type(5) {
+      z-index: 6;
+      backdrop-filter: blur(16px);
+      mask: linear-gradient(to top,
+          rgba(0, 0, 0, 0) 62.5%,
+          rgba(0, 0, 0, 1) 75%,
+          rgba(0, 0, 0, 1) 87.5%,
+          rgba(0, 0, 0, 0) 100%);
+    }
+
+    .gradient-blur>div:nth-of-type(6) {
+      z-index: 7;
+      backdrop-filter: blur(32px);
+      mask: linear-gradient(to top,
+          rgba(0, 0, 0, 0) 75%,
+          rgba(0, 0, 0, 1) 87.5%,
+          rgba(0, 0, 0, 1) 100%);
+    }
+
+    .gradient-blur::after {
+      content: "";
+      z-index: 8;
+      backdrop-filter: blur(64px);
+      mask: linear-gradient(to top,
+          rgba(0, 0, 0, 0) 87.5%,
+          rgba(0, 0, 0, 1) 100%);
+    }
+  </style>
+<main class="min-h-screen overflow-hidden relative">
+<!-- Background -->
+<div class="group absolute top-0 right-0 bottom-0 left-0" id="parallax-bg" style="transform: translateY(0px);">
+<img alt="Abstract interface background" class="opacity-20 w-full h-full object-cover grayscale" src="assets/56c4d3ce-3414-4deb-9b0c-c425ea_47c1ce2f79ff.png"/>
+<video aria-hidden="true" autoplay="" class="absolute inset-0 h-full w-full object-cover opacity-0 group-hover:opacity-60 transition-opacity duration-700" loop="" muted="" playsinline="" preload="metadata">
+<source src="https://cdn.coverr.co/videos/coverr-typing-on-a-laptop-keyboard-close-up-9106/1080p.mp4" type="video/mp4"/>
+</video>
+<div class="bg-gradient-to-tr from-black/90 via-black/50 to-transparent absolute top-0 right-0 bottom-0 left-0"></div>
+</div>
+<!-- Decorative crosses -->
+<div class="pointer-events-none absolute inset-0" id="parallax-crosses" style="transform: translateY(0px);">
+<div class="absolute left-6 top-16 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+<div class="absolute left-1/3 top-1/4 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+<div class="absolute right-10 top-14 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+<div class="absolute right-1/4 top-1/2 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+<div class="absolute left-12 bottom-24 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+<div class="absolute right-8 bottom-12 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+</div>
+<!-- Top Bar -->
+<header class="flex fixed transition-all duration-300 md:px-10 z-50 bg-black/5 w-full border-white/5 border-b pt-5 pr-6 pb-5 pl-6 top-0 backdrop-blur-md items-center justify-between">
+<div class="flex gap-3 z-50 relative items-center">
+<div class="h-2.5 w-2.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.6)]"></div>
+<span class="md:text-base cursor-pointer text-sm font-semibold text-white tracking-tight" onclick="window.location.href='/home'" role="button">ALEX</span>
+</div>
+<!-- Desktop Navigation -->
+<nav class="hidden md:flex gap-8 text-sm font-medium text-white/80 tracking-tight items-center">
+<a class="hover:text-white transition-colors duration-200" href="#">Work</a>
+<a class="hover:text-white transition-colors duration-200" href="#">Services</a>
+<a class="hover:text-white transition-colors duration-200" href="#">About</a>
+<a class="hover:text-white transition-colors duration-200" href="#">Contact</a>
+<div class="h-5 w-px bg-white/10"></div>
+<div class="flex gap-4 text-white/70 items-center">
+<a aria-label="X" class="hover:text-white transition-colors" href="#"><iconify-icon class="" icon="ri:twitter-x-line" width="16"></iconify-icon></a>
+<a aria-label="Dribbble" class="hover:text-white transition-colors" href="#"><iconify-icon icon="solar:basketball-linear" width="18"></iconify-icon></a>
+<a aria-label="LinkedIn" class="hover:text-white transition-colors" href="#"><iconify-icon icon="solar:link-circle-linear" width="18"></iconify-icon></a>
+<a aria-label="Email" class="hover:text-white transition-colors" href="#"><iconify-icon icon="solar:letter-linear" width="18"></iconify-icon></a>
+</div>
+</nav>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden inline-flex hover:bg-white/10 transition-all active:scale-95 z-50 text-sm text-white/90 bg-white/5 border-white/10 border rounded-full pt-2 pr-3 pb-2 pl-3 relative backdrop-blur-sm items-center justify-center" onclick="const m=document.getElementById('mobile-menu'); const icon=this.querySelector('iconify-icon'); if(m.classList.contains('opacity-0')){m.classList.remove('opacity-0','pointer-events-none');icon.setAttribute('icon','solar:close-circle-linear');}else{m.classList.add('opacity-0','pointer-events-none');icon.setAttribute('icon','solar:hamburger-menu-linear');}">
+<iconify-icon class="" icon="solar:hamburger-menu-linear" width="20"></iconify-icon>
+</button>
+<!-- Mobile Menu Overlay -->
+<div class="fixed transition-all duration-500 flex flex-col md:hidden bg-zinc-950/98 opacity-0 mt-auto mb-auto pt-28 pr-0 pb-10 pl-0 top-0 right-0 bottom-0 left-0 backdrop-blur-3xl" id="mobile-menu">
+<!-- Decorative Elements -->
+<div class="blur-[80px] -translate-y-1/2 pointer-events-none bg-blue-500/10 w-64 h-64 rounded-full absolute top-0 right-0 translate-x-1/2 gap-x-6 gap-y-6"></div>
+<div class="blur-[80px] -translate-x-1/2 pointer-events-none bg-purple-500/10 w-64 h-64 rounded-full absolute bottom-0 left-0 translate-y-1/2 gap-x-6 gap-y-6"></div>
+<nav class="flex flex-col z-10 bg-[#000000] pt-4 pr-4 pb-4 pl-4 relative gap-y-6">
+<a class="hover:text-blue-500 transition-colors text-2xl font-semibold text-white tracking-tight" href="#" onclick="document.querySelector('header button').click()">Work</a>
+<a class="hover:text-blue-500 transition-colors text-2xl font-semibold text-white tracking-tight" href="#" onclick="document.querySelector('header button').click()">Services</a>
+<a class="hover:text-blue-500 transition-colors text-2xl font-semibold text-white tracking-tight" href="#" onclick="document.querySelector('header button').click()">About</a>
+<a class="hover:text-blue-500 transition-colors text-2xl font-semibold text-white tracking-tight" href="#" onclick="document.querySelector('header button').click()">Contact</a>
+</nav>
+<div class="z-10 bg-[#000000] pr-4 pl-4 relative space-y-3 my-0 gap-y-3">
+<div class="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent w-full gap-y-3"></div>
+<div class="flex z-10 gap-y-3 items-center justify-between">
+<span class="text-sm font-medium text-zinc-500">Socials</span>
+<div class="flex items-center gap-6 text-white/60">
+<a class="hover:text-white hover:scale-110 transition-all p-2" href="#"><iconify-icon class="" icon="ri:twitter-x-line" width="22"></iconify-icon></a>
+<a class="hover:text-white hover:scale-110 transition-all p-2" href="#"><iconify-icon class="" icon="solar:basketball-linear" width="24"></iconify-icon></a>
+<a class="hover:text-white hover:scale-110 transition-all p-2" href="#"><iconify-icon class="" icon="solar:link-circle-linear" width="24"></iconify-icon></a>
+<a class="hover:text-white hover:scale-110 transition-all p-2" href="#"><iconify-icon class="" icon="solar:letter-linear" width="24"></iconify-icon></a>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Content -->
+<section class="z-10 relative" style="">
+<div class="grid grid-cols-1 gap-8 md:grid-cols-2 md:px-10 lg:pb-36 lg:pt-20 max-w-7xl mr-auto ml-auto pt-10 pr-6 pb-28 pl-6 items-center">
+<div class="max-w-xl mt-36">
+<h1 class="sm:text-5xl lg:text-6xl xl:text-7xl text-4xl font-semibold tracking-tight">Crafting digital experiences &amp; user interfaces</h1>
+<p class="mt-5 text-base sm:text-lg text-white/80">
+              Specializing in complex web applications, design systems, and mobile interfaces for high-growth startups and enterprise clients.
+            </p>
+<div class="mt-8 flex flex-wrap items-center gap-3">
+<a class="inline-flex items-center gap-2 rounded-full bg-white text-black px-5 py-3 text-sm font-medium hover:bg-white/90 transition" href="#work">
+                View case studies
+                <iconify-icon icon="solar:arrow-right-linear" width="18"></iconify-icon>
+</a>
+<a class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm text-white/90 backdrop-blur hover:bg-white/10 transition" href="#contact">
+                Book consultation
+                <iconify-icon icon="solar:calendar-linear" width="18"></iconify-icon>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- Massive brand wordmark -->
+<div class="select-none absolute right-0 left-0" id="parallax-wordmark" style="transform: translateY(0px);">
+<div class="md:px-10 max-w-full mr-auto ml-auto pr-6 pl-6 items-center justify-center">
+<div class="whitespace-nowrap text-[18vw] leading-none font-semibold text-blue-500/95 tracking-tight text-center opacity-20 mix-blend-overlay">INTERFACE</div>
+</div>
+</div>
+<!-- Floating preview card -->
+<aside class="hidden md:block z-10 absolute right-6 bottom-6" style="">
+</aside>
+</main><main class="min-h-screen overflow-hidden relative">
+<!-- Background -->
+<div class="absolute top-0 right-0 bottom-0 left-0" id="parallax-bg2" style="transform: translateY(0px);">
+<img alt="Multiple device mockup collage" class="h-full w-full object-cover" src="assets/faef3732-0024-406d-be3c-f7cb0e_b42e53b44d20.png" style="transition: outline 0.1s ease-in-out;"/>
+<div class="bg-gradient-to-b from-slate-900/0 to-[#000000]/60 absolute top-0 right-0 bottom-0 left-0" style=""></div>
+</div>
+<!-- Decorative crosses -->
+<div class="pointer-events-none absolute top-0 right-0 bottom-0 left-0" id="parallax-crosses2" style="transform: translateY(0px);">
+<div class="absolute left-6 top-16 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+<div class="absolute left-1/3 top-1/4 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+<div class="absolute right-10 top-14 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+<div class="absolute right-1/4 top-1/2 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+<div class="absolute left-12 bottom-24 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+<div class="absolute right-8 bottom-12 text-white/30"><iconify-icon icon="solar:add-square-linear" width="16"></iconify-icon></div>
+</div>
+<!-- Content -->
+<section class="z-10 relative">
+<div class="grid grid-cols-1 md:grid-cols-2 md:px-10 lg:pb-36 lg:pt-20 max-w-7xl mr-auto ml-auto pt-10 pr-6 pb-28 pl-6 gap-x-8 gap-y-8 items-center">
+</div>
+</section>
+<!-- Massive brand wordmark -->
+<div class="pointer-events-none z-0 select-none absolute right-0 bottom-0 left-0" id="parallax-wordmark2">
+<div class="md:px-10 max-w-full mr-auto ml-auto pr-6 pl-6 items-center justify-center">
+<div class="whitespace-nowrap text-[18vw] leading-none font-semibold text-blue-500/95 tracking-tight text-center opacity-20 mix-blend-overlay">PROJECTS</div>
+</div>
+</div>
+<!-- Floating preview card -->
+<aside class="hidden md:block z-10 absolute right-6 bottom-6">
+</aside>
+</main><script class="" src="assets/chart_ba9eca532d10.js"></script><section class="overflow-hidden lg:py-48 bg-black pt-32 pb-32 relative" id="mobile-apps">
+<!-- Dynamic Background with Parallax -->
+<div class="absolute inset-0 z-0 opacity-40 mix-blend-color-dodge pointer-events-none" id="apps-bg-parallax" style="will-change: transform;">
+<img alt="Background texture" class="h-full w-full object-cover opacity-30 blur-3xl scale-125" src="assets/photo-1640906152676-dace6710d2_59d39f09dae4.jpg" style="outline: rgb(245, 158, 11) solid 2px; outline-offset: 2px; transition: outline 0.1s ease-in-out;"/>
+<div class="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black"></div>
+</div>
+<!-- Content Container -->
+<div class="relative z-10 mx-auto max-w-7xl px-6 md:px-10">
+<div class="mb-24 md:max-w-3xl">
+<h2 class="md:text-5xl lg:text-6xl text-4xl font-semibold text-white tracking-tight">
+        Native performance.
+        <span class="text-zinc-500">Uncompromised design.</span>
+</h2>
+<p class="mt-6 text-lg text-zinc-400 md:text-xl max-w-xl leading-relaxed">
+        Building fluid, gesture-driven mobile experiences that feel natural on every device. From fintech to media, every interaction is meticulously crafted.
+      </p>
+</div>
+<!-- Parallax Grid -->
+<div class="grid gap-12 lg:grid-cols-2 lg:gap-24 items-start">
+<!-- Left Column (Moves slower) -->
+<div class="flex flex-col gap-12 pt-0 lg:pt-20 parallax-column" data-speed="0.05">
+<!-- Project Card 1: Fintech App -->
+<div class="group relative">
+<div class="absolute -inset-1 rounded-[3rem] bg-gradient-to-b from-blue-500/20 to-purple-500/20 opacity-0 blur transition duration-500 group-hover:opacity-100"></div>
+<!-- Phone Mockup -->
+<div class="relative mx-auto h-[680px] w-[340px] overflow-hidden rounded-[2.5rem] border-[8px] border-zinc-900 bg-zinc-950 shadow-2xl ring-1 ring-white/10">
+<!-- Notch -->
+<div class="absolute left-1/2 top-0 z-50 h-6 w-32 -translate-x-1/2 rounded-b-xl bg-zinc-900"></div>
+<!-- App UI -->
+<div class="flex h-full flex-col bg-zinc-950 pt-12 text-white">
+<!-- App Header -->
+<div class="flex items-center justify-between px-6 pb-6">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-bold text-zinc-400">JM</div>
+<span class="text-sm font-medium">Hello, James</span>
+</div>
+<button class="rounded-full bg-zinc-900 p-2 text-zinc-400 hover:text-white">
+<iconify-icon icon="lucide:bell" width="18"></iconify-icon>
+</button>
+</div>
+<!-- Balance Section -->
+<div class="px-6">
+<div class="text-sm text-zinc-500">Total Balance</div>
+<div class="mt-1 text-3xl font-semibold tracking-tight">$24,039.52</div>
+<div class="mt-2 flex items-center gap-1 text-sm text-emerald-500">
+<iconify-icon icon="lucide:arrow-up-right" width="16"></iconify-icon>
+<span class="font-medium">+$1,204 (4.2%)</span>
+</div>
+</div>
+<!-- Chart Area -->
+<div class="relative mt-8 h-48 w-full px-2">
+<canvas class="" height="300" id="financeChart" style="display: block; box-sizing: border-box; height: 150px; width: 308px;" width="616"></canvas>
+<!-- Custom Tooltip Overlay Simulation -->
+<div class="absolute left-1/2 top-10 flex -translate-x-1/2 flex-col items-center rounded-lg border border-white/10 bg-zinc-900/90 px-3 py-1.5 backdrop-blur">
+<span class="text-[10px] text-zinc-400">Sep 24</span>
+<span class="text-sm font-bold">$23,800</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="mt-6 flex justify-around border-t border-white/5 px-4 pt-6">
+<div class="flex flex-col items-center gap-2">
+<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-900/20">
+<iconify-icon icon="lucide:arrow-up" width="20"></iconify-icon>
+</div>
+<span class="text-xs font-medium text-zinc-400">Send</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 border border-white/10 text-white hover:bg-zinc-800 transition">
+<iconify-icon icon="lucide:arrow-down" width="20"></iconify-icon>
+</div>
+<span class="text-xs font-medium text-zinc-400">Request</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 border border-white/10 text-white hover:bg-zinc-800 transition">
+<iconify-icon icon="lucide:more-horizontal" width="20"></iconify-icon>
+</div>
+<span class="text-xs font-medium text-zinc-400">More</span>
+</div>
+</div>
+<!-- Recent List -->
+<div class="mt-8 flex-1 rounded-t-[2rem] bg-zinc-900/50 p-6 backdrop-blur-sm">
+<h4 class="mb-4 text-sm font-medium text-zinc-400">Recent Activity</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white">
+<iconify-icon class="" icon="lucide:shopping-bag" width="18"></iconify-icon>
+</div>
+<div class="">
+<div class="text-sm font-medium">Apple Store</div>
+<div class="text-xs text-zinc-500">Today, 2:40 PM</div>
+</div>
+</div>
+<div class="text-sm font-medium text-white">-$129.00</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white">
+<iconify-icon icon="lucide:coffee" width="18"></iconify-icon>
+</div>
+<div>
+<div class="text-sm font-medium">Starbucks</div>
+<div class="text-xs text-zinc-500">Yesterday</div>
+</div>
+</div>
+<div class="text-sm font-medium text-white">-$4.50</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Description -->
+<div class="mt-8 md:pl-8">
+<h3 class="text-2xl font-semibold text-white">Nova Finance</h3>
+<p class="mt-2 text-zinc-400">A high-performance trading wallet with real-time websocket data and biometric security.</p>
+<div class="mt-4 flex gap-2">
+<span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300">iOS</span>
+<span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300">SwiftUI</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column (Moves faster) -->
+<div class="flex flex-col gap-12 parallax-column" data-speed="0.12">
+<!-- Project Card 2: Music/Social App -->
+<div class="group relative">
+<div class="absolute -inset-1 rounded-[3rem] bg-gradient-to0 blur transition duration-500 group-hover:opacity-100"></div>
+<!-- Phone Mockup -->
+<div class="relative mx-auto h-[680px] w-[340px] overflow-hidden rounded-[2.5rem] border-[8px] border-zinc-900 bg-zinc-950 shadow-2xl ring-1 ring-white/10">
+<!-- Notch -->
+<div class="absolute left-1/2 top-0 z-50 h-6 w-32 -translate-x-1/2 rounded-b-xl bg-zinc-900"></div>
+<!-- Full Image Bg -->
+<img alt="Album Art" class="absolute inset-0 h-full w-full object-cover opacity-60" src="assets/8aa0d98a-387e-492b-9bea-7172f4_b51f0bddd89a.webp" style=""/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+<!-- App UI -->
+<div class="relative flex h-full flex-col justify-end p-6 text-white">
+<!-- Floating Elements -->
+<div class="absolute right-4 top-16 flex flex-col gap-4">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur-md">
+<iconify-icon icon="lucide:heart" width="20"></iconify-icon>
+</div>
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur-md">
+<iconify-icon icon="lucide:message-circle" width="20"></iconify-icon>
+</div>
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur-md">
+<iconify-icon icon="lucide:share-2" width="20"></iconify-icon>
+</div>
+</div>
+<div class="mb-8 space-y-2">
+<div class="flex items-center gap-2">
+<div class="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+<span class="text-xs font-medium uppercase tracking-wider text-green-400">Now Playing</span>
+</div>
+<h2 class="text-3xl font-bold leading-none tracking-tight">MidnightEchoes</h2>
+<p class="text-zinc-300">The Abstract Collective</p>
+</div>
+<!-- Player -->
+<div class="rounded-2xl bg-white/10 p-4 backdrop-blur-md ring-1 ring-white/10">
+<div class="mb-4 h-1 w-full overflow-hidden rounded-full bg-white/20">
+<div class="h-full w-2/3 bg-white"></div>
+</div>
+<div class="flex items-center justify-between">
+<div class="text-xs font-medium text-zinc-400">2:14</div>
+<div class="flex items-center gap-6">
+<iconify-icon class="text-zinc-300" icon="lucide:skip-back" width="24"></iconify-icon>
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-black">
+<iconify-icon class="ml-1" icon="lucide:play" width="20"></iconify-icon>
+</div>
+<iconify-icon class="text-zinc-300" icon="lucide:skip-forward" width="24"></iconify-icon>
+</div>
+<div class="text-xs font-medium text-zinc-400">3:45</div>
+</div>
+</div>
+<!-- Bottom Nav -->
+<div class="mt-8 flex justify-between px-4 text-zinc-500">
+<iconify-icon class="text-white" icon="lucide:home" width="24"></iconify-icon>
+<iconify-icon icon="lucide:search" width="24"></iconify-icon>
+<iconify-icon icon="lucide:library" width="24"></iconify-icon>
+</div>
+</div>
+</div>
+<!-- Description -->
+<div class="mt-8 md:pl-8">
+<h3 class="text-2xl font-semibold text-white">Echo Stream</h3>
+<p class="mt-2 text-zinc-400">Social music discovery platform focusing on shared listening experiences and visualizers.</p>
+<div class="mt-4 flex gap-2">
+<span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300">React Native</span>
+<span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-zinc-300">Node.js</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Initialize Parallax and Chart when this section loads
+    (function() {
+      // 1. Chart.js Initialization
+      const ctx = document.getElementById('financeChart');
+      if (ctx) {
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+            datasets: [{
+              data: [65, 59, 80, 81, 56, 85, 90],
+              borderColor: '#10b981', // Emerald 500
+              backgroundColor: (context) => {
+                const bg = context.chart.ctx.createLinearGradient(0, 0, 0, 200);
+                bg.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+                bg.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                return bg;
+              },
+              fill: true,
+              tension: 0.4,
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: {
+              x: { display: false },
+              y: { display: false, min: 40 }
+            },
+            layout: { padding: 0 }
+          }
+        });
+      }
+
+      // 2. Custom Parallax Logic
+      const section = document.getElementById('mobile-apps');
+      const bg = document.getElementById('apps-bg-parallax');
+      const columns = section.querySelectorAll('.parallax-column');
+
+      function handleParallax() {
+        const scrolled = window.scrollY;
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.offsetHeight;
+        const screenHeight = window.innerHeight;
+
+        // Check if section is in view
+        if (scrolled + screenHeight > sectionTop && scrolled < sectionTop + sectionHeight) {
+          const relativeScroll = scrolled - sectionTop;
+          
+          // Animate Background
+          if(bg) {
+             bg.style.transform = `translateY(${relativeScroll * 0.1}px) scale(1.1)`;
+          }
+
+          // Animate Columns
+          columns.forEach(col => {
+            const speed = parseFloat(col.getAttribute('data-speed') || 0);
+            // Apply translation based on scroll speed factor
+            col.style.transform = `translateY(${relativeScroll * speed}px)`;
+          });
+        }
+      }
+
+      window.addEventListener('scroll', () => requestAnimationFrame(handleParallax));
+    })();
+  </script>
+</section>
+<!-- Footer -->
+<div class="flex flex-col overflow-hidden bg-slate-50 pt-8 pr-8 pb-8 pl-8 relative shadow-2xl gap-x-8 gap-y-8" style="background: radial-gradient(circle at top left, #111, #000); position: relative; --border-gradient: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0))">
+<div class="flex flex-col md:flex-row md:items-end text-center mt-20 mb-10 pr-2 pl-2 gap-x-6 gap-y-6 items-center justify-center">
+<div class="text-center space-y-2 items-center justify-center">
+<h2 class="md:text-4xl lg:text-5xl text-3xl font-semibold tracking-tight mb-6">Interface Studies</h2>
+<p class="text-zinc-400 text-sm md:text-base max-w-xl leading-relaxed">A deep dive into functional aesthetics, design systems, and interaction patterns across enterprise platforms. Each panel represents a distinct module in our 2024 UI study.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="group relative">
+<button class="px-5 py-2.5 rounded-full border border-white/10 text-xs font-medium text-white hover:bg-white/5 transition flex items-center gap-2">
+          Product Modules <iconify-icon icon="lucide:chevron-down" width="14"></iconify-icon>
+</button>
+</div>
+<button class="px-5 py-2.5 rounded-full bg-white text-black text-xs font-medium hover:bg-zinc-200 transition flex items-center gap-2">
+        Case Studies <iconify-icon icon="lucide:arrow-up-right" width="14"></iconify-icon>
+</button>
+</div>
+</div>
+<div class="flex overflow-hidden w-full h-[700px] rounded-2xl gap-x-2 gap-y-2 items-stretch">
+<div class="card-panel flex-1 overflow-hidden cursor-pointer transition-all duration-500 flex hover:flex-[4] relative group bg-zinc-900 rounded-sm items-center justify-center">
+<img alt="SaaS Dashboard UI" class="card-image w-full h-full object-cover rounded-sm" src="assets/37e18797-a6da-4246-9868-7ae06d_98dd1faae399.png"/>
+<div class="card-overlay absolute inset-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 rounded-sm p-6 justify-end">
+<h3 class="text-white text-xl font-semibold mb-1 tracking-tight">Enterprise Core</h3>
+<p class="text-zinc-300 text-sm">Complex data orchestration dashboard</p>
+<div class="mt-3 flex gap-2">
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white backdrop-blur-sm border border-white/10">SaaS</span>
+</div>
+</div>
+</div>
+<div class="card-panel flex-1 overflow-hidden cursor-pointer transition-all duration-500 flex hover:flex-[4] group bg-zinc-900 rounded-sm relative items-center justify-center">
+<img alt="Fintech App UI" class="card-image w-full h-full object-cover rounded-sm" src="assets/b30ed36c-fa0a-48df-8d21-175bed_e113b2cc1021.png" style=""/>
+<div class="card-overlay group-hover:opacity-100 transition-opacity duration-300 flex flex-col bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 rounded-sm pt-6 pr-6 pb-6 pl-6 absolute top-0 right-0 bottom-0 left-0 justify-end">
+<h3 class="text-xl font-semibold text-white tracking-tight mb-1">Nexus Wallet</h3>
+<p class="text-zinc-300 text-sm">Biometric-first mobile banking</p>
+<div class="mt-3 flex gap-2">
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white backdrop-blur-sm border border-white/10">Fintech</span>
+</div>
+</div>
+</div>
+<div class="card-panel h-full flex-1 overflow-hidden cursor-pointer rounded-sm transition-all duration-500 bg-zinc-900 flex justify-center items-center hover:flex-[4] relative group">
+<img alt="Analytics Platform UI" class="card-image w-full h-full object-cover rounded-sm" src="assets/d7448262-5258-4cf4-9b57-d8980c_47cec67a2452.webp" style=""/>
+<div class="card-overlay absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-sm flex flex-col justify-end p-6">
+<h3 class="text-white text-xl font-semibold mb-1 tracking-tight">MetricFlow</h3>
+<p class="text-zinc-300 text-sm">Advanced visualization &amp; tracking</p>
+<div class="mt-3 flex gap-2">
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white backdrop-blur-sm border border-white/10">Analytics</span>
+</div>
+</div>
+</div>
+<div class="card-panel h-full flex-1 overflow-hidden cursor-pointer rounded-sm transition-all duration-500 bg-zinc-900 flex justify-center items-center hover:flex-[4] relative group">
+<img alt="Architecture UI Study" class="card-image w-full h-full object-cover rounded-sm" src="assets/f9fafcbc-4d96-425a-a1fd-cb1693_8b0277ee0234.webp"/>
+<div class="card-overlay absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-sm flex flex-col justify-end p-6">
+<h3 class="text-white text-xl font-semibold mb-1 tracking-tight">System 01</h3>
+<p class="text-zinc-300 text-sm">Component-driven architectural tool</p>
+<div class="mt-3 flex gap-2">
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white backdrop-blur-sm border border-white/10">Design System</span>
+</div>
+</div>
+</div>
+<div class="card-panel h-full flex-1 overflow-hidden cursor-pointer rounded-sm transition-all duration-500 bg-zinc-900 flex justify-center items-center hover:flex-[4] relative group">
+<img alt="Mockup Collection" class="card-image w-full h-full object-cover rounded-sm" src="assets/a1089fd3-4ee0-45a5-a682-917472_9517ed542ae3.png" style="transition: outline 0.1s ease-in-out;"/>
+<div class="card-overlay absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-sm flex flex-col justify-end p-6">
+<h3 class="text-white text-xl font-semibold mb-1 tracking-tight">Global Connect</h3>
+<p class="text-zinc-300 text-sm">Collaborative workspace integration</p>
+<div class="mt-3 flex gap-2">
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white backdrop-blur-sm border border-white/10">Productivity</span>
+</div>
+</div>
+</div>
+</div>
+</div><main class="z-10 pt-32 pb-20 relative">
+<!-- Split Layout Container -->
+<div class="md:px-10 flex flex-col md:flex-row gap-12 lg:gap-24 max-w-screen-2xl mr-auto ml-auto pr-6 pl-6 gap-x-12 gap-y-12">
+<!-- Left Sidebar (Sticky) -->
+<aside class="md:w-1/3 lg:w-1/4">
+<div class="md:sticky md:top-32 space-y-12">
+<div class="space-y-4">
+<span class="text-xs font-semibold tracking-[0.2em] uppercase text-blue-500">Available for 2024</span>
+<h1 class="lg:text-6xl md:text-4xl text-4xl font-semibold text-white tracking-tight">DesignServices</h1>
+<p class="text-zinc-500 text-sm leading-relaxed max-w-xs">
+            Specialized in crafting digital experiences that blend aesthetic precision with functional depth for
+            startups and enterprise.
+          </p>
+</div>
+<!-- Vertical Filter Navigation -->
+<div class="space-y-6 pt-4 border-t border-white/10">
+<h3 class="text-xs font-medium text-white uppercase tracking-wider">Expertise</h3>
+<div class="flex flex-col gap-3 items-start text-sm">
+<button class="text-white flex items-center gap-3 group w-full">
+<span class="h-1.5 w-1.5 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.8)] bg-blue-500"></span>
+<span class="">All Services</span>
+<span class="ml-auto text-zinc-600 text-xs">04</span>
+</button>
+<button class="text-zinc-500 hover:text-white transition-colors flex items-center gap-3 group w-full">
+<span class="h-1.5 w-1.5 rounded-full bg-transparent border border-zinc-700 group-hover:border-zinc-500 transition-colors"></span>
+<span class="">Product Design</span>
+<span class="ml-auto text-zinc-600 text-xs">UX/UI</span>
+</button>
+<button class="text-zinc-500 hover:text-white transition-colors flex items-center gap-3 group w-full">
+<span class="h-1.5 w-1.5 rounded-full bg-transparent border border-zinc-700 group-hover:border-zinc-500 transition-colors"></span>
+<span>Design Systems</span>
+<span class="ml-auto text-zinc-600 text-xs">Ops</span>
+</button>
+<button class="text-zinc-500 hover:text-white transition-colors flex items-center gap-3 group w-full">
+<span class="h-1.5 w-1.5 rounded-full bg-transparent border border-zinc-700 group-hover:border-zinc-500 transition-colors"></span>
+<span class="">Web Development</span>
+<span class="ml-auto text-zinc-600 text-xs">Code</span>
+</button>
+</div>
+</div>
+<!-- Quick Contact -->
+<div class="pt-8 hidden md:block">
+<a class="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition border border-white/10 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm group hover:border-blue-500/50" href="mailto:hello@alex.design">
+<iconify-icon class="transition-colors text-blue-500 group-hover:text-blue-400" icon="solar:calendar-add-linear"></iconify-icon>
+            Book a Discovery Call
+          </a>
+</div>
+</div>
+</aside>
+<!-- Right Content (Scrollable) -->
+<div class="md:w-2/3 lg:w-3/4 space-y-24">
+<!-- Featured Project (Full Width) -->
+<div class="group cursor-pointer">
+<div class="aspect-[16/9] md:aspect-[2/1] overflow-hidden bg-zinc-900 w-full border-white/5 border rounded-sm mb-6 relative">
+<img alt="Product Design" class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-60 group-hover:opacity-80" src="assets/b60e0d50-e5e1-4516-8629-6565f3_7784851d5bc5.png"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+<!-- Floating Elements -->
+<div class="absolute bottom-6 left-6 md:bottom-10 md:left-10 z-10">
+<h2 class="md:text-5xl lg:text-4xl text-4xl font-medium text-white tracking-tight">Product Design</h2>
+<p class="text-zinc-400 text-sm md:text-base max-w-lg">From complex SaaS dashboards to consumer mobile apps.
+              I focus on retention, clarity, and delight.</p>
+</div>
+<div class="absolute top-6 right-6">
+<div class="bg-black/40 backdrop-blur-md text-white border border-white/10 rounded-full h-10 w-10 flex items-center justify-center group-hover:text-black transition-all group-hover:bg-blue-500 group-hover:border-blue-500">
+<iconify-icon icon="solar:arrow-right-up-linear" width="20"></iconify-icon>
+</div>
+</div>
+</div>
+</div>
+<!-- Grid Projects -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-16">
+<!-- Item 1 -->
+<div class="group cursor-pointer flex flex-col gap-4">
+<div class="relative w-full aspect-[4/3] overflow-hidden bg-zinc-900 rounded-sm border border-white/5">
+<img alt="Marketing Sites" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100" src="assets/286dcc4a-3b11-43d3-af80-a7b1c3_d267ef095c04.webp"/>
+<div class="absolute top-4 left-4 text-black text-[10px] font-bold px-2 py-1 uppercase tracking-wider bg-blue-500">
+              Popular
+            </div>
+</div>
+<div class="flex flex-col gap-1 border-t border-white/10 pt-4 transition-colors group-hover:border-blue-500/50">
+<div class="flex justify-between items-center">
+<h3 class="text-xl font-semibold text-white tracking-tight mb-1">Marketing Websites</h3>
+<iconify-icon class="text-zinc-500 group-hover:text-white transition-colors" icon="solar:laptop-linear"></iconify-icon>
+</div>
+<p class="text-sm text-zinc-500">High-conversion landing pages with Framer/Webflow.</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="group cursor-pointer flex flex-col gap-4">
+<div class="relative w-full aspect-[4/3] overflow-hidden bg-zinc-900 rounded-sm border border-white/5">
+<img alt="Design Systems" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-70 group-hover:opacity-100" src="assets/2785f53a-a46a-4482-9c3e-d09a2d_b19dc6ab5577.png"/>
+</div>
+<div class="flex flex-col gap-1 border-t border-white/10 pt-4 transition-colors group-hover:border-blue-500/50">
+<div class="flex justify-between items-center">
+<h3 class="text-xl font-semibold text-white tracking-tight mb-1">Design Systems</h3>
+<iconify-icon class="text-zinc-500 group-hover:text-white transition-colors" icon="solar:layers-linear"></iconify-icon>
+</div>
+<p class="text-sm text-zinc-500">Scalable Figma component libraries &amp; documentation.</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="group cursor-pointer flex flex-col gap-4">
+<div class="relative w-full aspect-[4/3] overflow-hidden bg-zinc-900 rounded-sm border border-white/5">
+<img alt="Mobile Apps" class="transition-transform duration-700 group-hover:scale-105 group-hover:opacity-100 group-hover:mix-blend-normal opacity-70 w-full h-full object-cover" src="assets/cb1b1152-57d5-4b49-b944-3a944a_da7ba289005d.webp"/>
+</div>
+<div class="flex flex-col gap-1 border-t border-white/10 pt-4 transition-colors group-hover:border-blue-500/50">
+<div class="flex justify-between items-center">
+<h3 class="text-xl font-semibold text-white tracking-tight mb-1">Mobile Apps</h3>
+<iconify-icon class="text-zinc-500 group-hover:text-white transition-colors" icon="solar:smartphone-linear"></iconify-icon>
+</div>
+<p class="text-sm text-zinc-500">Native iOS &amp; Android interface design.</p>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="group cursor-pointer flex flex-col gap-4">
+<div class="relative w-full aspect-[4/3] overflow-hidden bg-zinc-900 rounded-sm border border-white/5">
+<img alt="Strategy" class="transition-transform duration-700 group-hover:scale-105 group-hover:opacity-100 opacity-70 w-full h-full object-cover" src="assets/d7ffe8db-0c0b-4425-9c8a-a797d9_ab526587434e.webp"/>
+</div>
+<div class="flex flex-col gap-1 border-t border-white/10 pt-4 transition-colors group-hover:border-blue-500/50">
+<div class="flex justify-between items-center">
+<h3 class="text-xl font-semibold text-white tracking-tight mb-1">Brand Strategy</h3>
+<iconify-icon class="text-zinc-500 group-hover:text-white transition-colors" icon="solar:flag-linear"></iconify-icon>
+</div>
+<p class="text-sm text-zinc-500">Visual identity, logos, and art direction.</p>
+</div>
+</div>
+</div>
+<!-- Archive List Section -->
+<div class="pt-12 border-t border-white/10">
+<div class="flex justify-between items-end mb-8">
+<h2 class="text-4xl font-semibold text-white tracking-tight mb-1">Design Process</h2>
+<button class="text-sm text-zinc-500 hover:text-white transition flex items-center gap-1 group">
+              View Detailed Guide 
+              <iconify-icon class="group-hover:translate-x-1 transition-transform" icon="solar:arrow-right-linear"></iconify-icon>
+</button>
+</div>
+<div class="flex flex-col text-sm">
+<!-- List Header -->
+<div class="grid grid-cols-12 gap-4 pb-4 border-b border-white/10 text-[10px] uppercase tracking-widest text-zinc-500 font-semibold">
+<div class="col-span-5 md:col-span-4">Phase</div>
+<div class="col-span-4 md:col-span-5">Deliverables</div>
+<div class="col-span-3 md:col-span-3 text-right">Est. Time</div>
+</div>
+<!-- Row 1 -->
+<div class="group grid grid-cols-12 gap-4 py-6 border-b border-white/5 items-center hover:bg-white/5 transition-colors -mx-2 px-2 rounded cursor-pointer">
+<div class="col-span-5 md:col-span-4 transition-colors flex font-medium text-white gap-x-2 gap-y-2 items-center group-hover:text-blue-500">
+<span class="text-xs text-zinc-600 font-mono">01</span>
+              Discovery &amp; Strategy
+            </div>
+<div class="col-span-4 md:col-span-5 text-zinc-400">User Research, Audit, Roadmap</div>
+<div class="col-span-3 md:col-span-3 text-right text-zinc-600 font-mono">1 Week</div>
+</div>
+<!-- Row 2 -->
+<div class="group grid grid-cols-12 gap-4 py-6 border-b border-white/5 items-center hover:bg-white/5 transition-colors -mx-2 px-2 rounded cursor-pointer">
+<div class="col-span-5 md:col-span-4 text-white font-medium transition-colors flex items-center gap-2 group-hover:text-blue-500">
+<span class="text-xs text-zinc-600 font-mono">02</span>
+              UX &amp; Wireframing
+            </div>
+<div class="col-span-4 md:col-span-5 text-zinc-400">User Flows, Low-fi Prototypes</div>
+<div class="col-span-3 md:col-span-3 text-right text-zinc-600 font-mono">2 Weeks</div>
+</div>
+<!-- Row 3 -->
+<div class="group grid grid-cols-12 gap-4 py-6 border-b border-white/5 items-center hover:bg-white/5 transition-colors -mx-2 px-2 rounded cursor-pointer">
+<div class="col-span-5 md:col-span-4 text-white font-medium transition-colors flex items-center gap-2 group-hover:text-blue-500">
+<span class="text-xs text-zinc-600 font-mono">03</span>
+              Visual Design
+            </div>
+<div class="col-span-4 md:col-span-5 text-zinc-400">High-fidelity UI, Interactions</div>
+<div class="col-span-3 md:col-span-3 text-right text-zinc-600 font-mono">2 Weeks</div>
+</div>
+<!-- Row 4 -->
+<div class="group grid grid-cols-12 gap-4 py-6 border-b border-white/5 items-center hover:bg-white/5 transition-colors -mx-2 px-2 rounded cursor-pointer">
+<div class="col-span-5 md:col-span-4 text-white font-medium transition-colors flex items-center gap-2 group-hover:text-blue-500">
+<span class="text-xs text-zinc-600 font-mono">04</span>
+              Handoff &amp; Support
+            </div>
+<div class="col-span-4 md:col-span-5 text-zinc-400">Figma Assets, QA, Dev Sync</div>
+<div class="col-span-3 md:col-span-3 text-right text-zinc-600 font-mono">1 Week</div>
+</div>
+</div>
+</div>
+<!-- Load More -->
+<div class="flex justify-center pt-8">
+<button class="text-zinc-500 hover:text-white transition-colors text-sm flex flex-col items-center gap-2">
+<iconify-icon icon="solar:file-download-linear" width="20"></iconify-icon>
+<span>Download Rate Card</span>
+</button>
+</div>
+</div>
+</div>
+</main><section class="bg-zinc-50 border-gray-200 border-t relative" id="work">
+<div class="md:px-10 lg:py-28 max-w-7xl mr-auto ml-auto pt-20 pr-6 pb-20 pl-6">
+<div class="text-center mb-16">
+<h2 class="md:text-4xl lg:text-5xl text-3xl font-semibold text-gray-900 tracking-tight mb-6">Selected Works</h2>
+<p class="text-lg text-gray-600 max-w-2xl mx-auto">Featured case studies demonstrating problem-solving across fintech, healthcare, and e-commerce sectors.</p>
+</div>
+<div class="grid gap-8 md:gap-12 lg:gap-16">
+<!-- Featured Campaign -->
+<div class="overflow-hidden relative bg-white rounded-2xl shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)]">
+<div class="grid lg:grid-cols-2 items-center">
+<div class="lg:h-[500px] overflow-hidden h-96 relative top-0 right-0 bottom-0 left-0 bg-gray-100 flex items-center justify-center">
+<img alt="Fintech dashboard UI" class="h-full w-full object-cover" src="assets/c1042d62-4402-4150-a295-c82f62_9ea665aec031.webp" style=""/>
+<div class="lg:to-white/50 absolute top-0 right-0 bottom-0 left-0"></div>
+</div>
+<div class="p-8 lg:p-12">
+<div class="flex items-center gap-3 mb-4">
+<div class="h-1.5 w-1.5 rounded-full bg-blue-600"></div>
+<span class="text-sm font-medium text-blue-600">Featured Case Study</span>
+</div>
+<h3 class="text-2xl lg:text-3xl font-semibold tracking-tight mb-4 text-gray-900">Nova Fintech Dashboard</h3>
+<p class="text-gray-700 mb-6">Complete redesign of an institutional trading platform. Focused on data visualization clarity, reducing cognitive load for traders, and implementing a scalable design system.</p>
+<div class="flex flex-wrap gap-3 mb-6">
+<span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800">UX Research</span>
+<span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800">UI Design</span>
+<span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800">Design System</span>
+</div>
+<a class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-500 transition" href="#">
+              View details
+              <iconify-icon icon="solar:arrow-right-linear" width="16"></iconify-icon>
+</a>
+</div>
+</div>
+</div>
+<!-- Recent Projects Grid -->
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 top-0 right-0 bottom-0 left-0">
+<div class="group overflow-hidden bg-white rounded-xl relative top-0 right-0 bottom-0 left-0 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)]">
+<div class="overflow-hidden h-64 relative top-0 right-0 bottom-0 left-0 bg-gray-100">
+<img alt="Mobile app interface" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" src="assets/bb9b217e-05c2-4e6e-8f35-3fcb7f_0dfa3063424c.webp" style=""/>
+<div class="bg-gradient-to-t from-white/90 via-transparent to-transparent absolute top-0 right-0 bottom-0 left-0"></div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 p-6">
+<div class="flex items-center gap-2 mb-2">
+<div class="h-1 w-1 rounded-full bg-blue-600"></div>
+<span class="text-xs font-medium text-blue-600">Mobile Health</span>
+</div>
+<h4 class="font-semibold text-gray-900 mb-1">HealthTrack App</h4>
+<p class="text-sm text-gray-700">Patient monitoring iOS &amp; Android</p>
+</div>
+</div>
+<div class="group overflow-hidden bg-white rounded-xl relative top-0 right-0 bottom-0 left-0 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)]">
+<div class="overflow-hidden h-64 relative top-0 right-0 bottom-0 left-0 bg-gray-100">
+<img alt="E-commerce analytics" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" src="assets/9497e84f-cd43-4bed-8735-bbc8bf_d6debf2e891f.webp" style=""/>
+<div class="bg-gradient-to-t from-white/90 via-transparent to-transparent absolute top-0 right-0 bottom-0 left-0"></div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 p-6">
+<div class="flex items-center gap-2 mb-2">
+<div class="h-1 w-1 rounded-full bg-blue-600"></div>
+<span class="text-xs font-medium text-blue-600">SaaS Platform</span>
+</div>
+<h4 class="font-semibold text-gray-900 mb-1">MetricFlow Analytics</h4>
+<p class="text-sm text-gray-700">Data visualization dashboard</p>
+</div>
+</div>
+<div class="group relative overflow-hidden md:col-span-2 lg:col-span-1 bg-white rounded-xl top-0 right-0 bottom-0 left-0 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)]">
+<div class="overflow-hidden h-64 relative top-0 right-0 bottom-0 left-0 bg-gray-100">
+<img alt="Web design layout" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" src="assets/fa91f7af-c0ee-487e-9b71-34905a_2fef5ef8fe90.webp" style=""/>
+<div class="bg-gradient-to-t from-white/90 via-transparent to-transparent absolute top-0 right-0 bottom-0 left-0"></div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 p-6">
+<div class="flex items-center gap-2 mb-2">
+<div class="h-1 w-1 rounded-full bg-blue-600"></div>
+<span class="text-xs font-medium text-blue-600">Web Design</span>
+</div>
+<h4 class="font-semibold text-gray-900 mb-1">Architectural Digest</h4>
+<p class="text-sm text-gray-700">Interactive portfolio website</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Stats -->
+<div class="mt-20 pt-12 border-t border-gray-200">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+<div class="text-center">
+<div class="text-3xl lg:text-4xl font-semibold tracking-tight text-blue-600 mb-2">80+</div>
+<div class="text-sm text-gray-600">Projects Shipped</div>
+</div>
+<div class="text-center">
+<div class="text-3xl lg:text-4xl font-semibold tracking-tight text-blue-600 mb-2">6+</div>
+<div class="text-sm text-gray-600">Years Experience</div>
+</div>
+<div class="text-center">
+<div class="text-3xl lg:text-4xl font-semibold tracking-tight text-blue-600 mb-2">12</div>
+<div class="text-sm text-gray-600">Design Systems</div>
+</div>
+<div class="text-center lg:border-l lg:border-gray-200">
+<div class="text-3xl lg:text-4xl font-semibold tracking-tight text-blue-600 mb-2">4</div>
+<div class="text-sm text-gray-600">Design Awards</div>
+</div>
+</div>
+</div>
+</div>
+</section><section class="bg-zinc-950 border-white/5 border-t relative cursor-pointer" id="testimonials" onclick="window.location.href='/#testimonials'" role="button">
+<div class="mx-auto max-w-7xl px-6 py-20 md:px-10 lg:py-28">
+<div class="text-center mb-16">
+<h2 class="md:text-4xl lg:text-5xl text-3xl font-semibold tracking-tight mb-6">Client Feedback</h2>
+<p class="text-lg text-white/60 max-w-2xl mx-auto">Trusted by startups, agencies, and enterprise product teams worldwide.</p>
+</div>
+<!-- Featured Testimonial -->
+<div class="overflow-hidden bg-zinc-900/50 ring-slate-50/10 ring-1 rounded-2xl mb-12 relative backdrop-blur">
+<div class="grid lg:grid-cols-2 items-center">
+<div class="lg:p-12 order-2 lg:order-1 pt-8 pr-8 pb-8 pl-8">
+<div class="flex items-center gap-3 mb-6">
+<div class="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
+<span class="text-sm font-medium text-blue-400">Head of Product</span>
+</div>
+<blockquote class="lg:text-2xl leading-relaxed text-xl font-medium text-white/90 mb-6">"Alex transformed our complex data requirements into an intuitive dashboard. The design system delivered scaled our development speed by 2x."</blockquote>
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-full bg-zinc-800 flex items-center justify-center">
+<span class="text-sm font-medium text-white">MR</span>
+</div>
+<div class="">
+<div class="font-medium text-white">Marco Rodriguez</div>
+<div class="text-sm text-white/60">Product Director, TechCorp</div>
+</div>
+</div>
+</div>
+<div class="relative h-80 lg:h-96 overflow-hidden order-1 lg:order-2">
+<img alt="Team meeting" class="h-full w-full object-cover" src="assets/c7c6e255-e784-4bd2-9b3e-d2b724_a8ed0c29ec9f.webp"/>
+<div class="absolute inset-0 bg-gradient-to-l from-transparent to-zinc-900/80 lg:to-zinc-900/50"></div>
+</div>
+</div>
+</div>
+<!-- Testimonials Grid -->
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16">
+<div class="overflow-hidden bg-zinc-900/50 ring-slate-50/10 ring-1 rounded-xl pt-6 pr-6 pb-6 pl-6 relative backdrop-blur">
+<div class="mb-6">
+<div class="flex items-center gap-1 mb-4 text-blue-400">
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+</div>
+<blockquote class="text-white/90 mb-4">"Incredibly professional and detailed. The mobile app redesign completely revitalized our user engagement metrics."</blockquote>
+</div>
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center">
+<span class="text-xs font-medium text-white">SL</span>
+</div>
+<div class="">
+<div class="text-sm font-medium text-white">Sarah Laurent</div>
+<div class="text-xs text-white/60">Founder, HealthStart</div>
+</div>
+</div>
+</div>
+<div class="overflow-hidden bg-zinc-900/50 ring-slate-50/10 ring-1 rounded-xl pt-6 pr-6 pb-6 pl-6 relative backdrop-blur">
+<div class="mb-6">
+<div class="flex items-center gap-1 mb-4 text-blue-400">
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+</div>
+<blockquote class="text-white/90 mb-4">"Alex's ability to bridge the gap between design and engineering is rare. A true partner in product building."</blockquote>
+</div>
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center">
+<span class="text-xs font-medium text-white">JC</span>
+</div>
+<div class="">
+<div class="text-sm font-medium text-white">James Chen</div>
+<div class="text-xs text-white/60">CTO, FinFlow</div>
+</div>
+</div>
+</div>
+<div class="overflow-hidden bg-zinc-900/50 ring-slate-50/10 ring-1 rounded-xl pt-6 pr-6 pb-6 pl-6 relative backdrop-blur">
+<div class="mb-6">
+<div class="flex items-center gap-1 mb-4 text-blue-400">
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+<iconify-icon icon="solar:star-bold" width="16"></iconify-icon>
+</div>
+<blockquote class="text-white/90 mb-4">"Exceptional quality of work. The prototyping phase helped us validate our ideas before writing a single line of code."</blockquote>
+</div>
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center">
+<span class="text-xs font-medium text-white">AN</span>
+</div>
+<div>
+<div class="text-sm font-medium text-white">Amelia Noir</div>
+<div class="text-xs text-white/60">Creative Director</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Press & Recognition -->
+<div class="text-center">
+<h3 class="text-xl font-semibold text-white/90 tracking-tight mb-10">Featured In</h3>
+<div class="flex flex-wrap gap-10 lg:gap-24 opacity-50 items-center justify-center text-white">
+<iconify-icon class="hover:text-white transition-colors duration-300" height="64" icon="simple-icons:nasa" width="64"></iconify-icon>
+<iconify-icon class="hover:text-white transition-colors duration-300" height="64" icon="simple-icons:spacex" width="64"></iconify-icon>
+<iconify-icon class="hover:text-white transition-colors duration-300" height="64" icon="simple-icons:uber" width="64"></iconify-icon>
+<iconify-icon class="hover:text-white transition-colors duration-300" height="64" icon="simple-icons:visa" width="64"></iconify-icon>
+<iconify-icon class="hover:text-white transition-colors duration-300" height="64" icon="simple-icons:grab" width="64"></iconify-icon>
+</div>
+</div>
+</div>
+</section><section class="relative bg-zinc-100 border-gray-200 border-t" id="contact">
+<div class="mx-auto max-w-7xl px-6 py-20 md:px-10 lg:py-28">
+<div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+<!-- Left Content -->
+<div class="">
+<div class="flex items-center gap-3 mb-6">
+<div class="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
+<span class="text-sm font-medium text-blue-600">Let's Work Together</span>
+</div>
+<h2 class="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight mb-6 text-gray-900">Ready to build something great?</h2>
+<p class="text-lg text-gray-600 mb-8 max-w-lg">Whether you need a complete product redesign, a new mobile app, or design system consulting, I'm here to help bring your vision to life.</p>
+<!-- Contact Methods -->
+<div class="space-y-4 mb-8">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-xl bg-white backdrop-blur border border-gray-200 flex items-center justify-center text-blue-600">
+<iconify-icon icon="solar:letter-linear" width="20"></iconify-icon>
+</div>
+<div class="">
+<div class="text-sm font-medium text-gray-900">Email</div>
+<div class="text-sm text-gray-600">alex@designstudio.com</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-xl bg-white backdrop-blur border border-gray-200 flex items-center justify-center text-blue-600">
+<iconify-icon icon="solar:calendar-linear" width="20"></iconify-icon>
+</div>
+<div class="">
+<div class="text-sm font-medium text-gray-900">Availability</div>
+<div class="text-sm text-gray-600">Open for Q3 2024</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-xl bg-white backdrop-blur border border-gray-200 flex items-center justify-center text-blue-600">
+<iconify-icon icon="solar:map-point-linear" width="20"></iconify-icon>
+</div>
+<div class="">
+<div class="text-sm font-medium text-gray-900">Based in</div>
+<div class="text-sm text-gray-600">San Francisco, CA (Remote)</div>
+</div>
+</div>
+</div>
+<!-- Quick Stats -->
+<div class="grid grid-cols-3 gap-6 pt-8 border-t border-gray-200">
+<div class="">
+<div class="text-xl font-semibold text-gray-900 mb-1">24h</div>
+<div class="text-xs text-gray-600">Response time</div>
+</div>
+<div class="">
+<div class="text-xl font-semibold text-gray-900 mb-1">Remote</div>
+<div class="text-xs text-gray-600">Preferred</div>
+</div>
+<div class="">
+<div class="text-xl font-semibold text-gray-900 mb-1">Figma</div>
+<div class="text-xs text-gray-600">Expertise</div>
+</div>
+</div>
+</div>
+<!-- Right Content - Contact Form -->
+<div class="relative">
+<div class="relative overflow-hidden rounded-2xl bg-white backdrop-blur border border-gray-200 p-8 shadow-sm">
+<form class="space-y-6">
+<div class="grid md:grid-cols-2 gap-4">
+<div class="">
+<label class="block text-sm font-medium text-gray-900 mb-2" for="firstName">First Name</label>
+<input class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition focus:bg-white" id="firstName" name="firstName" placeholder="Enter your first name" type="text"/>
+</div>
+<div class="">
+<label class="block text-sm font-medium text-gray-900 mb-2" for="lastName">Last Name</label>
+<input class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition focus:bg-white" id="lastName" name="lastName" placeholder="Enter your last name" type="text"/>
+</div>
+</div>
+<div class="">
+<label class="block text-sm font-medium text-gray-900 mb-2" for="email">Email</label>
+<input class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition focus:bg-white" id="email" name="email" placeholder="your.email@example.com" type="email"/>
+</div>
+<div class="">
+<label class="block text-sm font-medium text-gray-900 mb-2" for="company">Company</label>
+<input class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition focus:bg-white" id="company" name="company" placeholder="Your company name" type="text"/>
+</div>
+<div class="">
+<label class="block text-sm font-medium text-gray-900 mb-2" for="projectType">Project Type</label>
+<select class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition focus:bg-white" id="projectType" name="projectType">
+<option value="">Select project type</option>
+<option value="webapp">Web Application</option>
+<option value="mobile">Mobile App</option>
+<option value="system">Design System</option>
+<option value="marketing">Marketing Website</option>
+<option value="branding">Branding &amp; Identity</option>
+<option value="other">Other</option>
+</select>
+</div>
+<div class="">
+<label class="block text-sm font-medium text-gray-900 mb-2" for="message">Project Details</label>
+<textarea class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition resize-none focus:bg-white" id="message" name="message" placeholder="Tell me about your project, timeline, and budget..." rows="4"></textarea>
+</div>
+<button class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 text-white px-6 py-3 font-medium hover:bg-blue-500 transition-colors" type="submit">
+              Send Message
+              <iconify-icon icon="solar:plain-linear" width="18"></iconify-icon>
+</button>
+</form>
+</div>
+<!-- Decorative elements -->
+<div class="absolute -top-4 -right-4 h-8 w-8 rounded-full bg-blue-500/20 blur-xl"></div>
+<div class="absolute -bottom-6 -left-6 h-12 w-12 rounded-full bg-blue-500/10 blur-2xl"></div>
+</div>
+</div>
+</div>
+</section><footer class="z-10 bg-black/95 border-white/10 border-t relative backdrop-blur">
+<div class="md:px-10 lg:py-20 max-w-7xl mr-auto ml-auto pt-16 pr-6 pb-16 pl-6">
+<div class="grid gap-12 lg:grid-cols-2 lg:gap-20">
+<!-- Left section -->
+<div class="space-y-8">
+<div class="">
+<div class="flex items-center gap-3 mb-4">
+<div class="h-2.5 w-2.5 rounded-full bg-blue-500"></div>
+<span class="text-lg font-semibold tracking-tight cursor-pointer" onclick="window.location.href='/home'" role="button">ALEX</span>
+</div>
+<p class="text-white/60 max-w-md">
+            Senior Product Designer crafting clean, functional, and scalable digital experiences for the modern web.
+          </p>
+</div>
+<div class="flex items-center gap-4 text-white/60">
+<a class="hover:text-white transition" href="#">
+<iconify-icon icon="ri:twitter-x-line" width="20"></iconify-icon>
+</a>
+<a class="hover:text-white transition" href="#">
+<iconify-icon icon="solar:basketball-linear" width="20"></iconify-icon>
+</a>
+<a class="hover:text-white transition" href="#">
+<iconify-icon icon="solar:link-circle-linear" width="20"></iconify-icon>
+</a>
+<a class="hover:text-white transition" href="#">
+<iconify-icon icon="solar:figma-linear" width="20"></iconify-icon>
+</a>
+</div>
+<div class="space-y-3">
+<p class="text-sm font-medium text-white/90">Start a project?</p>
+<div class="flex flex-wrap gap-3">
+<a class="inline-flex items-center gap-2 rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-blue-500 transition" href="#contact">
+              Get in touch
+              <iconify-icon icon="solar:arrow-right-linear" width="16"></iconify-icon>
+</a>
+<a class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/90 backdrop-blur hover:bg-white/10 transition" href="#">
+              Download Resume
+            </a>
+</div>
+</div>
+</div>
+<!-- Right section -->
+<div class="grid gap-8 sm:grid-cols-2 lg:gap-12">
+<div class="">
+<h3 class="text-sm font-medium text-white mb-4">Services</h3>
+<ul class="space-y-3">
+<li class=""><a class="text-sm text-white/60 hover:text-white transition" href="#">Product Design</a></li>
+<li class=""><a class="text-sm text-white/60 hover:text-white transition" href="#">Design Systems</a></li>
+<li class=""><a class="text-sm text-white/60 hover:text-white transition" href="#">Mobile Apps</a></li>
+<li class=""><a class="text-sm text-white/60 hover:text-white transition" href="#">Web Development</a></li>
+<li class=""><a class="text-sm text-white/60 hover:text-white transition" href="#">UX Consulting</a></li>
+</ul>
+</div>
+<div class="">
+<h3 class="text-sm font-medium text-white mb-4">Sitemap</h3>
+<ul class="space-y-3">
+<li class=""><a class="hover:text-white transition text-sm text-white/60" href="#">Work</a></li>
+<li class=""><a class="hover:text-white transition text-sm text-white/60" href="#">Services</a></li>
+<li class=""><a class="hover:text-white transition text-sm text-white/60" href="#">About</a></li>
+<li class=""><a class="hover:text-white transition text-sm text-white/60" href="#">Blog</a></li>
+<li class=""><a class="hover:text-white transition text-sm text-white/60" href="#">Contact</a></li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Bottom section -->
+<div class="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+<p class="text-sm text-white/60">
+        © 2024 ALEX Design. All rights reserved.
+      </p>
+<div class="flex items-center gap-6 text-sm text-white/60">
+<a class="hover:text-white transition" href="#">Case Studies</a>
+<a class="hover:text-white transition" href="#">Terms</a>
+<a class="hover:text-white transition" href="#">Privacy</a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+      window.addEventListener('DOMContentLoaded', () => {
+        // Parallax scrolling effect
+        let ticking = false;
+        
+        function updateParallax() {
+          const scrolled = window.pageYOffset;
+          const viewportHeight = window.innerHeight;
+          
+          // Main hero background
+          const parallaxBg = document.getElementById('parallax-bg');
+          if (parallaxBg) {
+            const speed = 0.5;
+            parallaxBg.style.transform = `translateY(${scrolled * speed}px)`;
+          }
+          
+          // Hero decorative crosses
+          const parallaxCrosses = document.getElementById('parallax-crosses');
+          if (parallaxCrosses) {
+            const speed = 0.3;
+            parallaxCrosses.style.transform = `translateY(${scrolled * speed}px)`;
+          }
+          
+          // Hero wordmark
+          const parallaxWordmark = document.getElementById('parallax-wordmark');
+          if (parallaxWordmark) {
+            const speed = 0.7;
+            parallaxWordmark.style.transform = `translateY(${scrolled * speed}px)`;
+          }
+          
+          // Second section background
+          const parallaxBg2 = document.getElementById('parallax-bg2');
+          if (parallaxBg2) {
+            const rect = parallaxBg2.getBoundingClientRect();
+            if (rect.bottom >= 0 && rect.top <= viewportHeight) {
+              const speed = 0.4;
+              const offset = (scrolled - parallaxBg2.parentElement.offsetTop) * speed;
+              parallaxBg2.style.transform = `translateY(${offset}px)`;
+            }
+          }
+          
+          // Second section crosses
+          const parallaxCrosses2 = document.getElementById('parallax-crosses2');
+          if (parallaxCrosses2) {
+            const rect = parallaxCrosses2.getBoundingClientRect();
+            if (rect.bottom >= 0 && rect.top <= viewportHeight) {
+              const speed = 0.2;
+              const offset = (scrolled - parallaxCrosses2.parentElement.offsetTop) * speed;
+              parallaxCrosses2.style.transform = `translateY(${offset}px)`;
+            }
+          }
+          
+          // Second section wordmark
+          const parallaxWordmark2 = document.getElementById('parallax-wordmark2');
+          if (parallaxWordmark2) {
+            const rect = parallaxWordmark2.getBoundingClientRect();
+            if (rect.bottom >= 0 && rect.top <= viewportHeight) {
+              const speed = 0.6;
+              const offset = (scrolled - parallaxWordmark2.parentElement.offsetTop) * speed;
+              parallaxWordmark2.style.transform = `translateY(${offset}px)`;
+            }
+          }
+          
+          ticking = false;
+        }
+        
+        function requestTick() {
+          if (!ticking) {
+            requestAnimationFrame(updateParallax);
+            ticking = true;
+          }
+        }
+        
+        window.addEventListener('scroll', requestTick);
+        
+        // Initial call
+        updateParallax();
+      });
+    </script>
+<script data-img-fallback-handler="">!function(){var f=["https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/917d6f93-fb36-439a-8c48-884b67b35381_1600w.jpg","https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/4734259a-bad7-422f-981e-ce01e79184f2_1600w.jpg","https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/c543a9e1-f226-4ced-80b0-feb8445a75b9_1600w.jpg","https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/5bab247f-35d9-400d-a82b-fd87cfe913d2_1600w.webp","https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/30104e3c-5eea-4b93-93e9-5313698a7156_1600w.webp"],h=new Set;function g(s){for(var x=0,i=0;i<s.length;i++)x=(x<<5)-x+s.charCodeAt(i)|0;return f[Math.abs(x)%f.length]}function r(t){var s=t.src;if(s&&!h.has(s)){h.add(s);t.src=g(s)}}window.addEventListener("error",function(e){var t=e.target;if(t&&t.tagName==="IMG")r(t)},!0);function c(){document.querySelectorAll("img").forEach(function(i){if(i.complete&&!i.naturalWidth&&i.src)r(i)})}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",c);else c()}()</script></body></html>

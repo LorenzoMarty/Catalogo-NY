@@ -1,0 +1,480 @@
+﻿<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Miles Design System Showcase</title>
+<script src="assets/resource_3fa48481346f.es"></script>
+<script src="assets/lucide_latest_2eebd0ebe8c2.es"></script>
+<link href="assets/css2_19fd9cc6b396.css" rel="stylesheet"/>
+<style>
+body { font-family: 'Inter', sans-serif; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style><style data-scroll-fix="true">
+html, body {
+    overflow: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 100% !important;
+    scroll-behavior: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+body, .wrapper, main, #__next, #app, .page, .content {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+}
+
+.loader, .preloader, .loading, [class*="loader"], [class*="preloader"] {
+    display: none !important;
+    opacity: 0 !important;
+}
+
+.word-inner, .char, .line, [data-aos], [data-scroll],
+.hero-text span, .hero-fade, [class*="hero"] span {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+}
+
+.translate-y-full, .translate-x-full, .-translate-y-full, .-translate-x-full,
+.translate-y-1\/2, .-translate-y-1\/2, .translate-y-\[100\%\], .translate-y-\[110\%\] {
+    transform: none !important;
+}
+
+.opacity-0, [class*="opacity-0"] {
+    opacity: 1 !important;
+}
+
+.scale-0, .scale-50, .scale-75 {
+    transform: none !important;
+}
+
+html.lenis, html.lenis-smooth,
+body.lenis, body.lenis-smooth,
+.lenis-wrapper, .lenis-content,
+[data-lenis-prevent], [data-scroll-container] {
+    overflow: visible !important;
+    height: auto !important;
+}
+
+body.flex.items-center,
+body.flex.justify-center {
+    align-items: flex-start !important;
+    min-height: 100vh;
+    height: auto !important;
+}
+
+main, #__next, #__nuxt, #app, .main-content {
+    overflow: visible !important;
+    height: auto !important;
+}
+</style></head>
+<body class="bg-white text-slate-800 antialiased">
+<nav class="bg-[#051316] border-b border-white/10 px-6 md:px-12 py-2">
+<div class="max-w-[1600px] mx-auto flex items-center justify-between gap-6 overflow-x-auto no-scrollbar">
+<div class="flex items-center gap-2 text-white">
+<div class="flex items-center justify-center w-8 h-8 bg-[#4FBFA5] rounded-md text-[#0A262D]">
+<span class="font-semibold text-lg">M</span>
+</div>
+<span class="font-semibold tracking-tight text-lg uppercase">Miles Design System</span>
+</div>
+<div class="flex items-center gap-6">
+<a class="text-white/90 text-xs hover:text-[#4FBFA5] transition-colors" href="#hero">Hero</a>
+<a class="text-white/90 text-xs hover:text-[#4FBFA5] transition-colors" href="#typography">Typography</a>
+<a class="text-white/90 text-xs hover:text-[#4FBFA5] transition-colors" href="#colors">Colors</a>
+<a class="text-white/90 text-xs hover:text-[#4FBFA5] transition-colors" href="#components">Components</a>
+<a class="text-white/90 text-xs hover:text-[#4FBFA5] transition-colors" href="#layout">Layout</a>
+<a class="text-white/90 text-xs hover:text-[#4FBFA5] transition-colors" href="#motion">Motion</a>
+<a class="text-white/90 text-xs hover:text-[#4FBFA5] transition-colors" href="#icons">Icons</a>
+</div>
+</div>
+</nav>
+<section id="hero">
+<div class="relative w-full min-h-[90vh] flex flex-col">
+<div class="absolute inset-0 z-0">
+<img alt="Cityscape" class="w-full h-full object-cover" src="assets/photo-1477959858617-67f85cf4f1_db0733743c40.avif"/>
+<div class="absolute inset-0 bg-[#0A262D]/70 mix-blend-multiply"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-[#0A262D]/90"></div>
+</div>
+<nav class="relative z-20 flex w-full items-center justify-between px-6 py-6 lg:px-12 border-b border-white/10">
+<div class="flex items-center gap-2">
+<div class="flex items-center justify-center w-8 h-8 bg-[#4FBFA5] rounded-md text-[#0A262D]">
+<span class="font-semibold text-lg">M</span>
+</div>
+<span class="text-white font-semibold tracking-tight text-lg uppercase">Miles</span>
+</div>
+<div class="hidden lg:flex items-center gap-8">
+<a class="text-white/90 text-xs hover:text-[#4FBFA5] transition-colors" href="#">Home</a>
+<a class="text-white/70 text-xs hover:text-white transition-colors" href="#">ADR Services</a>
+<a class="text-white/70 text-xs hover:text-white transition-colors" href="#">Our Panel</a>
+<a class="text-white/70 text-xs hover:text-white transition-colors" href="#">Practice Areas</a>
+<a class="text-white/70 text-xs hover:text-white transition-colors" href="#">Locations</a>
+<a class="text-white/70 text-xs hover:text-white transition-colors" href="#">About Us</a>
+</div>
+<div class="hidden lg:flex items-center gap-6">
+<a class="text-white/90 text-xs hover:text-white transition-colors" href="#">Shop</a>
+<a class="text-white/90 text-xs hover:text-white transition-colors" href="#">Pay Online</a>
+<a class="px-5 py-2 border border-white/30 text-white text-xs rounded-full hover:bg-white/10 transition-colors" href="#">Log In</a>
+</div>
+<button class="lg:hidden text-white">
+<i class="w-6 h-6" data-lucide="menu"></i>
+</button>
+</nav>
+<div class="relative z-10 flex flex-col items-center justify-center flex-grow text-center px-4 mt-10">
+<h1 class="text-5xl md:text-7xl lg:text-8xl font-semibold text-white tracking-tight leading-none mb-6">
+DESIGN SYSTEM<br/>SHOWCASE
+</h1>
+<p class="text-lg md:text-xl text-white/80 max-w-2xl font-light leading-relaxed">
+A living library of the exact Miles interface patterns, typography, surfaces, motion, and components used across the original experience.
+</p>
+<div class="mt-20 animate-bounce text-white/30">
+<div class="w-[1px] h-16 bg-white/20 mx-auto mb-2"></div>
+<div class="border border-white/20 rounded-full p-2">
+<div class="w-1 h-1 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 px-6 bg-white" id="typography">
+<div class="max-w-7xl mx-auto">
+<div class="mb-12">
+<h2 class="text-4xl font-semibold tracking-tight text-[#0A262D]">TYPOGRAPHY</h2>
+<p class="text-lg text-slate-600 leading-relaxed font-light">Hierarchy, scale, and rhythm using only styles present in the reference.</p>
+</div>
+<div class="rounded-2xl overflow-hidden bg-[#0A262D] p-12 mb-12">
+<div class="flex items-start justify-between gap-6">
+<p class="text-[10px] text-white/70 font-semibold uppercase tracking-wider">Heading 1</p>
+<h1 class="text-5xl md:text-7xl lg:text-8xl font-semibold text-white tracking-tight leading-none mb-6">DESIGN SYSTEM</h1>
+<p class="text-xs text-white/70">48px / 48px</p>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<div class="flex items-start justify-between gap-6 border-b border-slate-200 py-3">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Heading 2</p>
+<h2 class="text-4xl font-semibold tracking-tight text-[#0A262D]">Section Heading</h2>
+<p class="text-xs text-slate-400">36px / 40px</p>
+</div>
+<div class="flex items-start justify-between gap-6 border-b border-slate-200 py-3">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Heading 3</p>
+<h3 class="text-2xl font-semibold text-[#0A262D] leading-tight mb-3 group-hover:text-[#4FBFA5] transition-colors">Component Title</h3>
+<p class="text-xs text-slate-400">24px / 32px</p>
+</div>
+<div class="flex items-start justify-between gap-6 border-b border-slate-200 py-3">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Heading 4</p>
+<h4 class="text-lg font-semibold text-[#0A262D] mt-1 leading-snug group-hover:text-[#4FBFA5] transition-colors">Supporting Heading</h4>
+<p class="text-xs text-slate-400">18px / 28px</p>
+</div>
+<div class="flex items-start justify-between gap-6 border-b border-slate-200 py-3">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Bold L</p>
+<p class="text-xl font-semibold uppercase">Bold Large</p>
+<p class="text-xs text-slate-400">20px / 28px</p>
+</div>
+<div class="flex items-start justify-between gap-6 border-b border-slate-200 py-3">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Bold M</p>
+<p class="text-sm font-medium">Bold Medium</p>
+<p class="text-xs text-slate-400">14px / 20px</p>
+</div>
+<div class="flex items-start justify-between gap-6 border-b border-slate-200 py-3">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Bold S</p>
+<p class="text-xs uppercase font-semibold">Bold Small</p>
+<p class="text-xs text-slate-400">12px / 16px</p>
+</div>
+<div class="flex items-start justify-between gap-6 border-b border-slate-200 py-3">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Paragraph</p>
+<p class="text-lg text-slate-600 leading-relaxed mb-10 font-light">Larger body copy for intros, product narrative, and long-form section context.</p>
+<p class="text-xs text-slate-400">18px / 28px</p>
+</div>
+<div class="flex items-start justify-between gap-6 border-b border-slate-200 py-3">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Regular L</p>
+<p class="text-lg text-slate-600 leading-relaxed font-light">Regular Large body</p>
+<p class="text-xs text-slate-400">18px / 28px</p>
+</div>
+<div class="flex items-start justify-between gap-6 border-b border-slate-200 py-3">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Regular M</p>
+<div class="text-sm">
+<p class="font-light">Regular Medium body</p>
+</div>
+<p class="text-xs text-slate-400">14px / 20px</p>
+</div>
+<div class="flex items-start justify-between gap-6 py-3">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Regular S</p>
+<p class="text-[10px] uppercase tracking-wider opacity-80 mb-1">Regular Small label</p>
+<p class="text-xs text-slate-400">10px / 16px</p>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-[#EAF4F4] py-24 px-6 md:px-12" id="colors">
+<div class="max-w-[1600px] mx-auto">
+<div class="mb-12">
+<h2 class="text-4xl font-semibold tracking-tight text-[#0A262D]">COLORS &amp; SURFACES</h2>
+<p class="text-lg text-slate-600 leading-relaxed font-light">Core backgrounds, overlays, borders, and gradients used in the source layout.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+<div class="rounded-2xl overflow-hidden border border-slate-200 bg-white">
+<div class="h-[200px] bg-white"></div>
+<div class="p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Page</p>
+<p class="text-sm text-slate-600">`bg-white`</p>
+</div>
+</div>
+<div class="rounded-2xl overflow-hidden bg-[#0A262D] text-white">
+<div class="h-[200px] bg-[#0A262D]"></div>
+<div class="p-12">
+<p class="text-[10px] text-white/70 font-semibold uppercase tracking-wider mb-1">Dark Section</p>
+<p class="text-sm text-white/70">`bg-[#0A262D]`</p>
+</div>
+</div>
+<div class="rounded-2xl overflow-hidden border border-slate-200 bg-[#EAF4F4]">
+<div class="h-[200px] bg-[#EAF4F4]"></div>
+<div class="p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Soft Section</p>
+<p class="text-sm text-slate-600">`bg-[#EAF4F4]`</p>
+</div>
+</div>
+<div class="rounded-2xl overflow-hidden bg-[#06181C]/80 text-white">
+<div class="h-[200px] bg-[#0F2A31]/80 backdrop-blur-md border border-white/10"></div>
+<div class="p-12">
+<p class="text-[10px] text-white/70 font-semibold uppercase tracking-wider mb-1">Glass / Blur</p>
+<p class="text-sm text-white/70">`bg-[#0F2A31]/80` + `backdrop-blur-md`</p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="relative h-[300px] rounded-2xl overflow-hidden">
+<img alt="Gradient Context" class="w-full h-full object-cover" src="assets/photo-1486406146926-c627a92ad1_35589233d7b0.avif"/>
+<div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-[#0A262D]/90"></div>
+<div class="absolute bottom-6 left-6 text-white">
+<p class="text-[10px] uppercase tracking-wider opacity-80 mb-1">Overlay</p>
+<p class="text-xl font-semibold uppercase">Hero Gradient</p>
+</div>
+</div>
+<div class="relative h-[300px] rounded-2xl overflow-hidden">
+<img alt="Gradient Context" class="w-full h-full object-cover" src="assets/photo-1497366216548-3752607029_d5beab4ba774.avif"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-6 left-6 text-white">
+<p class="text-[10px] uppercase tracking-wider opacity-80 mb-1">Overlay</p>
+<p class="text-xl font-semibold uppercase">Card Fade</p>
+</div>
+</div>
+<div class="relative h-[300px] rounded-2xl overflow-hidden">
+<img alt="Gradient Context" class="w-full h-full object-cover" src="assets/917d6f93-fb36-439a-8c48-884b67_1e33efa61316.jpg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0A262D] via-transparent to-transparent opacity-90"></div>
+<div class="absolute bottom-6 left-6 text-white">
+<p class="text-[10px] uppercase tracking-wider opacity-80 mb-1">Overlay</p>
+<p class="text-xl font-semibold uppercase">Location Fade</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 px-6 md:px-12 bg-white max-w-[1600px] mx-auto" id="components">
+<div class="mb-12">
+<h2 class="text-4xl font-semibold tracking-tight text-[#0A262D]">UI COMPONENTS</h2>
+<p class="text-lg text-slate-600 leading-relaxed font-light">Buttons, cards, links, and icon controls exactly as implemented in the reference.</p>
+</div>
+<div class="mb-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Button States</p>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+<div class="rounded-2xl border border-slate-200 p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Default</p>
+<button class="bg-[#0A262D] text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-[#153e48] transition-colors">Primary</button>
+</div>
+<div class="rounded-2xl border border-slate-200 p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Hover</p>
+<button class="bg-[#1a2e35] text-white px-8 py-3.5 rounded-full text-sm font-medium hover:bg-[#25414b] transition-colors">Hover Me</button>
+</div>
+<div class="rounded-2xl border border-slate-200 p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Active</p>
+<button class="bg-[#0A262D] text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-[#153e48] transition-colors">Press</button>
+</div>
+<div class="rounded-2xl border border-slate-200 p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Focus</p>
+<button autofocus class="bg-transparent border border-[#0A262D] text-[#0A262D] px-8 py-3 rounded-full text-sm font-medium hover:bg-[#0A262D]/5 transition-colors">Tab Focus</button>
+</div>
+<div class="rounded-2xl border border-slate-200 p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Disabled</p>
+<button class="bg-[#0A262D] text-white px-8 py-3 rounded-full text-sm font-medium opacity-80" disabled>Disabled</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+<div class="flex flex-col gap-6 group cursor-pointer">
+<div class="relative overflow-hidden rounded-2xl aspect-video">
+<span class="absolute top-4 left-4 bg-white px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase z-10">Featured</span>
+<img alt="Card" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="assets/photo-1454165804606-c3d57bc86b_ce5886596612.avif"/>
+</div>
+<div>
+<h3 class="text-2xl font-semibold text-[#0A262D] leading-tight mb-3 group-hover:text-[#4FBFA5] transition-colors">Featured Article Card</h3>
+<div class="flex items-center text-[#4FBFA5] text-sm font-medium gap-1">Read Article <i class="w-4 h-4" data-lucide="arrow-right"></i></div>
+</div>
+</div>
+<div class="bg-[#0A262D] rounded-2xl p-12 text-white">
+<p class="text-[#4FBFA5] text-xs font-semibold tracking-wider uppercase mb-2">Icon Controls</p>
+<div class="flex gap-3 mb-10">
+<button class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"><i class="w-4 h-4" data-lucide="chevron-left"></i></button>
+<button class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"><i class="w-4 h-4" data-lucide="chevron-right"></i></button>
+</div>
+<p class="text-white/70 font-light">No input fields are present in the original design; component inventory is button, link, card, media, and icon controls.</p>
+</div>
+</div>
+</section>
+<section class="py-24 px-6 md:px-12 bg-white max-w-[1600px] mx-auto" id="layout">
+<div class="mb-12">
+<h2 class="text-4xl font-semibold tracking-tight text-[#0A262D]">LAYOUT &amp; SPACING</h2>
+<p class="text-lg text-slate-600 leading-relaxed font-light">Canonical containers, section paddings, and responsive composition patterns.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<div class="rounded-2xl border border-slate-200 p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Container</p>
+<p class="text-sm text-slate-600">`max-w-4xl` + `mx-auto`</p>
+</div>
+<div class="rounded-2xl border border-slate-200 p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Section Padding</p>
+<p class="text-sm text-slate-600">`py-24 px-6 md:px-12`</p>
+</div>
+<div class="rounded-2xl border border-slate-200 p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Wide Container</p>
+<p class="text-sm text-slate-600">`max-w-[1600px] mx-auto`</p>
+</div>
+</div>
+<div class="pb-24 px-4 md:px-8 max-w-[1600px] mx-auto mb-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Pattern 1: Mosaic Grid</p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-auto md:h-[600px]">
+<div class="relative rounded-2xl overflow-hidden group h-[300px] md:h-full">
+<img alt="Office" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="assets/photo-1497366216548-3752607029_d5beab4ba774.avif"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+</div>
+<div class="flex flex-col gap-6 h-full">
+<div class="relative flex-grow rounded-2xl overflow-hidden group h-[300px] md:h-auto">
+<img alt="Skyscrapers" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="assets/photo-1486406146926-c627a92ad1_35589233d7b0.avif"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<h3 class="text-white text-xl font-medium tracking-tight">Grid + Split Middle</h3>
+</div>
+</div>
+<div class="relative h-[200px] rounded-2xl overflow-hidden group">
+<img alt="Meeting" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="assets/photo-1517048676732-d65bc937f9_38da3666af2f.avif"/>
+<div class="absolute inset-0 bg-slate-900/20"></div>
+</div>
+</div>
+<div class="relative rounded-2xl overflow-hidden group h-[300px] md:h-full">
+<img alt="Handshake" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="assets/photo-1582213782179-e0d53f98f2_d367f6ccba31.avif"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+</div>
+</div>
+</div>
+<div class="bg-[#EAF4F4] py-24 px-6 md:px-12 rounded-2xl">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Pattern 2: Two-Column Split</p>
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="relative">
+<div class="absolute -inset-4 bg-white/50 rounded-full blur-2xl"></div>
+<img alt="Dashboard" class="relative rounded-2xl shadow-2xl z-10 border-4 border-white" src="assets/photo-1551288049-bebda4e38f71_e54631fa704b.avif"/>
+</div>
+<div>
+<h2 class="text-4xl lg:text-5xl font-semibold text-[#0A262D] tracking-tight mb-2">CONTENT</h2>
+<h2 class="text-4xl lg:text-5xl font-semibold text-[#4FBFA5] tracking-tight mb-8">SPLIT LAYOUT</h2>
+<p class="text-lg text-slate-600 mb-8 leading-relaxed">Image + copy alignment with consistent gap and responsive stacking.</p>
+<div class="flex gap-4">
+<button class="bg-[#0A262D] text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-[#153e48] transition-colors">Primary</button>
+<button class="bg-transparent border border-[#0A262D] text-[#0A262D] px-8 py-3 rounded-full text-sm font-medium hover:bg-[#0A262D]/5 transition-colors">Secondary</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 px-6 md:px-12 bg-[#0A262D] text-white overflow-hidden" id="motion">
+<div class="max-w-[1600px] mx-auto">
+<div class="mb-12">
+<h2 class="text-4xl font-semibold tracking-tight">MOTION &amp; INTERACTION</h2>
+<p class="text-lg text-white/70 leading-relaxed font-light">Animation and transition behaviors from the source implementation.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="rounded-2xl border border-white/20 p-12">
+<p class="text-[10px] text-white/70 font-semibold uppercase tracking-wider mb-2">`animate-bounce`</p>
+<div class="mt-20 animate-bounce text-white/30">
+<div class="w-[1px] h-16 bg-white/20 mx-auto mb-2"></div>
+<div class="border border-white/20 rounded-full p-2">
+<div class="w-1 h-1 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="relative rounded-2xl overflow-hidden group h-[300px]">
+<img alt="Hover Scale" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="assets/4734259a-bad7-422f-981e-ce01e7_30e2ef6eeadd.jpg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0A262D] via-transparent to-transparent opacity-90"></div>
+<p class="absolute bottom-8 left-8 text-3xl font-semibold tracking-tight uppercase">Scale 110</p>
+</div>
+<div class="relative aspect-[3/4] rounded-2xl overflow-hidden group cursor-pointer">
+<img alt="Hover Scale" class="w-full h-full object-cover brightness-75 transition-transform duration-500 group-hover:scale-105" src="assets/photo-1497366811353-6870744d04_212e19746e0f.avif"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-14 h-14 rounded-full border border-white/50 flex items-center justify-center bg-white/10 backdrop-blur-sm group-hover:bg-white/20 transition-all">
+<i class="w-5 h-5 text-white fill-white ml-1" data-lucide="play"></i>
+</div>
+</div>
+<div class="absolute bottom-6 left-6 text-white">
+<p class="text-[10px] uppercase tracking-wider opacity-80 mb-1">`transition-all`</p>
+<p class="text-xl font-semibold uppercase">Play Control</p>
+</div>
+</div>
+<div class="rounded-2xl border border-white/20 p-12">
+<p class="text-[10px] text-white/70 font-semibold uppercase tracking-wider mb-2">Color Transitions</p>
+<div class="flex flex-col gap-6">
+<button class="bg-white text-[#0A262D] px-8 py-3.5 rounded-full text-sm font-medium hover:bg-slate-100 transition-colors">Button Hover</button>
+<a class="text-white/90 text-xs hover:text-[#4FBFA5] transition-colors" href="#">Nav Link Hover</a>
+<h4 class="text-lg font-semibold text-white mt-1 leading-snug group-hover:text-[#4FBFA5] transition-colors">Text Color Transition</h4>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 px-6 md:px-12 bg-white max-w-[1600px] mx-auto" id="icons">
+<div class="mb-12">
+<h2 class="text-4xl font-semibold tracking-tight text-[#0A262D]">ICONS</h2>
+<p class="text-lg text-slate-600 leading-relaxed font-light">Lucide icon system from the original build, with inherited color and size variants.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="rounded-2xl border border-slate-200 p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Small (16)</p>
+<div class="flex gap-4 items-center text-[#4FBFA5]">
+<i class="w-4 h-4" data-lucide="arrow-right"></i>
+<i class="w-4 h-4" data-lucide="chevron-left"></i>
+<i class="w-4 h-4" data-lucide="chevron-right"></i>
+</div>
+</div>
+<div class="rounded-2xl border border-slate-200 p-12">
+<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Medium (20)</p>
+<div class="flex gap-4 items-center text-[#0A262D]">
+<i class="w-5 h-5" data-lucide="menu"></i>
+<i class="w-5 h-5" data-lucide="linkedin"></i>
+<i class="w-5 h-5" data-lucide="twitter"></i>
+</div>
+</div>
+<div class="rounded-2xl overflow-hidden bg-[#0A262D] p-12 text-white">
+<p class="text-[10px] text-white/70 font-semibold uppercase tracking-wider mb-2">Filled Play Treatment</p>
+<div class="w-14 h-14 rounded-full border border-white/50 flex items-center justify-center bg-white/10 backdrop-blur-sm">
+<i class="w-5 h-5 text-white fill-white ml-1" data-lucide="play"></i>
+</div>
+</div>
+<div class="rounded-2xl overflow-hidden bg-[#051316] p-12 text-white/70">
+<p class="text-[10px] text-white/70 font-semibold uppercase tracking-wider mb-2">Social Buttons</p>
+<div class="flex gap-4">
+<a class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors" href="#"><i class="w-4 h-4" data-lucide="facebook"></i></a>
+<a class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors" href="#"><i class="w-4 h-4" data-lucide="instagram"></i></a>
+<a class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors" href="#"><i class="w-4 h-4" data-lucide="linkedin"></i></a>
+</div>
+</div>
+</div>
+</section>
+<footer class="bg-[#051316] text-slate-400 py-16 px-6 md:px-12 text-sm">
+<div class="max-w-[1600px] mx-auto border-t border-white/5 pt-8 text-center text-xs text-slate-600 font-light">
+<p>Design System Showcase built from the original Miles reference components and classes.</p>
+</div>
+</footer>
+<script>
+lucide.createIcons();
+</script>
+</body></html>
+
