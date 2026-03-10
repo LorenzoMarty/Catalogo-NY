@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New York Freeshop | Catalogo Mobile-First</title>
+  <meta
+    name="description"
+    content="Catalogo virtual de freeshop com categorias verticais, grid responsiva e forte valorizacao aspiracional das marcas usando exclusivamente o design system fornecido."
+  />
+  <script src="design_sytem/Hero/assets/resource_3fa48481346f.es"></script>
+  <script src="design_sytem/Hero/assets/lucide_latest_2eebd0ebe8c2.es"></script>
+  <script src="design_sytem/elements/assets/iconify-icon_e19829e7f0e8.js"></script>
+  <link href="design_sytem/Hero/assets/css2_19fd9cc6b396.css" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+  <style>
+    .gradient-blur {
+      position: fixed;
+      z-index: 35;
+      inset: 0 0 auto 0;
+      height: 12%;
+      pointer-events: none;
+    }
+
+    .gradient-blur > div,
+    .gradient-blur::before,
+    .gradient-blur::after {
+      position: absolute;
+      inset: 0;
+    }
+
+    .gradient-blur::before {
+      content: "";
+      z-index: 1;
+      backdrop-filter: blur(0.5px);
+      mask: linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 18%, rgba(0,0,0,0) 36%);
+    }
+
+    .gradient-blur > div:nth-of-type(1) { z-index: 2; backdrop-filter: blur(1px); }
+    .gradient-blur > div:nth-of-type(2) { z-index: 3; backdrop-filter: blur(2px); }
+    .gradient-blur > div:nth-of-type(3) { z-index: 4; backdrop-filter: blur(4px); }
+    .gradient-blur > div:nth-of-type(4) { z-index: 5; backdrop-filter: blur(8px); }
+    .gradient-blur > div:nth-of-type(5) { z-index: 6; backdrop-filter: blur(16px); }
+    .gradient-blur > div:nth-of-type(6) { z-index: 7; backdrop-filter: blur(32px); }
+
+    .gradient-blur::after {
+      content: "";
+      z-index: 8;
+      backdrop-filter: blur(64px);
+      mask: linear-gradient(to top, rgba(0,0,0,0) 85%, rgba(0,0,0,1) 100%);
+    }
+
+    .section-shell { position: relative; overflow: hidden; }
+
+    .section-shell::before {
+      content: "";
+      position: absolute;
+      top: -120px;
+      right: -160px;
+      width: 360px;
+      height: 360px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(79,191,165,0.24), rgba(79,191,165,0));
+      filter: blur(8px);
+      animation: driftGlow 15s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .section-shell::after {
+      content: "";
+      position: absolute;
+      bottom: -140px;
+      left: -140px;
+      width: 320px;
+      height: 320px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(59,130,246,0.24), rgba(59,130,246,0));
+      filter: blur(8px);
+      animation: driftGlow 20s ease-in-out infinite reverse;
+      pointer-events: none;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .8s ease, transform .8s ease;
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .stagger > * {
+      opacity: 0;
+      transform: translateY(22px);
+    }
+
+    .stagger.is-visible > * {
+      animation: riseIn .75s ease forwards;
+    }
+
+    .stagger.is-visible > *:nth-child(1) { animation-delay: .05s; }
+    .stagger.is-visible > *:nth-child(2) { animation-delay: .1s; }
+    .stagger.is-visible > *:nth-child(3) { animation-delay: .15s; }
+    .stagger.is-visible > *:nth-child(4) { animation-delay: .2s; }
+    .stagger.is-visible > *:nth-child(5) { animation-delay: .25s; }
+    .stagger.is-visible > *:nth-child(6) { animation-delay: .3s; }
+
+    .btn-glow { position: relative; isolation: isolate; }
+
+    .btn-glow::after {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, rgba(79,191,165,.55), rgba(59,130,246,.6));
+      z-index: -1;
+      opacity: 0;
+      transition: opacity .35s ease;
+      filter: blur(10px);
+    }
+
+    .btn-glow:hover::after { opacity: 1; }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes driftGlow {
+      0%, 100% { transform: translate3d(0,0,0) scale(1); }
+      50% { transform: translate3d(24px,-18px,0) scale(1.08); }
+    }
+
+    @media (max-width: 767px) {
+      .section-shell::before {
+        top: -88px;
+        right: -112px;
+        width: 240px;
+        height: 240px;
+      }
+
+      .section-shell::after {
+        bottom: -104px;
+        left: -104px;
+        width: 224px;
+        height: 224px;
+      }
+    }
+  </style>
+</head>
+<body class="overflow-x-hidden bg-black text-white antialiased">
+  <div class="gradient-blur">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <nav class="fixed top-0 z-50 flex w-full items-center justify-between gap-4 border-b border-white/10 bg-black/40 px-4 py-4 backdrop-blur-md transition-all duration-300 md:px-10 md:py-5">
+    <div class="min-w-0 flex items-center gap-3 text-white">
+      <div class="h-2.5 w-2.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.6)]"></div>
+      <div class="min-w-0 flex flex-col gap-0.5">
+        <span class="truncate text-sm font-semibold uppercase tracking-tight md:text-base">New York Freeshop</span>
+        <span class="hidden text-[10px] uppercase tracking-[0.18em] text-white/50 sm:block">Mobile-first catalog</span>
+      </div>
+    </div>
+    <button
+      class="btn-glow inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs font-medium text-white/90 backdrop-blur md:hidden"
+      data-scroll-target="catalog-shell"
+      type="button"
+    >
+      Catalogo
+      <iconify-icon icon="solar:arrow-down-linear" width="16"></iconify-icon>
+    </button>
+    <div class="hidden items-center gap-6 text-xs font-medium tracking-tight text-white/80 md:flex">
+      <button class="transition-colors duration-200 hover:text-white" data-scroll-target="intro" type="button">Intro</button>
+      <button class="transition-colors duration-200 hover:text-white" data-scroll-target="catalog-shell" type="button">Categorias</button>
+      <button class="transition-colors duration-200 hover:text-white" data-scroll-target="footer-note" type="button">Resumo</button>
+    </div>
+  </nav>
+
+  <section class="section-shell" id="intro">
+    <div class="relative flex min-h-[100vh] w-full flex-col overflow-hidden">
+      <div class="absolute inset-0">
+        <img
+          alt="Paisagem premium para ambientacao do catalogo"
+          class="h-full w-full object-cover"
+          src="design_sytem/Hero/assets/photo-1477959858617-67f85cf4f1_db0733743c40.avif"
+        />
+        <img
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 h-full w-full object-cover opacity-20 grayscale mix-blend-overlay"
+          src="design_sytem/elements/assets/56c4d3ce-3414-4deb-9b0c-c425ea_47c1ce2f79ff.png"
+        />
+        <div class="absolute inset-0 bg-[#0A262D]/70 mix-blend-multiply"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-[#051316]"></div>
+        <div class="absolute inset-0 bg-gradient-to-tr from-black/90 via-black/30 to-transparent"></div>
+      </div>
+
+      <div class="pointer-events-none absolute -top-20 -left-16 h-72 w-72 rounded-full bg-[#4FBFA5]/20 blur-3xl animate-pulse"></div>
+      <div class="pointer-events-none absolute top-24 -right-16 h-80 w-80 rounded-full bg-blue-500/15 blur-3xl animate-pulse"></div>
+      <div class="pointer-events-none absolute bottom-10 left-1/3 h-64 w-64 rounded-full bg-white/10 blur-3xl animate-pulse"></div>
+
+      <div class="relative z-10 mx-auto flex w-full max-w-[1600px] flex-col gap-10 px-4 pt-24 pb-14 sm:px-6 md:gap-12 md:px-12 md:pt-28 md:pb-16">
+        <div class="grid grid-cols-1 items-center gap-10 md:gap-12 lg:grid-cols-2">
+          <div class="reveal">
+            <div class="mb-6 inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-[10px] font-medium text-white/90 backdrop-blur sm:text-xs">
+              <span class="h-1.5 w-1.5 rounded-full bg-[#4FBFA5] shadow-[0_0_8px_rgba(79,191,165,0.9)]"></span>
+              CATEGORIAS COM MARCA DOMINANTE + GRID COM BRANDING INTEGRADO
+            </div>
+            <h1 class="mb-5 text-[2.7rem] font-semibold leading-[0.94] tracking-tight text-white sm:text-5xl md:mb-6 md:text-7xl lg:text-8xl">
+              FREESHOP DIGITAL<br />COM MARCAS JA<br />NA NAVEGACAO
+            </h1>
+            <p class="mb-8 max-w-2xl text-base font-light leading-relaxed text-white/80 sm:text-lg md:text-xl">
+              O branding nao aparece como uma secao isolada. Ele entra como textura nas categorias,
+              como badge premium nos cards e como watermark suave dentro da grade, mantendo a leitura
+              rapida e a atmosfera aspiracional.
+            </p>
+            <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+              <button
+                class="btn-glow inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-medium text-black transition hover:bg-white/90 sm:w-auto"
+                data-scroll-target="catalog-shell"
+                type="button"
+              >
+                Explorar catalogo
+                <iconify-icon icon="solar:arrow-right-linear" width="18"></iconify-icon>
+              </button>
+              <button
+                class="btn-glow inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm text-white/90 backdrop-blur transition hover:bg-white/10 sm:w-auto"
+                data-scroll-target="category-rail-shell"
+                type="button"
+              >
+                Ir para categorias
+                <iconify-icon icon="solar:sort-vertical-linear" width="18"></iconify-icon>
+              </button>
+            </div>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 stagger">
+              <div class="relative overflow-hidden rounded-xl bg-zinc-900/50 pt-4 pr-4 pb-4 pl-4 ring-1 ring-slate-50/10 backdrop-blur">
+                <div class="mb-1 text-xs uppercase tracking-wider text-zinc-500">Categorias</div>
+                <div class="text-xl font-semibold" id="metric-categories">0</div>
+              </div>
+              <div class="relative overflow-hidden rounded-xl bg-zinc-900/50 pt-4 pr-4 pb-4 pl-4 ring-1 ring-slate-50/10 backdrop-blur">
+                <div class="mb-1 text-xs uppercase tracking-wider text-zinc-500">Marcas</div>
+                <div class="text-xl font-semibold" id="metric-brands">0</div>
+              </div>
+              <div class="relative overflow-hidden rounded-xl bg-zinc-900/50 pt-4 pr-4 pb-4 pl-4 ring-1 ring-slate-50/10 backdrop-blur">
+                <div class="mb-1 text-xs uppercase tracking-wider text-zinc-500">Produtos</div>
+                <div class="text-xl font-semibold" id="metric-products">0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="reveal">
+            <div class="relative overflow-hidden rounded-2xl bg-zinc-900/50 p-4 ring-1 ring-slate-50/10 backdrop-blur sm:p-6">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div class="group relative h-40 overflow-hidden rounded-xl sm:h-44">
+                  <img
+                    alt="Editorial premium para perfumes"
+                    class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    src="design_sytem/Hero/assets/5bab247f-35d9-400d-a82b-fd87cf_4dacb933d717.webp"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                  <span class="absolute bottom-3 left-3 rounded-full border border-white/10 bg-white/10 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">Perfumes · Dior</span>
+                </div>
+                <div class="group relative h-40 overflow-hidden rounded-xl sm:h-44">
+                  <img
+                    alt="Preview premium para tenis"
+                    class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    src="design_sytem/elements/assets/cb1b1152-57d5-4b49-b944-3a944a_da7ba289005d.webp"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                  <span class="absolute bottom-3 left-3 rounded-full border border-white/10 bg-white/10 px-2 py-0.5 text-[10px] text-white backdrop-blur-sm">Tenis · Nike</span>
+                </div>
+                <div class="group relative h-56 overflow-hidden rounded-xl sm:col-span-2">
+                  <img
+                    alt="Preview premium para oculos"
+                    class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    src="design_sytem/Hero/assets/917d6f93-fb36-439a-8c48-884b67_1e33efa61316.jpg"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-[#0A262D] via-transparent to-transparent opacity-90"></div>
+                  <div class="absolute right-4 bottom-4 left-4 flex flex-col items-start gap-3 sm:right-5 sm:bottom-5 sm:left-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                    <div>
+                      <p class="mb-1 text-[10px] uppercase tracking-wider opacity-80">Integracao aspiracional</p>
+                      <p class="text-lg font-semibold tracking-tight uppercase sm:text-xl">Marca dominante na categoria e no card</p>
+                    </div>
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 transition-colors hover:bg-white/10">
+                      <i class="h-4 w-4" data-lucide="sparkles"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reveal overflow-hidden rounded-2xl border border-white/10 bg-[#06181C]/80 p-3 backdrop-blur-md md:p-4" id="catalog-shell">
+          <div class="grid grid-cols-1 items-start gap-4 md:grid-cols-[108px_minmax(0,1fr)] md:gap-4 xl:grid-cols-[132px_minmax(0,1fr)]">
+            <aside
+              class="no-scrollbar w-full overflow-x-auto overflow-y-hidden rounded-2xl border border-white/10 bg-white/5 p-2 backdrop-blur-md scroll-smooth snap-x snap-mandatory md:max-h-[74vh] md:overflow-x-hidden md:overflow-y-auto md:snap-y md:snap-proximity"
+              id="category-rail-shell"
+              aria-label="Carrossel de categorias"
+            >
+              <div class="flex w-max min-w-full gap-2 md:w-auto md:min-w-0 md:flex-col" id="category-rail"></div>
+            </aside>
+
+            <div class="min-w-0 flex flex-col gap-4 md:gap-5">
+              <article
+                class="relative min-h-[260px] overflow-hidden rounded-2xl bg-zinc-900/50 p-4 ring-1 ring-slate-50/10 backdrop-blur md:min-h-[320px] md:p-8"
+                id="category-spotlight"
+                aria-live="polite"
+              ></article>
+
+              <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div class="reveal max-w-2xl">
+                  <p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">Categoria ativa</p>
+                  <h2 class="text-3xl font-semibold tracking-tight text-white md:text-4xl" id="results-title">Perfumes</h2>
+                  <p class="mt-2 text-sm leading-relaxed text-white/70 md:text-base" id="results-copy">
+                    Branding sutil no rail e nas cartas da grade, sem criar uma secao separada para marcas.
+                  </p>
+                </div>
+
+                <div class="reveal flex w-full flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur sm:w-auto sm:flex-nowrap sm:gap-4">
+                  <div>
+                    <p class="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Produtos</p>
+                    <p class="text-xl font-semibold" id="results-count">0</p>
+                  </div>
+                  <div class="h-px w-full bg-white/10 sm:h-10 sm:w-px"></div>
+                  <div>
+                    <p class="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Marca dominante</p>
+                    <p class="text-sm font-medium text-white/80" id="results-brand">-</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 stagger" id="product-grid" aria-live="polite"></div>
+
+              <div class="flex flex-col items-center gap-3 pt-2">
+                <div class="h-px w-full" id="scroll-sentinel"></div>
+                <button
+                  class="btn-glow inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm text-white/90 backdrop-blur transition hover:bg-white/10 sm:w-auto"
+                  id="load-more"
+                  type="button"
+                >
+                  Carregar mais produtos
+                  <iconify-icon icon="solar:arrow-down-linear" width="18"></iconify-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-[#051316] px-4 py-14 text-sm text-slate-400 sm:px-6 md:px-12 md:py-16" id="footer-note">
+    <div class="mx-auto max-w-[1600px] border-t border-white/5 pt-8 text-center text-xs font-light text-slate-600">
+      <p>Catalogo de freeshop montado apenas com os assets, superficies, motion e componentes visuais do design system fornecido.</p>
+    </div>
+  </footer>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      lucide.createIcons();
+
+      var categories = [
+        {
+          id: 'perfumes',
+          name: 'Perfumes',
+          dominantBrand: 'Dior',
+          brands: ['Dior', 'Chanel', 'Carolina Herrera'],
+          helper: 'Fragrancias de assinatura com leitura imediata de marca e atmosfera editorial.',
+          spotlight: 'A textura da categoria usa a marca dominante como presenca aspiracional. Na grade, o branding entra como selo, tipografia suave e overlay de baixa opacidade.',
+          featured: 'Sauvage Elixir',
+          texture: 'design_sytem/Hero/assets/5bab247f-35d9-400d-a82b-fd87cf_4dacb933d717.webp',
+          mark: 'DIOR',
+          badgeClass: 'bg-amber-500/20 text-amber-100 border border-amber-400/30',
+          accentText: 'text-amber-200',
+          accentDot: 'bg-amber-400',
+          activeGlow: 'shadow-[0_0_24px_rgba(251,191,36,0.18)]'
+        },
+        {
+          id: 'tenis',
+          name: 'Tenis',
+          dominantBrand: 'Nike',
+          brands: ['Nike', 'Adidas', 'New Balance'],
+          helper: 'Shape reconhecivel, cards compactos e marcas esportivas integradas ao produto.',
+          spotlight: 'A categoria ja apresenta o universo da marca mais vendida. O card preserva a foto principal, enquanto o nome da marca aparece como detalhe premium dentro do layout.',
+          featured: 'Air Max Pulse',
+          texture: 'design_sytem/elements/assets/cb1b1152-57d5-4b49-b944-3a944a_da7ba289005d.webp',
+          mark: 'NIKE',
+          badgeClass: 'bg-blue-500/20 text-blue-100 border border-blue-500/30',
+          accentText: 'text-blue-200',
+          accentDot: 'bg-blue-500',
+          activeGlow: 'shadow-[0_0_24px_rgba(59,130,246,0.18)]'
+        },
+        {
+          id: 'oculos',
+          name: 'Oculos',
+          dominantBrand: 'Ray-Ban',
+          brands: ['Ray-Ban', 'Prada', 'Oakley'],
+          helper: 'Silhuetas iconicas com presenca de marca discreta e muito foco em imagem.',
+          spotlight: 'Oculos pedem reconhecimento visual imediato. A categoria privilegia o shape e usa a marca como watermark elegante, sem disputar atencao com a imagem principal.',
+          featured: 'Wayfarer Classic',
+          texture: 'design_sytem/Hero/assets/917d6f93-fb36-439a-8c48-884b67_1e33efa61316.jpg',
+          mark: 'RAY',
+          badgeClass: 'bg-rose-500/20 text-rose-100 border border-rose-400/30',
+          accentText: 'text-rose-200',
+          accentDot: 'bg-rose-400',
+          activeGlow: 'shadow-[0_0_24px_rgba(251,113,133,0.18)]'
+        },
+        {
+          id: 'beauty',
+          name: 'Beauty Sets',
+          dominantBrand: 'Chanel',
+          brands: ['Chanel', 'Lancome', 'MAC'],
+          helper: 'Kits premium com textura visual suave, badge refinado e linguagem editorial.',
+          spotlight: 'Em beauty, a marca precisa aparecer como assinatura leve. A composicao privilegia espacamento, superficies limpas e uma presenca premium que nao polui a grade.',
+          featured: 'Les Beiges Travel Set',
+          texture: 'design_sytem/Hero/assets/c543a9e1-f226-4ced-80b0-feb844_003f08ea08e8.jpg',
+          mark: 'CHANEL',
+          badgeClass: 'bg-white/10 text-white border border-white/20',
+          accentText: 'text-white',
+          accentDot: 'bg-white',
+          activeGlow: 'shadow-[0_0_24px_rgba(255,255,255,0.12)]'
+        },
+        {
+          id: 'travel-tech',
+          name: 'Travel Tech',
+          dominantBrand: 'Apple',
+          brands: ['Apple', 'Sony', 'Marshall'],
+          helper: 'Tecnologia compacta para viagem, leitura rapida e forte presenca aspiracional.',
+          spotlight: 'A grade favorece produtos compactos e desejo imediato. O branding aparece em mini badge, tipografia leve e overlays suaves sobre a imagem.',
+          featured: 'AirPods Pro',
+          texture: 'design_sytem/elements/assets/f9fafcbc-4d96-425a-a1fd-cb1693_8b0277ee0234.webp',
+          mark: 'APPLE',
+          badgeClass: 'bg-[#4FBFA5]/20 text-[#d7fff7] border border-[#4FBFA5]/30',
+          accentText: 'text-[#4FBFA5]',
+          accentDot: 'bg-[#4FBFA5]',
+          activeGlow: 'shadow-[0_0_24px_rgba(79,191,165,0.18)]'
+        },
+        {
+          id: 'spirits',
+          name: 'Spirits',
+          dominantBrand: 'Bombay Sapphire',
+          brands: ['Bombay Sapphire', 'Chivas', 'Absolut'],
+          helper: 'Rotulos premium e compra orientada por reconhecimento imediato de marca.',
+          spotlight: 'Mesmo sem uma secao de marcas, a categoria comunica premium logo no primeiro contato. A grade preserva a imagem e usa marcas como selo discreto e camada de fundo.',
+          featured: 'Bombay Sapphire 750ml',
+          texture: 'design_sytem/elements/assets/d7ffe8db-0c0b-4425-9c8a-a797d9_ab526587434e.webp',
+          mark: 'BOMBAY',
+          badgeClass: 'bg-indigo-500/20 text-indigo-100 border border-indigo-400/30',
+          accentText: 'text-indigo-200',
+          accentDot: 'bg-indigo-400',
+          activeGlow: 'shadow-[0_0_24px_rgba(129,140,248,0.18)]'
+        }
+      ];
+
+      var brandThemes = {
+        Dior: { pill: 'bg-amber-500/20 text-amber-700 border border-amber-400/30', dot: 'bg-amber-400', accentText: 'text-amber-600', mark: 'DIOR' },
+        Chanel: { pill: 'bg-slate-900/10 text-slate-700 border border-slate-200', dot: 'bg-slate-700', accentText: 'text-slate-700', mark: 'CHANEL' },
+        'Carolina Herrera': { pill: 'bg-amber-500/20 text-amber-700 border border-amber-400/30', dot: 'bg-amber-500', accentText: 'text-amber-700', mark: '212' },
+        Nike: { pill: 'bg-blue-500/20 text-blue-700 border border-blue-500/30', dot: 'bg-blue-500', accentText: 'text-blue-700', mark: 'NIKE' },
+        Adidas: { pill: 'bg-blue-500/20 text-blue-700 border border-blue-500/30', dot: 'bg-blue-500', accentText: 'text-blue-700', mark: 'ADI' },
+        'New Balance': { pill: 'bg-blue-500/20 text-blue-700 border border-blue-500/30', dot: 'bg-blue-500', accentText: 'text-blue-700', mark: 'NB' },
+        'Ray-Ban': { pill: 'bg-rose-500/20 text-rose-700 border border-rose-500/30', dot: 'bg-rose-500', accentText: 'text-rose-700', mark: 'RAY' },
+        Prada: { pill: 'bg-rose-500/20 text-rose-700 border border-rose-500/30', dot: 'bg-rose-500', accentText: 'text-rose-700', mark: 'PRADA' },
+        Oakley: { pill: 'bg-rose-500/20 text-rose-700 border border-rose-500/30', dot: 'bg-rose-500', accentText: 'text-rose-700', mark: 'OAKLEY' },
+        Lancome: { pill: 'bg-slate-900/10 text-slate-700 border border-slate-200', dot: 'bg-slate-700', accentText: 'text-slate-700', mark: 'LANCOME' },
+        MAC: { pill: 'bg-slate-900/10 text-slate-700 border border-slate-200', dot: 'bg-slate-700', accentText: 'text-slate-700', mark: 'MAC' },
+        Apple: { pill: 'bg-[#4FBFA5]/15 text-[#0A262D] border border-[#4FBFA5]/30', dot: 'bg-[#4FBFA5]', accentText: 'text-[#0A262D]', mark: 'APPLE' },
+        Sony: { pill: 'bg-[#4FBFA5]/15 text-[#0A262D] border border-[#4FBFA5]/30', dot: 'bg-[#4FBFA5]', accentText: 'text-[#0A262D]', mark: 'SONY' },
+        Marshall: { pill: 'bg-[#4FBFA5]/15 text-[#0A262D] border border-[#4FBFA5]/30', dot: 'bg-[#4FBFA5]', accentText: 'text-[#0A262D]', mark: 'MARSHALL' },
+        'Bombay Sapphire': { pill: 'bg-indigo-500/20 text-indigo-700 border border-indigo-400/30', dot: 'bg-indigo-500', accentText: 'text-indigo-700', mark: 'BOMBAY' },
+        Chivas: { pill: 'bg-indigo-500/20 text-indigo-700 border border-indigo-400/30', dot: 'bg-indigo-500', accentText: 'text-indigo-700', mark: 'CHIVAS' },
+        Absolut: { pill: 'bg-indigo-500/20 text-indigo-700 border border-indigo-400/30', dot: 'bg-indigo-500', accentText: 'text-indigo-700', mark: 'ABSOLUT' }
+      };
+
+      var products = [
+        { id: 'p1', category: 'perfumes', brand: 'Dior', name: 'Sauvage Elixir 60ml', note: 'Ambar amadeirado', price: 'US$ 129', badge: 'Best seller', image: 'design_sytem/Hero/assets/5bab247f-35d9-400d-a82b-fd87cf_4dacb933d717.webp', texture: 'design_sytem/Hero/assets/4734259a-bad7-422f-981e-ce01e7_30e2ef6eeadd.jpg' },
+        { id: 'p2', category: 'perfumes', brand: 'Chanel', name: 'Coco Mademoiselle 50ml', note: 'Floral sofisticado', price: 'US$ 118', badge: 'Gift icon', image: 'design_sytem/Hero/assets/c543a9e1-f226-4ced-80b0-feb844_003f08ea08e8.jpg', texture: 'design_sytem/Hero/assets/4734259a-bad7-422f-981e-ce01e7_30e2ef6eeadd.jpg' },
+        { id: 'p3', category: 'perfumes', brand: 'Carolina Herrera', name: 'Good Girl 80ml', note: 'Doce e noturno', price: 'US$ 112', badge: 'Duty free pick', image: 'design_sytem/Hero/assets/5bab247f-35d9-400d-a82b-fd87cf_4dacb933d717.webp', texture: 'design_sytem/elements/assets/d7ffe8db-0c0b-4425-9c8a-a797d9_ab526587434e.webp' },
+        { id: 'p4', category: 'perfumes', brand: 'Dior', name: "J'adore Parfum d'Eau", note: 'Floral luminoso', price: 'US$ 124', badge: 'New arrival', image: 'design_sytem/Hero/assets/c543a9e1-f226-4ced-80b0-feb844_003f08ea08e8.jpg', texture: 'design_sytem/Hero/assets/4734259a-bad7-422f-981e-ce01e7_30e2ef6eeadd.jpg' },
+        { id: 'p5', category: 'perfumes', brand: 'Chanel', name: 'Bleu de Chanel 100ml', note: 'Fresco mineral', price: 'US$ 135', badge: 'Iconic', image: 'design_sytem/Hero/assets/5bab247f-35d9-400d-a82b-fd87cf_4dacb933d717.webp', texture: 'design_sytem/elements/assets/8aa0d98a-387e-492b-9bea-7172f4_b51f0bddd89a.webp' },
+        { id: 'p6', category: 'perfumes', brand: 'Dior', name: 'Miss Dior Blooming', note: 'Rose signature', price: 'US$ 109', badge: 'Travel size', image: 'design_sytem/Hero/assets/c543a9e1-f226-4ced-80b0-feb844_003f08ea08e8.jpg', texture: 'design_sytem/Hero/assets/4734259a-bad7-422f-981e-ce01e7_30e2ef6eeadd.jpg' },
+
+        { id: 'p7', category: 'tenis', brand: 'Nike', name: 'Air Max Pulse', note: 'Volume urbano', price: 'US$ 146', badge: 'Best seller', image: 'design_sytem/elements/assets/cb1b1152-57d5-4b49-b944-3a944a_da7ba289005d.webp', texture: 'design_sytem/elements/assets/286dcc4a-3b11-43d3-af80-a7b1c3_d267ef095c04.webp' },
+        { id: 'p8', category: 'tenis', brand: 'Adidas', name: 'Samba OG', note: 'Retro essencial', price: 'US$ 129', badge: 'Street icon', image: 'design_sytem/elements/assets/cb1b1152-57d5-4b49-b944-3a944a_da7ba289005d.webp', texture: 'design_sytem/elements/assets/8aa0d98a-387e-492b-9bea-7172f4_b51f0bddd89a.webp' },
+        { id: 'p9', category: 'tenis', brand: 'New Balance', name: '9060 Core Grey', note: 'Chunky premium', price: 'US$ 159', badge: 'Curated', image: 'design_sytem/elements/assets/cb1b1152-57d5-4b49-b944-3a944a_da7ba289005d.webp', texture: 'design_sytem/elements/assets/photo-1640906152676-dace6710d2_59d39f09dae4.jpg' },
+        { id: 'p10', category: 'tenis', brand: 'Nike', name: 'P-6000 Metallic', note: 'Runner aspiracional', price: 'US$ 138', badge: 'New arrival', image: 'design_sytem/elements/assets/cb1b1152-57d5-4b49-b944-3a944a_da7ba289005d.webp', texture: 'design_sytem/elements/assets/286dcc4a-3b11-43d3-af80-a7b1c3_d267ef095c04.webp' },
+        { id: 'p11', category: 'tenis', brand: 'Adidas', name: 'Campus 00s Black', note: 'Silhueta casual', price: 'US$ 119', badge: 'Easy pick', image: 'design_sytem/elements/assets/cb1b1152-57d5-4b49-b944-3a944a_da7ba289005d.webp', texture: 'design_sytem/elements/assets/8aa0d98a-387e-492b-9bea-7172f4_b51f0bddd89a.webp' },
+        { id: 'p12', category: 'tenis', brand: 'Nike', name: 'Vomero 5 Travel', note: 'Conforto de viagem', price: 'US$ 164', badge: 'Premium run', image: 'design_sytem/elements/assets/cb1b1152-57d5-4b49-b944-3a944a_da7ba289005d.webp', texture: 'design_sytem/elements/assets/photo-1640906152676-dace6710d2_59d39f09dae4.jpg' },
+
+        { id: 'p13', category: 'oculos', brand: 'Ray-Ban', name: 'Wayfarer Classic', note: 'Forma iconica', price: 'US$ 169', badge: 'Best seller', image: 'design_sytem/Hero/assets/917d6f93-fb36-439a-8c48-884b67_1e33efa61316.jpg', texture: 'design_sytem/elements/assets/8aa0d98a-387e-492b-9bea-7172f4_b51f0bddd89a.webp' },
+        { id: 'p14', category: 'oculos', brand: 'Prada', name: 'Symbole Narrow', note: 'Fashion sharp', price: 'US$ 245', badge: 'Luxury edit', image: 'design_sytem/Hero/assets/c543a9e1-f226-4ced-80b0-feb844_003f08ea08e8.jpg', texture: 'design_sytem/Hero/assets/917d6f93-fb36-439a-8c48-884b67_1e33efa61316.jpg' },
+        { id: 'p15', category: 'oculos', brand: 'Oakley', name: 'Radar EV Path', note: 'Sport performance', price: 'US$ 198', badge: 'Performance', image: 'design_sytem/Hero/assets/917d6f93-fb36-439a-8c48-884b67_1e33efa61316.jpg', texture: 'design_sytem/elements/assets/photo-1640906152676-dace6710d2_59d39f09dae4.jpg' },
+        { id: 'p16', category: 'oculos', brand: 'Ray-Ban', name: 'Clubmaster Metal', note: 'Heritage line', price: 'US$ 188', badge: 'Travel icon', image: 'design_sytem/Hero/assets/917d6f93-fb36-439a-8c48-884b67_1e33efa61316.jpg', texture: 'design_sytem/elements/assets/8aa0d98a-387e-492b-9bea-7172f4_b51f0bddd89a.webp' },
+        { id: 'p17', category: 'oculos', brand: 'Prada', name: 'Linea Rossa Wrap', note: 'Graphic silhouette', price: 'US$ 232', badge: 'New arrival', image: 'design_sytem/Hero/assets/917d6f93-fb36-439a-8c48-884b67_1e33efa61316.jpg', texture: 'design_sytem/Hero/assets/4734259a-bad7-422f-981e-ce01e7_30e2ef6eeadd.jpg' },
+        { id: 'p18', category: 'oculos', brand: 'Ray-Ban', name: 'Hexagonal Flat', note: 'Metal frame', price: 'US$ 176', badge: 'Curated', image: 'design_sytem/Hero/assets/917d6f93-fb36-439a-8c48-884b67_1e33efa61316.jpg', texture: 'design_sytem/elements/assets/8aa0d98a-387e-492b-9bea-7172f4_b51f0bddd89a.webp' },
+
+        { id: 'p19', category: 'beauty', brand: 'Chanel', name: 'Les Beiges Travel Set', note: 'Glow natural', price: 'US$ 154', badge: 'Best seller', image: 'design_sytem/Hero/assets/c543a9e1-f226-4ced-80b0-feb844_003f08ea08e8.jpg', texture: 'design_sytem/Hero/assets/4734259a-bad7-422f-981e-ce01e7_30e2ef6eeadd.jpg' },
+        { id: 'p20', category: 'beauty', brand: 'Lancome', name: 'Genifique Duo', note: 'Skincare premium', price: 'US$ 132', badge: 'Duty free pick', image: 'design_sytem/Hero/assets/5bab247f-35d9-400d-a82b-fd87cf_4dacb933d717.webp', texture: 'design_sytem/elements/assets/8aa0d98a-387e-492b-9bea-7172f4_b51f0bddd89a.webp' },
+        { id: 'p21', category: 'beauty', brand: 'MAC', name: 'Velvet Teddy Kit', note: 'Lip + liner duo', price: 'US$ 74', badge: 'Giftable', image: 'design_sytem/Hero/assets/c543a9e1-f226-4ced-80b0-feb844_003f08ea08e8.jpg', texture: 'design_sytem/Hero/assets/4734259a-bad7-422f-981e-ce01e7_30e2ef6eeadd.jpg' },
+        { id: 'p22', category: 'beauty', brand: 'Chanel', name: 'Hydra Beauty Mist', note: 'Fresh routine', price: 'US$ 88', badge: 'Everyday icon', image: 'design_sytem/Hero/assets/5bab247f-35d9-400d-a82b-fd87cf_4dacb933d717.webp', texture: 'design_sytem/Hero/assets/4734259a-bad7-422f-981e-ce01e7_30e2ef6eeadd.jpg' },
+        { id: 'p23', category: 'beauty', brand: 'Lancome', name: 'Idole Eye Edit', note: 'Travel makeup', price: 'US$ 67', badge: 'New arrival', image: 'design_sytem/Hero/assets/c543a9e1-f226-4ced-80b0-feb844_003f08ea08e8.jpg', texture: 'design_sytem/elements/assets/8aa0d98a-387e-492b-9bea-7172f4_b51f0bddd89a.webp' },
+        { id: 'p24', category: 'beauty', brand: 'Chanel', name: 'Rouge Coco Trio', note: 'Bag essentials', price: 'US$ 92', badge: 'Luxury edit', image: 'design_sytem/Hero/assets/5bab247f-35d9-400d-a82b-fd87cf_4dacb933d717.webp', texture: 'design_sytem/Hero/assets/4734259a-bad7-422f-981e-ce01e7_30e2ef6eeadd.jpg' },
+
+        { id: 'p25', category: 'travel-tech', brand: 'Apple', name: 'AirPods Pro', note: 'Noise canceling', price: 'US$ 249', badge: 'Best seller', image: 'design_sytem/elements/assets/f9fafcbc-4d96-425a-a1fd-cb1693_8b0277ee0234.webp', texture: 'design_sytem/elements/assets/bb9b217e-05c2-4e6e-8f35-3fcb7f_0dfa3063424c.webp' },
+        { id: 'p26', category: 'travel-tech', brand: 'Apple', name: 'Apple Watch SE', note: 'Travel companion', price: 'US$ 279', badge: 'Smart essential', image: 'design_sytem/elements/assets/d7448262-5258-4cf4-9b57-d8980c_47cec67a2452.webp', texture: 'design_sytem/elements/assets/b30ed36c-fa0a-48df-8d21-175bed_e113b2cc1021.png' },
+        { id: 'p27', category: 'travel-tech', brand: 'Sony', name: 'WH-1000XM5', note: 'Long-haul audio', price: 'US$ 328', badge: 'Premium sound', image: 'design_sytem/elements/assets/bb9b217e-05c2-4e6e-8f35-3fcb7f_0dfa3063424c.webp', texture: 'design_sytem/elements/assets/286dcc4a-3b11-43d3-af80-a7b1c3_d267ef095c04.webp' },
+        { id: 'p28', category: 'travel-tech', brand: 'Marshall', name: 'Emberton II', note: 'Portable speaker', price: 'US$ 199', badge: 'Travel ready', image: 'design_sytem/elements/assets/d7ffe8db-0c0b-4425-9c8a-a797d9_ab526587434e.webp', texture: 'design_sytem/elements/assets/286dcc4a-3b11-43d3-af80-a7b1c3_d267ef095c04.webp' },
+        { id: 'p29', category: 'travel-tech', brand: 'Apple', name: 'MagSafe Duo Pack', note: 'Compact charging', price: 'US$ 149', badge: 'Carry-on pick', image: 'design_sytem/elements/assets/f9fafcbc-4d96-425a-a1fd-cb1693_8b0277ee0234.webp', texture: 'design_sytem/elements/assets/9497e84f-cd43-4bed-8735-bbc8bf_d6debf2e891f.webp' },
+        { id: 'p30', category: 'travel-tech', brand: 'Sony', name: 'LinkBuds S', note: 'Lightweight fit', price: 'US$ 179', badge: 'New arrival', image: 'design_sytem/elements/assets/d7448262-5258-4cf4-9b57-d8980c_47cec67a2452.webp', texture: 'design_sytem/elements/assets/286dcc4a-3b11-43d3-af80-a7b1c3_d267ef095c04.webp' },
+
+        { id: 'p31', category: 'spirits', brand: 'Bombay Sapphire', name: 'Bombay Sapphire 750ml', note: 'Gin premium', price: 'US$ 38', badge: 'Best seller', image: 'design_sytem/elements/assets/d7ffe8db-0c0b-4425-9c8a-a797d9_ab526587434e.webp', texture: 'design_sytem/elements/assets/photo-1640906152676-dace6710d2_59d39f09dae4.jpg' },
+        { id: 'p32', category: 'spirits', brand: 'Chivas', name: 'Chivas 12 1L', note: 'Scotch iconico', price: 'US$ 49', badge: 'Giftable', image: 'design_sytem/elements/assets/286dcc4a-3b11-43d3-af80-a7b1c3_d267ef095c04.webp', texture: 'design_sytem/elements/assets/9497e84f-cd43-4bed-8735-bbc8bf_d6debf2e891f.webp' },
+        { id: 'p33', category: 'spirits', brand: 'Absolut', name: 'Absolut Elyx 1L', note: 'Vodka copper label', price: 'US$ 42', badge: 'Duty free pick', image: 'design_sytem/elements/assets/9497e84f-cd43-4bed-8735-bbc8bf_d6debf2e891f.webp', texture: 'design_sytem/elements/assets/photo-1640906152676-dace6710d2_59d39f09dae4.jpg' },
+        { id: 'p34', category: 'spirits', brand: 'Bombay Sapphire', name: 'Bombay Premier Cru', note: 'Botanicos citricos', price: 'US$ 44', badge: 'New arrival', image: 'design_sytem/elements/assets/d7ffe8db-0c0b-4425-9c8a-a797d9_ab526587434e.webp', texture: 'design_sytem/elements/assets/9497e84f-cd43-4bed-8735-bbc8bf_d6debf2e891f.webp' },
+        { id: 'p35', category: 'spirits', brand: 'Chivas', name: 'Chivas XV', note: 'Smooth whisky', price: 'US$ 64', badge: 'Premium', image: 'design_sytem/elements/assets/286dcc4a-3b11-43d3-af80-a7b1c3_d267ef095c04.webp', texture: 'design_sytem/elements/assets/photo-1640906152676-dace6710d2_59d39f09dae4.jpg' },
+        { id: 'p36', category: 'spirits', brand: 'Bombay Sapphire', name: 'Bombay Travel Edition', note: 'Bottle spotlight', price: 'US$ 47', badge: 'Collector', image: 'design_sytem/elements/assets/d7ffe8db-0c0b-4425-9c8a-a797d9_ab526587434e.webp', texture: 'design_sytem/elements/assets/9497e84f-cd43-4bed-8735-bbc8bf_d6debf2e891f.webp' }
+      ];
+
+      var PAGE_SIZE = 4;
+      var state = {
+        category: categories[0].id,
+        visibleCount: PAGE_SIZE
+      };
+
+      var categoryRail = document.getElementById('category-rail');
+      var categorySpotlight = document.getElementById('category-spotlight');
+      var productGrid = document.getElementById('product-grid');
+      var resultsTitle = document.getElementById('results-title');
+      var resultsCopy = document.getElementById('results-copy');
+      var resultsCount = document.getElementById('results-count');
+      var resultsBrand = document.getElementById('results-brand');
+      var loadMoreButton = document.getElementById('load-more');
+      var scrollSentinel = document.getElementById('scroll-sentinel');
+      var metricCategories = document.getElementById('metric-categories');
+      var metricBrands = document.getElementById('metric-brands');
+      var metricProducts = document.getElementById('metric-products');
+      var revealObserver;
+      var loadObserver;
+
+      function escapeHtml(text) {
+        return String(text || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function getCategory(id) {
+        return categories.find(function (category) { return category.id === id; }) || categories[0];
+      }
+
+      function getProductsByCategory(id) {
+        return products.filter(function (product) { return product.category === id; });
+      }
+
+      function getTheme(brand, category) {
+        return brandThemes[brand] || {
+          pill: category.badgeClass,
+          dot: category.accentDot,
+          accentText: category.accentText,
+          mark: category.mark
+        };
+      }
+
+      function renderMetrics() {
+        metricCategories.textContent = String(categories.length);
+        metricBrands.textContent = String(Object.keys(brandThemes).length);
+        metricProducts.textContent = String(products.length);
+      }
+
+      function renderRail(shouldScrollActive) {
+        categoryRail.innerHTML = categories.map(function (category) {
+          var itemCount = getProductsByCategory(category.id).length;
+          var isActive = category.id === state.category;
+
+          return '' +
+            '<button ' +
+              'class="group relative min-h-[104px] min-w-[172px] shrink-0 snap-center overflow-hidden rounded-xl border p-3 text-left backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:bg-white/10 md:min-h-[112px] md:min-w-0 md:snap-start ' + (isActive ? ('border-white/20 bg-white/10 scale-[1.02] ' + category.activeGlow) : 'border-white/10 bg-white/5') + '" ' +
+              'type="button" ' +
+              'data-category="' + escapeHtml(category.id) + '" ' +
+              'aria-pressed="' + (isActive ? 'true' : 'false') + '"' +
+            '>' +
+              '<img class="absolute inset-0 h-full w-full object-cover opacity-[0.16] blur-sm scale-110 transition-transform duration-700 group-hover:scale-125" src="' + escapeHtml(category.texture) + '" alt="" loading="lazy" />' +
+              '<div class="absolute inset-0 bg-gradient-to-b from-black/5 via-[#0A262D]/35 to-[#0A262D]/90"></div>' +
+              '<span class="absolute right-3 top-3 text-[9px] font-semibold uppercase tracking-[0.2em] text-white/20">' + escapeHtml(category.mark) + '</span>' +
+              '<div class="relative z-10 flex h-full flex-col justify-between gap-5">' +
+                '<div class="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">' +
+                  '<span class="h-1.5 w-1.5 rounded-full ' + escapeHtml(category.accentDot) + '"></span>' +
+                  'Marca' +
+                '</div>' +
+                '<div>' +
+                  '<p class="text-[10px] uppercase tracking-[0.18em] text-white/60">' + escapeHtml(category.dominantBrand) + '</p>' +
+                  '<p class="text-sm font-semibold leading-tight tracking-tight text-white">' + escapeHtml(category.name) + '</p>' +
+                  '<p class="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/40">' + itemCount + ' itens</p>' +
+                '</div>' +
+              '</div>' +
+            '</button>';
+        }).join('');
+
+        var activeButton = categoryRail.querySelector('[data-category="' + state.category + '"]');
+        if (shouldScrollActive && activeButton) {
+          activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+
+      function renderSpotlight() {
+        var category = getCategory(state.category);
+        var featuredProducts = getProductsByCategory(category.id).slice(0, 3);
+
+        categorySpotlight.innerHTML = '' +
+          '<img class="absolute inset-0 h-full w-full object-cover opacity-[0.16] blur-sm scale-110" src="' + escapeHtml(category.texture) + '" alt="" loading="lazy" />' +
+          '<div class="absolute inset-0 bg-gradient-to-br from-[#0A262D]/95 via-[#0A262D]/80 to-black/70"></div>' +
+          '<div class="absolute inset-y-0 right-0 hidden w-2/5 bg-gradient-to-l from-black/10 to-transparent md:block"></div>' +
+          '<p class="pointer-events-none absolute right-3 bottom-0 text-[28vw] font-semibold leading-none tracking-tight text-white/5 sm:text-[22vw] md:text-[10rem]">' + escapeHtml(category.mark) + '</p>' +
+          '<div class="relative z-10 flex max-w-3xl flex-col gap-4 sm:gap-5">' +
+            '<span class="inline-flex max-w-full w-fit flex-wrap items-center gap-2 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide ' + escapeHtml(category.badgeClass) + '">' +
+              'Marca dominante · ' + escapeHtml(category.dominantBrand) +
+            '</span>' +
+            '<div>' +
+              '<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">Categoria curada</p>' +
+              '<h2 class="text-3xl font-semibold leading-none tracking-tight text-white sm:text-4xl md:text-6xl">' + escapeHtml(category.name) + ' com presenca imediata de marca.</h2>' +
+            '</div>' +
+            '<p class="max-w-2xl text-sm font-light leading-relaxed text-white/75 sm:text-base md:text-lg">' + escapeHtml(category.spotlight) + '</p>' +
+            '<div class="flex flex-wrap gap-2">' +
+              category.brands.map(function (brand) {
+                return '<span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-white/70 backdrop-blur-sm">' + escapeHtml(brand) + '</span>';
+              }).join('') +
+            '</div>' +
+            '<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">' +
+              '<div class="relative overflow-hidden rounded-xl bg-zinc-900/50 pt-4 pr-4 pb-4 pl-4 ring-1 ring-slate-50/10 backdrop-blur">' +
+                '<div class="mb-1 text-xs uppercase tracking-wider text-zinc-500">Produto ancora</div>' +
+                '<div class="text-xl font-semibold">' + escapeHtml(category.featured) + '</div>' +
+              '</div>' +
+              '<div class="relative overflow-hidden rounded-xl bg-zinc-900/50 pt-4 pr-4 pb-4 pl-4 ring-1 ring-slate-50/10 backdrop-blur">' +
+                '<div class="mb-1 text-xs uppercase tracking-wider text-zinc-500">Atmosfera</div>' +
+                '<div class="text-sm font-medium text-white/80">' + escapeHtml(category.helper) + '</div>' +
+              '</div>' +
+              '<div class="relative overflow-hidden rounded-xl bg-zinc-900/50 pt-4 pr-4 pb-4 pl-4 ring-1 ring-slate-50/10 backdrop-blur">' +
+                '<div class="mb-1 text-xs uppercase tracking-wider text-zinc-500">Marcas em foco</div>' +
+                '<div class="text-sm font-medium text-white/80">' + escapeHtml(featuredProducts.map(function (product) { return product.brand; }).join(' · ')) + '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+      }
+
+      function renderResultsMeta() {
+        var category = getCategory(state.category);
+        var total = getProductsByCategory(category.id).length;
+
+        resultsTitle.textContent = category.name;
+        resultsCopy.textContent = category.helper;
+        resultsCount.textContent = String(total);
+        resultsBrand.textContent = category.dominantBrand;
+      }
+
+      function renderProducts() {
+        var category = getCategory(state.category);
+        var visibleProducts = getProductsByCategory(category.id).slice(0, state.visibleCount);
+        var totalProducts = getProductsByCategory(category.id).length;
+
+        productGrid.innerHTML = visibleProducts.map(function (product) {
+          var theme = getTheme(product.brand, category);
+
+          return '' +
+            '<article class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white text-[#0A262D] transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl">' +
+              '<div class="relative aspect-[3/4] overflow-hidden bg-[#EAF4F4]">' +
+                '<img class="absolute inset-0 h-full w-full object-cover opacity-[0.08] blur-sm scale-110" src="' + escapeHtml(product.texture || product.image) + '" alt="" loading="lazy" />' +
+                '<div class="absolute inset-0 bg-gradient-to-b from-white/5 via-white/10 to-white"></div>' +
+                '<span class="absolute left-3 top-3 z-20 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide backdrop-blur-sm ' + escapeHtml(theme.pill) + '">' + escapeHtml(product.brand) + '</span>' +
+                '<span class="pointer-events-none absolute right-3 top-2 text-4xl font-semibold tracking-tight text-[#0A262D]/[0.06]">' + escapeHtml(theme.mark) + '</span>' +
+                '<img class="relative z-10 h-full w-full object-contain p-4 transition-transform duration-700 group-hover:scale-105" src="' + escapeHtml(product.image) + '" alt="' + escapeHtml(product.name) + '" loading="lazy" />' +
+                '<div class="absolute inset-x-0 bottom-0 z-20 p-3">' +
+                  '<div class="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/70 px-3 py-1 backdrop-blur-sm">' +
+                    '<span class="h-1.5 w-1.5 rounded-full ' + escapeHtml(theme.dot) + '"></span>' +
+                    '<span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">' + escapeHtml(product.badge) + '</span>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+              '<div class="flex flex-col gap-3 p-4">' +
+                '<div>' +
+                  '<p class="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">' + escapeHtml(product.brand) + '</p>' +
+                  '<h3 class="text-base font-semibold leading-tight tracking-tight sm:text-lg">' + escapeHtml(product.name) + '</h3>' +
+                  '<p class="mt-1 text-sm leading-relaxed text-slate-600">' + escapeHtml(product.note) + '</p>' +
+                '</div>' +
+                '<div class="flex items-end justify-between gap-3">' +
+                  '<div>' +
+                    '<p class="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Duty free</p>' +
+                    '<p class="text-base font-semibold tracking-tight sm:text-lg">' + escapeHtml(product.price) + '</p>' +
+                  '</div>' +
+                  '<div class="text-right">' +
+                    '<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Marca</p>' +
+                    '<p class="text-xs font-medium ' + escapeHtml(theme.accentText) + '">' + escapeHtml(product.brand) + '</p>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</article>';
+        }).join('');
+
+        productGrid.classList.remove('is-visible');
+        requestAnimationFrame(function () {
+          productGrid.classList.add('is-visible');
+        });
+
+        var hasMore = state.visibleCount < totalProducts;
+        loadMoreButton.hidden = !hasMore;
+        scrollSentinel.hidden = !hasMore;
+      }
+
+      function renderCatalog(shouldScrollRail) {
+        renderRail(Boolean(shouldScrollRail));
+        renderSpotlight();
+        renderResultsMeta();
+        renderProducts();
+      }
+
+      function loadMoreProducts() {
+        var total = getProductsByCategory(state.category).length;
+        if (state.visibleCount >= total) {
+          return;
+        }
+        state.visibleCount = Math.min(state.visibleCount + PAGE_SIZE, total);
+        renderProducts();
+      }
+
+      function setCategory(categoryId) {
+        if (categoryId === state.category) {
+          return;
+        }
+        state.category = categoryId;
+        state.visibleCount = PAGE_SIZE;
+        renderCatalog(true);
+      }
+
+      function setupReveal() {
+        var revealItems = document.querySelectorAll('.reveal, .stagger');
+        if (!('IntersectionObserver' in window)) {
+          revealItems.forEach(function (item) {
+            item.classList.add('is-visible');
+          });
+          return;
+        }
+
+        revealObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+            }
+          });
+        }, { threshold: 0.08 });
+
+        revealItems.forEach(function (item) {
+          var rect = item.getBoundingClientRect();
+          if (rect.top < window.innerHeight && rect.bottom > 0) {
+            item.classList.add('is-visible');
+          }
+          revealObserver.observe(item);
+        });
+      }
+
+      function setupInfiniteScroll() {
+        if (!('IntersectionObserver' in window) || !scrollSentinel) {
+          return;
+        }
+
+        loadObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              loadMoreProducts();
+            }
+          });
+        }, { rootMargin: '320px 0px' });
+
+        loadObserver.observe(scrollSentinel);
+      }
+
+      function attachEvents() {
+        categoryRail.addEventListener('click', function (event) {
+          var button = event.target.closest('[data-category]');
+          if (!button) {
+            return;
+          }
+          setCategory(button.getAttribute('data-category'));
+        });
+
+        loadMoreButton.addEventListener('click', loadMoreProducts);
+
+        document.querySelectorAll('[data-scroll-target]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            var target = document.getElementById(button.getAttribute('data-scroll-target'));
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          });
+        });
+      }
+
+      renderMetrics();
+      renderCatalog(false);
+      setupReveal();
+      setupInfiniteScroll();
+      attachEvents();
+    });
+  </script>
+</body>
+</html>
