@@ -1,0 +1,839 @@
+<html class="antialiased overflow-x-hidden" lang="en"><head>
+<script id="aura-supabase-token-firewall">(function () {
+  if (window.__AURA_SUPABASE_FIREWALL__) return;
+  window.__AURA_SUPABASE_FIREWALL__ = true;
+
+  var SUPABASE_HOST = "hoirqrkdgbmvpwutwuwj.supabase.co";
+  var BLOCKED_KEY_PATTERNS = [
+    /^sb-[a-z0-9-]+-auth-token$/i,
+    /^supabase\.auth\.token$/i
+  ];
+
+  function isBlockedStorageKey(key) {
+    if (typeof key !== "string") return false;
+    for (var i = 0; i < BLOCKED_KEY_PATTERNS.length; i++) {
+      if (BLOCKED_KEY_PATTERNS[i].test(key)) return true;
+    }
+    return false;
+  }
+
+  function toAbsoluteUrl(input) {
+    try {
+      return new URL(input, window.location.href);
+    } catch {
+      return null;
+    }
+  }
+
+  function isSupabaseDestination(input) {
+    var parsed = toAbsoluteUrl(input);
+    if (!parsed) return false;
+    if (SUPABASE_HOST && parsed.host === SUPABASE_HOST) return true;
+    return parsed.host.endsWith(".supabase.co");
+  }
+
+  function pathLooksSensitive(input) {
+    var parsed = toAbsoluteUrl(input);
+    if (!parsed) return false;
+    return /^\/(auth|rest|functions)\/v1\//.test(parsed.pathname || "");
+  }
+
+  function headersContainAuth(headersLike) {
+    if (!headersLike) return false;
+
+    try {
+      if (typeof Headers !== "undefined" && headersLike instanceof Headers) {
+        return !!(headersLike.get("authorization") || headersLike.get("apikey"));
+      }
+    } catch {}
+
+    if (Array.isArray(headersLike)) {
+      for (var i = 0; i < headersLike.length; i++) {
+        var pair = headersLike[i] || [];
+        var name = String(pair[0] || "").toLowerCase();
+        if (name === "authorization" || name === "apikey") return true;
+      }
+      return false;
+    }
+
+    if (typeof headersLike === "object") {
+      var keys = Object.keys(headersLike);
+      for (var j = 0; j < keys.length; j++) {
+        var k = keys[j].toLowerCase();
+        if (k === "authorization" || k === "apikey") return true;
+      }
+    }
+    return false;
+  }
+
+  function requestLooksSensitive(input, init, extraHeaders) {
+    var url = "";
+    try {
+      if (typeof input === "string") {
+        url = input;
+      } else if (input && typeof input.url === "string") {
+        url = input.url;
+      }
+    } catch {}
+
+    var headers =
+      (init && init.headers) ||
+      (input && input.headers) ||
+      extraHeaders ||
+      null;
+    var hasAuthHeaders = headersContainAuth(headers);
+    if (hasAuthHeaders) return true;
+
+    if (!url) return false;
+    if (isSupabaseDestination(url) && pathLooksSensitive(url)) return true;
+    return false;
+  }
+
+  function patchStorage(storage, storageName) {
+    if (!storage) return;
+    var proto = Object.getPrototypeOf(storage);
+    if (!proto || proto.__auraSupabaseFirewallPatched) return;
+
+    var rawGetItem = proto.getItem;
+    var rawSetItem = proto.setItem;
+    var rawRemoveItem = proto.removeItem;
+    var rawClear = proto.clear;
+    var rawKey = proto.key;
+    var rawLengthDescriptor = Object.getOwnPropertyDescriptor(proto, "length");
+    var rawLengthGet = rawLengthDescriptor && rawLengthDescriptor.get;
+
+    function getRawLength(instance) {
+      try {
+        if (rawLengthGet) return Number(rawLengthGet.call(instance) || 0);
+      } catch {}
+      try {
+        return Number(instance.length || 0);
+      } catch {}
+      return 0;
+    }
+
+    function getVisibleKeys(instance) {
+      var visible = [];
+      var total = getRawLength(instance);
+      for (var i = 0; i < total; i++) {
+        var currentKey = rawKey.call(instance, i);
+        if (currentKey && !isBlockedStorageKey(currentKey)) {
+          visible.push(currentKey);
+        }
+      }
+      return visible;
+    }
+
+    function maskBlockedKeyProperty(instance, keyName) {
+      if (!keyName || !isBlockedStorageKey(keyName)) return;
+      try {
+        Object.defineProperty(instance, keyName, {
+          configurable: true,
+          enumerable: false,
+          get: function () {
+            return null;
+          },
+          set: function () {
+            return true;
+          }
+        });
+      } catch {}
+    }
+
+    function syncBlockedKeyProperties(instance) {
+      var total = getRawLength(instance);
+      for (var i = 0; i < total; i++) {
+        var k = rawKey.call(instance, i);
+        if (k) maskBlockedKeyProperty(instance, k);
+      }
+    }
+
+    proto.getItem = function (key) {
+      syncBlockedKeyProperties(this);
+      if (isBlockedStorageKey(String(key))) return null;
+      return rawGetItem.call(this, key);
+    };
+
+    proto.setItem = function (key, value) {
+      if (isBlockedStorageKey(String(key))) return;
+      return rawSetItem.call(this, key, value);
+    };
+
+    proto.removeItem = function (key) {
+      if (isBlockedStorageKey(String(key))) return;
+      return rawRemoveItem.call(this, key);
+    };
+
+    proto.clear = function () {
+      if (typeof rawClear !== "function") return;
+
+      // Preserve blocked keys across clear() to prevent auth token/session wipe.
+      var preservedBlockedEntries = [];
+      var total = getRawLength(this);
+      for (var i = 0; i < total; i++) {
+        var blockedKey = rawKey.call(this, i);
+        if (blockedKey && isBlockedStorageKey(blockedKey)) {
+          preservedBlockedEntries.push([
+            blockedKey,
+            rawGetItem.call(this, blockedKey),
+          ]);
+        }
+      }
+
+      rawClear.call(this);
+
+      for (var j = 0; j < preservedBlockedEntries.length; j++) {
+        var entry = preservedBlockedEntries[j];
+        var key = entry[0];
+        var value = entry[1];
+        if (typeof key === "string" && typeof value === "string") {
+          rawSetItem.call(this, key, value);
+        }
+      }
+
+      syncBlockedKeyProperties(this);
+    };
+
+    proto.key = function (index) {
+      syncBlockedKeyProperties(this);
+      var visible = getVisibleKeys(this);
+      return visible[index] || null;
+    };
+
+    try {
+      Object.defineProperty(proto, "length", {
+        configurable: true,
+        enumerable: false,
+        get: function () {
+          syncBlockedKeyProperties(this);
+          return getVisibleKeys(this).length;
+        }
+      });
+    } catch {}
+
+    var proxyStorage = null;
+    try {
+      proxyStorage = new Proxy(storage, {
+        get: function (target, prop) {
+          if (typeof prop === "string" && isBlockedStorageKey(prop)) return null;
+          if (prop === "length") return getVisibleKeys(target).length;
+          if (prop === "key") {
+            return function (index) {
+              var visible = getVisibleKeys(target);
+              return visible[index] || null;
+            };
+          }
+          if (prop === "clear") {
+            return function () {
+              if (typeof rawClear !== "function") return;
+
+              var preservedBlockedEntries = [];
+              var total = getRawLength(target);
+              for (var i = 0; i < total; i++) {
+                var blockedKey = rawKey.call(target, i);
+                if (blockedKey && isBlockedStorageKey(blockedKey)) {
+                  preservedBlockedEntries.push([
+                    blockedKey,
+                    rawGetItem.call(target, blockedKey),
+                  ]);
+                }
+              }
+
+              rawClear.call(target);
+
+              for (var j = 0; j < preservedBlockedEntries.length; j++) {
+                var entry = preservedBlockedEntries[j];
+                var key = entry[0];
+                var value = entry[1];
+                if (typeof key === "string" && typeof value === "string") {
+                  rawSetItem.call(target, key, value);
+                }
+              }
+
+              syncBlockedKeyProperties(target);
+            };
+          }
+
+          var value = target[prop];
+          if (typeof value === "function") return value.bind(target);
+          return value;
+        },
+        set: function (target, prop, value) {
+          if (typeof prop === "string" && isBlockedStorageKey(prop)) return true;
+          target[prop] = value;
+          return true;
+        },
+        has: function (target, prop) {
+          if (typeof prop === "string" && isBlockedStorageKey(prop)) return false;
+          return prop in target;
+        },
+        deleteProperty: function (target, prop) {
+          if (typeof prop === "string" && isBlockedStorageKey(prop)) return true;
+          try {
+            delete target[prop];
+          } catch {}
+          return true;
+        },
+        ownKeys: function (target) {
+          return getVisibleKeys(target);
+        },
+        getOwnPropertyDescriptor: function (target, prop) {
+          if (typeof prop === "string" && isBlockedStorageKey(prop)) {
+            return undefined;
+          }
+          if (prop === "length") {
+            return {
+              configurable: true,
+              enumerable: false,
+              value: getVisibleKeys(target).length,
+              writable: false
+            };
+          }
+          return Object.getOwnPropertyDescriptor(target, prop);
+        }
+      });
+    } catch {}
+
+    try {
+      if (proxyStorage) {
+        Object.defineProperty(window, storageName, {
+          configurable: true,
+          enumerable: true,
+          get: function () {
+            return proxyStorage;
+          }
+        });
+      }
+    } catch {}
+
+    syncBlockedKeyProperties(storage);
+    proto.__auraSupabaseFirewallPatched = true;
+  }
+
+  function patchCookieAccess() {
+    try {
+      var cookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, "cookie");
+      if (!cookieDescriptor || !cookieDescriptor.configurable) return;
+
+      Object.defineProperty(document, "cookie", {
+        configurable: true,
+        enumerable: false,
+        get: function () {
+          return "";
+        },
+        set: function () {
+          return true;
+        }
+      });
+    } catch {}
+  }
+
+  function patchFetch() {
+    if (typeof window.fetch !== "function") return;
+    var rawFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+      if (requestLooksSensitive(input, init, null)) {
+        return Promise.reject(new Error("Blocked by Aura security policy"));
+      }
+      return rawFetch(input, init);
+    };
+  }
+
+  function patchXHR() {
+    if (typeof XMLHttpRequest === "undefined") return;
+    var rawOpen = XMLHttpRequest.prototype.open;
+    var rawSetHeader = XMLHttpRequest.prototype.setRequestHeader;
+    var rawSend = XMLHttpRequest.prototype.send;
+
+    XMLHttpRequest.prototype.open = function (method, url) {
+      this.__auraRequestUrl = String(url || "");
+      this.__auraHeaders = {};
+      return rawOpen.apply(this, arguments);
+    };
+
+    XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+      if (!this.__auraHeaders) this.__auraHeaders = {};
+      this.__auraHeaders[String(name || "").toLowerCase()] = String(value || "");
+      return rawSetHeader.apply(this, arguments);
+    };
+
+    XMLHttpRequest.prototype.send = function () {
+      if (requestLooksSensitive(this.__auraRequestUrl || "", null, this.__auraHeaders || null)) {
+        throw new Error("Blocked by Aura security policy");
+      }
+      return rawSend.apply(this, arguments);
+    };
+  }
+
+  function patchBeacon() {
+    if (typeof navigator.sendBeacon !== "function") return;
+    var rawBeacon = navigator.sendBeacon.bind(navigator);
+    navigator.sendBeacon = function (url, data) {
+      if (requestLooksSensitive(url, null, null)) return false;
+      return rawBeacon(url, data);
+    };
+  }
+
+  function patchWebSocket() {
+    if (typeof WebSocket === "undefined") return;
+    var RawWebSocket = WebSocket;
+    window.WebSocket = function (url, protocols) {
+      if (requestLooksSensitive(String(url || ""), null, null)) {
+        throw new Error("Blocked by Aura security policy");
+      }
+      return new RawWebSocket(url, protocols);
+    };
+    window.WebSocket.prototype = RawWebSocket.prototype;
+  }
+
+  patchStorage(window.localStorage, "localStorage");
+  patchStorage(window.sessionStorage, "sessionStorage");
+  patchCookieAccess();
+  patchFetch();
+  patchXHR();
+  patchBeacon();
+  patchWebSocket();
+})();</script><meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EQUINOX | Developments</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="assets/css2_3184cbed031d.css" rel="stylesheet"/>
+<script src="assets/resource_3fa48481346f.es"></script>
+<script src="assets/lucide_latest_2eebd0ebe8c2.es"></script>
+<script src="assets/gsap_4f0dc5b47bd1.js"></script>
+<script src="assets/ScrollTrigger_270ba6162bc6.js"></script>
+
+<style>
+:root {
+--c-bg: #F8F8F8;
+--c-dark: #111111;
+--c-accent: #b19777;
+--c-card: #FFFFFF;
+--c-border: rgba(0,0,0,0.06);
+--font-display: 'Space Grotesk', sans-serif;
+--font-body: 'Inter', sans-serif;
+}
+html, body {
+overflow-x: hidden;
+width: 100%;
+max-width: 100vw;
+}
+body {
+background-color: var(--c-bg);
+color: var(--c-dark);
+font-family: var(--font-body);
+margin: 0;
+-webkit-font-smoothing: antialiased;
+}
+.wrapper {
+position: relative;
+z-index: 10;
+background-color: var(--c-bg);
+margin-bottom: 100vh;
+box-shadow: 0 50px 100px rgba(0,0,0,0.1);
+border-bottom-left-radius: 2rem;
+border-bottom-right-radius: 2rem;
+overflow: hidden; /* Helps prevent overflow issues */
+}
+.stack-section { position: relative; background: var(--c-bg); }
+.card-item {
+position: sticky; top: 10vh; height: auto; min-height: 80vh; width: 100%;
+display: flex; align-items: center; justify-content: center;
+margin-bottom: 5vh;
+}
+.card-inner {
+width: 95%; height: 100%;
+position: relative; overflow: hidden;
+box-shadow: 0 20px 40px -10px rgba(0,0,0,0.03);
+background: #fff;
+}
+.footer-sticky {
+position: fixed; bottom: 0; left: 0; width: 100%; height: 100vh;
+z-index: 1; background: #080808; color: #fff;
+display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+.display-font { font-family: var(--font-display); }
+.hero-text-huge { font-size: 16vw; line-height: 0.8; letter-spacing: -0.06em; mix-blend-mode: exclusion; color: white; }
+.noise {
+position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.03;
+background-image: url("filter_3E_3Crect_width__100_25_bd1a3fe14a76.html")'/%3E%3C/svg%3E");
+}
+/* Mobile Menu Transitions */
+#mobile-menu { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+.menu-open { overflow: hidden; }
+</style><style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.bottom-12{bottom:3rem}.left-6{left:1.5rem}.top-0{top:0px}.z-0{z-index:0}.z-10{z-index:10}.z-20{z-index:20}.z-40{z-index:40}.z-50{z-index:50}.order-1{order:1}.order-2{order:2}.mx-auto{margin-left:auto;margin-right:auto}.mb-10{margin-bottom:2.5rem}.mb-16{margin-bottom:4rem}.mb-2{margin-bottom:0.5rem}.mb-24{margin-bottom:6rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-10{margin-top:2.5rem}.mt-2{margin-top:0.5rem}.mt-40{margin-top:10rem}.mt-auto{margin-top:auto}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-12{height:3rem}.h-2{height:0.5rem}.h-4{height:1rem}.h-6{height:1.5rem}.h-\[1px\]{height:1px}.h-\[280px\]{height:280px}.h-full{height:100%}.h-screen{height:100vh}.w-0{width:0px}.w-10{width:2.5rem}.w-2{width:0.5rem}.w-4{width:1rem}.w-6{width:1.5rem}.w-\[300vw\]{width:300vw}.w-auto{width:auto}.w-full{width:100%}.w-screen{width:100vw}.max-w-5xl{max-width:64rem}.max-w-\[1600px\]{max-width:1600px}.max-w-md{max-width:28rem}.max-w-sm{max-width:24rem}.translate-x-full{--tw-translate-x:100%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-y-full{--tw-translate-y:100%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-pointer{cursor:pointer}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-10{gap:2.5rem}.gap-12{gap:3rem}.gap-20{gap:5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-8{gap:2rem}.self-start{align-self:flex-start}.self-end{align-self:flex-end}.overflow-hidden{overflow:hidden}.overflow-x-hidden{overflow-x:hidden}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-black\/5{border-color:rgb(0 0 0 / 0.05)}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.bg-\[\#0A0A0A\]{--tw-bg-opacity:1;background-color:rgb(10 10 10 / var(--tw-bg-opacity, 1))}.bg-\[\#111111\]{--tw-bg-opacity:1;background-color:rgb(17 17 17 / var(--tw-bg-opacity, 1))}.bg-\[\#F9F9F9\]{--tw-bg-opacity:1;background-color:rgb(249 249 249 / var(--tw-bg-opacity, 1))}.bg-\[\#b19777\]{--tw-bg-opacity:1;background-color:rgb(177 151 119 / var(--tw-bg-opacity, 1))}.bg-\[\#f4f4f4\]{--tw-bg-opacity:1;background-color:rgb(244 244 244 / var(--tw-bg-opacity, 1))}.bg-\[var\(--c-bg\)\]{background-color:var(--c-bg)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/5{background-color:rgb(255 255 255 / 0.05)}.stroke-\[1\.5\]{stroke-width:1.5}.object-contain{object-fit:contain}.object-cover{object-fit:cover}.p-8{padding:2rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-32{padding-top:8rem;padding-bottom:8rem}.py-40{padding-top:10rem;padding-bottom:10rem}.py-56{padding-top:14rem;padding-bottom:14rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.pb-40{padding-bottom:10rem}.pr-4{padding-right:1rem}.pt-20{padding-top:5rem}.pt-6{padding-top:1.5rem}.pt-8{padding-top:2rem}.text-left{text-align:left}.text-center{text-align:center}.text-base{font-size:1rem;line-height:1.5rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-6xl{font-size:3.75rem;line-height:1}.text-\[10px\]{font-size:10px}.text-\[12vw\]{font-size:12vw}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-light{font-weight:300}.font-medium{font-weight:500}.font-normal{font-weight:400}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-relaxed{line-height:1.625}.leading-\[0\.8\]{line-height:0.8}.leading-\[1\.1\]{line-height:1.1}.leading-none{line-height:1}.tracking-\[0\.25em\]{letter-spacing:0.25em}.tracking-\[0\.2em\]{letter-spacing:0.2em}.tracking-\[0\.3em\]{letter-spacing:0.3em}.tracking-tight{letter-spacing:-0.025em}.tracking-tighter{letter-spacing:-0.05em}.tracking-widest{letter-spacing:0.1em}.text-\[\#111\]{--tw-text-opacity:1;color:rgb(17 17 17 / var(--tw-text-opacity, 1))}.text-\[\#b19777\]{--tw-text-opacity:1;color:rgb(177 151 119 / var(--tw-text-opacity, 1))}.text-black{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-white\/20{color:rgb(255 255 255 / 0.2)}.text-white\/30{color:rgb(255 255 255 / 0.3)}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.opacity-0{opacity:0}.opacity-10{opacity:0.1}.opacity-60{opacity:0.6}.mix-blend-exclusion{mix-blend-mode:exclusion}.brightness-0{--tw-brightness:brightness(0);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.brightness-\[0\.4\]{--tw-brightness:brightness(0.4);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.grayscale{--tw-grayscale:grayscale(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.invert{--tw-invert:invert(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-1000{transition-duration:1000ms}.duration-300{transition-duration:300ms}.duration-500{transition-duration:500ms}.duration-700{transition-duration:700ms}.hover\:pl-6:hover{padding-left:1.5rem}.hover\:text-\[\#b19777\]:hover{--tw-text-opacity:1;color:rgb(177 151 119 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.group:hover .group-hover\:w-full{width:100%}.group:hover .group-hover\:translate-x-1{--tw-translate-x:0.25rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:scale-105{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:border-\[\#111\]{--tw-border-opacity:1;border-color:rgb(17 17 17 / var(--tw-border-opacity, 1))}.group:hover .group-hover\:bg-\[\#111\]{--tw-bg-opacity:1;background-color:rgb(17 17 17 / var(--tw-bg-opacity, 1))}.group:hover .group-hover\:text-\[\#b19777\]{--tw-text-opacity:1;color:rgb(177 151 119 / var(--tw-text-opacity, 1))}.group:hover .group-hover\:text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}@media (min-width: 768px){.md\:left-12{left:3rem}.md\:order-1{order:1}.md\:order-2{order:2}.md\:mb-12{margin-bottom:3rem}.md\:block{display:block}.md\:flex{display:flex}.md\:grid{display:grid}.md\:hidden{display:none}.md\:h-12{height:3rem}.md\:h-24{height:6rem}.md\:h-5{height:1.25rem}.md\:h-full{height:100%}.md\:w-12{width:3rem}.md\:w-5{width:1.25rem}.md\:flex-1{flex:1 1 0%}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.md\:grid-cols-\[1\.2fr_1fr\]{grid-template-columns:1.2fr 1fr}.md\:p-12{padding:3rem}.md\:px-12{padding-left:3rem;padding-right:3rem}.md\:px-20{padding-left:5rem;padding-right:5rem}.md\:py-10{padding-top:2.5rem;padding-bottom:2.5rem}.md\:pr-10{padding-right:2.5rem}.md\:text-4xl{font-size:2.25rem;line-height:2.5rem}.md\:text-5xl{font-size:3rem;line-height:1}.md\:text-7xl{font-size:4.5rem;line-height:1}.md\:text-8xl{font-size:6rem;line-height:1}.md\:text-base{font-size:1rem;line-height:1.5rem}}@media (min-width: 1024px){.lg\:col-span-4{grid-column:span 4 / span 4}.lg\:col-span-8{grid-column:span 8 / span 8}.lg\:col-start-5{grid-column-start:5}.lg\:flex{display:flex}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:p-16{padding:4rem}.lg\:text-5xl{font-size:3rem;line-height:1}.lg\:text-6xl{font-size:3.75rem;line-height:1}}</style><style id="cms-loading-styles">
+@keyframes cms-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.cms-loading {
+  position: relative;
+  color: transparent !important;
+  /* Override any background-image (inline styles, Tailwind bg-[url("_0fee8b4e6c53.html")]) */
+  background-image: none !important;
+  background-color: transparent !important;
+  background: linear-gradient(90deg, 
+    rgba(128, 128, 128, 0.1) 25%, 
+    rgba(128, 128, 128, 0.2) 50%, 
+    rgba(128, 128, 128, 0.1) 75%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: cms-shimmer 1.5s infinite !important;
+  border-radius: 12px;
+  min-height: 1em;
+  min-width: 3em;
+  overflow: hidden;
+}
+.cms-loading * {
+  visibility: hidden !important;
+}
+.cms-loading img {
+  opacity: 0 !important;
+}
+</style><style data-scroll-fix="true">
+        /* Scroll fixes for offline viewing */
+        html, body {
+            overflow: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100% !important;
+            scroll-behavior: auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* Force visibility - many sites use JS animations for initial display */
+        body, .wrapper, main, #__next, #app, .page, .content {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+        }
+        
+        /* Disable loader/preloader overlays */
+        .loader, .preloader, .loading, [class*="loader"], [class*="preloader"] {
+            display: none !important;
+            opacity: 0 !important;
+        }
+        
+        /* Show elements that might be hidden for animation */
+        .word-inner, .char, .line, [data-aos], [data-scroll],
+        .hero-text span, .hero-fade, [class*="hero"] span {
+            opacity: 1 !important;
+            transform: none !important;
+            visibility: visible !important;
+        }
+        
+        /* Reset Tailwind animation utility classes */
+        .translate-y-full, .translate-x-full, .-translate-y-full, .-translate-x-full,
+        .translate-y-1\/2, .-translate-y-1\/2, .translate-y-\[100\%\], .translate-y-\[110\%\] {
+            transform: none !important;
+        }
+        
+        /* Force visibility on common hidden-for-animation patterns */
+        .opacity-0, [class*="opacity-0"] {
+            opacity: 1 !important;
+        }
+        
+        /* Reset scale transforms used for animations */
+        .scale-0, .scale-50, .scale-75 {
+            transform: none !important;
+        }
+        
+        html.lenis, html.lenis-smooth, 
+        body.lenis, body.lenis-smooth,
+        .lenis-wrapper, .lenis-content,
+        [data-lenis-prevent], [data-scroll-container] {
+            overflow: visible !important;
+            height: auto !important;
+        }
+        
+        /* Fix flex containers that might cut off content */
+        body.flex.items-center,
+        body.flex.justify-center {
+            align-items: flex-start !important;
+            min-height: 100vh;
+            height: auto !important;
+        }
+        
+        /* Ensure main content scrolls */
+        main, #__next, #__nuxt, #app, .main-content {
+            overflow: visible !important;
+            height: auto !important;
+        }
+        </style></head>
+<body class="text-base font-light leading-relaxed" style="">
+<div class="noise"></div>
+<!-- Mobile Menu Overlay -->
+<div class="fixed inset-0 z-40 bg-[#111111] text-white transform translate-x-full flex flex-col items-center justify-center" id="mobile-menu">
+<nav class="flex flex-col gap-10 text-center">
+<a class="display-font text-4xl font-normal tracking-tight hover:text-[#b19777] transition-colors" href="#">Portfolio</a>
+<a class="display-font text-4xl font-normal tracking-tight hover:text-[#b19777] transition-colors" href="#">Joint Ventures</a>
+<a class="display-font text-4xl font-normal tracking-tight hover:text-[#b19777] transition-colors" href="#">About</a>
+<a class="display-font text-4xl font-normal tracking-tight hover:text-[#b19777] transition-colors" href="#">Contact</a>
+</nav>
+<div class="absolute bottom-12 text-xs uppercase tracking-[0.25em] text-white/30">
+            Equinox Developments
+        </div>
+</div>
+<nav class="fixed top-0 w-full px-6 py-6 md:px-12 md:py-10 flex justify-between items-center z-50 mix-blend-exclusion text-white">
+<div class="flex items-center md:flex-1">
+<img alt="Equinox Developments" class="md:h-24 w-auto h-12 object-contain invert brightness-0" src="assets/ED-Logo-horizontal_ez5rg2_57deed770ac0.png"/>
+</div>
+<div class="hidden md:flex gap-12 text-xs font-normal tracking-[0.25em] uppercase">
+<a class="hover:text-[#b19777] transition-colors" href="#">Portfolio</a>
+<a class="hover:text-[#b19777] transition-colors" href="#">Joint Ventures</a>
+<a class="hover:text-[#b19777] transition-colors" href="#">About</a>
+<a class="hover:text-[#b19777] transition-colors" href="#">Contact</a>
+</div>
+<div class="flex md:flex-1 justify-end">
+<!-- Mobile Menu Button -->
+<button class="z-50 group flex items-center justify-center md:hidden w-10 h-10 relative text-white" id="menu-btn">
+<svg class="lucide lucide-menu w-6 h-6 stroke-[1.5] absolute transition-opacity duration-300" fill="none" height="24" id="icon-menu" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+<svg class="lucide lucide-x w-6 h-6 stroke-[1.5] absolute opacity-0 transition-opacity duration-300" fill="none" height="24" id="icon-close" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M18 6 6 18"></path><path d="m6 6 18 18"></path></svg>
+</button>
+</div>
+</nav>
+<div class="wrapper">
+<section class="h-screen relative flex items-center justify-center overflow-hidden" id="hero">
+<div class="absolute inset-0 w-full h-full hero-img-wrap">
+<img alt="Luxury Living" class="brightness-[0.4] hero-img w-full h-full object-cover" src="assets/photo-1618221195710-dd6b41faae_aa36ad505289.avif" style="translate: none; rotate: none; scale: none; transform: translate(0px, 0%);"/>
+</div>
+<div class="relative z-10 w-full h-full flex flex-col justify-between pointer-events-none mix-blend-exclusion py-32 px-6 md:px-12">
+<div class="overflow-hidden self-start">
+<h1 class="hero-text-huge hero-title-l translate-y-full block font-medium tracking-tight" style="translate: none; rotate: none; scale: none; transform: translate3d(0px, 16.2684px, 0px);">
+                        EQUI
+                    </h1>
+</div>
+<!-- Added right padding to prevent italic 'X' from being cut off -->
+<div class="overflow-hidden self-end pr-4 md:pr-10">
+<h1 class="hero-text-huge hero-title-r translate-y-full block italic font-light tracking-tight" style="translate: none; rotate: none; scale: none; transform: translate3d(0px, 27.095px, 0px);">
+                        NOX
+                    </h1>
+</div>
+</div>
+<div class="absolute bottom-12 left-6 md:left-12 text-white mix-blend-exclusion flex flex-col gap-1">
+<span class="text-xs uppercase tracking-[0.3em] font-normal text-[#b19777]">
+                    Premium Real Estate
+                </span>
+<span class="text-xs uppercase tracking-[0.3em] opacity-60">
+                    Harare • Zimbabwe
+                </span>
+</div>
+</section>
+<section class="py-40 px-6 md:px-20 max-w-[1600px] mx-auto bg-[var(--c-bg)] relative z-20">
+<div class="grid lg:grid-cols-12 gap-12">
+<div class="lg:col-span-4 hidden lg:flex flex-col justify-between border-t border-black/5 pt-8">
+<span class="text-xs font-normal tracking-[0.2em] text-[#b19777]">01 — THE VISION</span>
+</div>
+<div class="lg:col-span-8 lg:col-start-5">
+<h2 class="display-font text-3xl md:text-5xl lg:text-6xl font-normal leading-[1.1] tracking-tight max-w-5xl text-black">
+                        We don't just build structures; we curate lifestyles. Pioneering luxury townhouses and high-value joint ventures in Zimbabwe's most prime locations.
+                    </h2>
+</div>
+</div>
+</section>
+<section class="stack-section pb-40">
+<div class="px-6 md:px-20 mb-24 flex justify-between items-end">
+<div>
+<div class="flex items-center gap-3 mb-6">
+<div class="w-2 h-2 rounded-full bg-[#b19777]"></div>
+<span class="text-xs font-normal uppercase tracking-[0.25em] text-gray-400">
+                            Available Listings
+                        </span>
+</div>
+<h2 class="display-font text-4xl md:text-5xl font-normal tracking-tight leading-none uppercase">
+                        Featured
+                        <br/>
+                        Developments
+                    </h2>
+</div>
+<div class="hidden md:block">
+<button class="group flex items-center gap-4 text-xs font-normal uppercase tracking-[0.2em] hover:text-[#b19777] transition-colors">
+                        Explore Portfolio
+                        <svg aria-hidden="true" class="lucide lucide-arrow-right w-4 h-4 stroke-[1.5] group-hover:translate-x-1 transition-transform" data-lucide="arrow-right" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+</button>
+</div>
+</div>
+<div class="stack-container px-4 md:px-20">
+<!-- Card 1 -->
+<div class="card-item group">
+<div class="card-inner flex flex-col md:grid md:grid-cols-[1.2fr_1fr] rounded-2xl border border-black/5" style="translate: none; rotate: none; scale: none; opacity: 1; transform: translate(0px, 0px);">
+<!-- Image Section -->
+<div class="h-[280px] md:h-full w-full relative overflow-hidden order-1 md:order-2">
+<img alt="Highland Views" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src="assets/photo-1600607687939-ce8a6c2511_cf259dfa4192.avif"/>
+</div>
+<!-- Content Section -->
+<div class="flex flex-col p-8 md:p-12 lg:p-16 order-2 md:order-1 bg-white relative">
+<!-- Header Row: Category + Icon -->
+<div class="flex justify-between items-start mb-6 md:mb-12">
+<span class="text-[10px] tracking-[0.2em] text-[#b19777] uppercase font-medium mt-2">
+                                    Highlands
+                                </span>
+<div class="w-10 h-10 md:w-12 md:h-12 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 group-hover:bg-[#111] group-hover:text-white group-hover:border-[#111] transition-all duration-300">
+<svg aria-hidden="true" class="lucide lucide-arrow-up-right w-4 h-4 md:w-5 md:h-5 stroke-[1.5]" data-lucide="arrow-up-right" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+</div>
+</div>
+<!-- Titles -->
+<div class="mb-4">
+<h3 class="display-font text-3xl md:text-4xl lg:text-5xl font-normal tracking-tight text-[#111] mb-2 uppercase">
+                                    The Ridge Estate
+                                </h3>
+<span class="text-xs text-gray-400 uppercase tracking-[0.2em] font-medium block">
+                                    Harare North
+                                </span>
+</div>
+<!-- Description -->
+<p class="text-sm md:text-base text-gray-500 font-light leading-relaxed mb-10 max-w-md">
+                                A collection of 12 bespoke cluster homes blending modern architectural lines with the rugged beauty of the Mashonaland landscape.
+                            </p>
+<!-- Footer Tags -->
+<div class="mt-auto pt-6 border-t border-black/5 flex gap-3">
+<span class="px-5 py-2.5 bg-[#F9F9F9] rounded-full text-[10px] tracking-widest uppercase text-gray-500 font-medium">
+                                    Residential
+                                </span>
+<span class="px-5 py-2.5 bg-[#F9F9F9] rounded-full text-[10px] tracking-widest uppercase text-gray-500 font-medium">
+                                    Selling
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="card-item group">
+<div class="card-inner flex flex-col md:grid md:grid-cols-[1.2fr_1fr] rounded-2xl border border-black/5">
+<!-- Image Section -->
+<div class="h-[280px] md:h-full w-full relative overflow-hidden order-1 md:order-2">
+<img alt="Borrowdale Brooke" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src="assets/photo-1613545325278-f24b0cae12_6b2bcda4b2ce.avif"/>
+</div>
+<!-- Content Section -->
+<div class="flex flex-col p-8 md:p-12 lg:p-16 order-2 md:order-1 bg-white relative">
+<!-- Header Row: Category + Icon -->
+<div class="flex justify-between items-start mb-6 md:mb-12">
+<span class="text-[10px] tracking-[0.2em] text-[#b19777] uppercase font-medium mt-2">
+                                    Borrowdale
+                                </span>
+<div class="w-10 h-10 md:w-12 md:h-12 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 group-hover:bg-[#111] group-hover:text-white group-hover:border-[#111] transition-all duration-300">
+<svg aria-hidden="true" class="lucide lucide-arrow-up-right w-4 h-4 md:w-5 md:h-5 stroke-[1.5]" data-lucide="arrow-up-right" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+</div>
+</div>
+<!-- Titles -->
+<div class="mb-4">
+<h3 class="display-font text-3xl md:text-4xl lg:text-5xl font-normal tracking-tight text-[#111] mb-2 uppercase">
+                                    Brooke Golf Estate
+                                </h3>
+<span class="text-xs text-gray-400 uppercase tracking-[0.2em] font-medium block">
+                                    Harare North
+                                </span>
+</div>
+<!-- Description -->
+<p class="text-sm md:text-base text-gray-500 font-light leading-relaxed mb-10 max-w-md">
+                                Exclusive golf-estate living featuring 6 luxury double-storey townhouses. Floor-to-ceiling glass captures the essence of fairway living.
+                            </p>
+<!-- Footer Tags -->
+<div class="mt-auto pt-6 border-t border-black/5 flex gap-3">
+<span class="px-5 py-2.5 bg-[#F9F9F9] rounded-full text-[10px] tracking-widest uppercase text-gray-500 font-medium">
+                                    Joint Venture
+                                </span>
+<span class="px-5 py-2.5 bg-[#F9F9F9] rounded-full text-[10px] tracking-widest uppercase text-gray-500 font-medium">
+                                    Completed
+                                </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Horizontal Scroll Section (Cleaned up structure) -->
+<div class="pin-spacer" style="order: 0; place-self: auto; grid-area: auto; z-index: auto; float: none; flex-shrink: 1; display: block; margin: 0px; inset: 0px; position: relative; flex-basis: auto; overflow: visible; box-sizing: border-box; width: 1380px; height: 5003px; padding: 0px 0px 4140px;"><section class="relative h-screen overflow-hidden bg-[var(--c-bg)] border-t border-black/5" id="horiz-scroll" style="translate: none; rotate: none; scale: none; inset: 0px auto auto 0px; margin: 0px; max-width: 1380px; width: 1380px; max-height: 863px; height: 863px; padding: 0px; transform: translate(0px, 0px);">
+<div class="horiz-wrap flex h-full w-[300vw]" style="translate: none; rotate: none; scale: none; transform: translate(0px, 0px);">
+<div class="w-screen h-full flex flex-col justify-center px-6 md:px-20 border-r border-black/5">
+<span class="text-xs font-normal text-[#b19777] mb-8 tracking-[0.3em]">01 — EXPERTISE</span>
+<h2 class="display-font text-6xl md:text-8xl font-normal tracking-tight uppercase">Joint Ventures</h2>
+<p class="mt-10 max-w-sm text-gray-500 text-lg font-light">Unlocking land value through transparent, high-yield development structures.</p>
+</div>
+<div class="w-screen h-full flex flex-col justify-center px-6 md:px-20 border-r border-black/5 bg-white">
+<span class="text-xs font-normal text-[#b19777] mb-8 tracking-[0.3em]">02 — EXPERTISE</span>
+<h2 class="display-font text-6xl md:text-8xl font-normal tracking-tight uppercase">Luxury Living</h2>
+<p class="mt-10 max-w-sm text-gray-500 text-lg font-light">Architectural excellence paired with sustainable, secure environments.</p>
+</div>
+<div class="w-screen h-full flex flex-col justify-center px-6 md:px-20 bg-[#f4f4f4]">
+<span class="text-xs font-normal text-[#b19777] mb-8 tracking-[0.3em]">03 — EXPERTISE</span>
+<h2 class="display-font text-6xl md:text-8xl font-normal tracking-tight uppercase">Project Mgmt</h2>
+<p class="mt-10 max-w-sm text-gray-500 text-lg font-light">End-to-end management from conceptual feasibility to final handover.</p>
+</div>
+</div>
+</section></div>
+<section class="py-56 bg-[#0A0A0A] text-white relative z-20 overflow-hidden">
+<div class="px-6 md:px-20 max-w-[1600px] mx-auto grid md:grid-cols-2 gap-20">
+<div class="">
+<span class="text-xs font-normal text-[#b19777] block mb-10 tracking-[0.3em]">CAPABILITIES</span>
+<h2 class="display-font text-5xl md:text-7xl font-normal tracking-tight leading-none uppercase">
+                        Areas of
+                        <br/>
+                        Excellence
+                    </h2>
+</div>
+<div class="flex flex-col">
+<div class="flex justify-between items-center border-b border-white/10 py-10 group hover:pl-6 transition-all duration-500 cursor-pointer">
+<span class="text-xl font-normal text-gray-300 group-hover:text-[#b19777] transition-colors">Cluster Home Design</span>
+<svg aria-hidden="true" class="lucide lucide-home w-6 h-6 stroke-[1.5] text-white/20 group-hover:text-[#b19777] transition-colors" data-lucide="home" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+</div>
+<div class="flex justify-between items-center border-b border-white/10 py-10 group hover:pl-6 transition-all duration-500 cursor-pointer">
+<span class="text-xl font-normal text-gray-300 group-hover:text-[#b19777] transition-colors">Commercial Partnerships</span>
+<svg aria-hidden="true" class="lucide lucide-users w-6 h-6 stroke-[1.5] text-white/20 group-hover:text-[#b19777] transition-colors" data-lucide="users" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
+</div>
+<div class="flex justify-between items-center border-b border-white/10 py-10 group hover:pl-6 transition-all duration-500 cursor-pointer">
+<span class="text-xl font-normal text-gray-300 group-hover:text-[#b19777] transition-colors">Land Acquisition</span>
+<svg aria-hidden="true" class="lucide lucide-map-pin w-6 h-6 stroke-[1.5] text-white/20 group-hover:text-[#b19777] transition-colors" data-lucide="map-pin" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+</div>
+</div>
+</div>
+</section>
+</div>
+<footer class="footer-sticky">
+<div class="absolute inset-0 z-0 opacity-10 grayscale">
+<img class="w-full h-full object-cover" src="assets/photo-1582268611958-ebfd161ef9_e5960b35cf87.avif"/>
+</div>
+<div class="relative z-10 text-center w-full max-w-5xl px-6">
+<div class="inline-flex items-center gap-3 px-6 py-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-16">
+<div class="w-2 h-2 rounded-full bg-[#b19777] animate-pulse"></div>
+<span class="text-xs uppercase tracking-[0.3em] text-gray-300 font-normal">
+                    Joint Venture Opportunities Available
+                </span>
+</div>
+<a class="block group" href="mailto:info@equinox.co.zw">
+<h2 class="display-font text-[12vw] leading-[0.8] font-normal tracking-tighter text-white group-hover:text-[#b19777] transition-colors duration-700">
+                    LET'S BUILD
+                </h2>
+<div class="h-[1px] w-0 group-hover:w-full bg-[#b19777] mx-auto transition-all duration-1000 mt-10"></div>
+</a>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-12 mt-40 text-left border-t border-white/10 pt-20">
+<div class="flex flex-col gap-8">
+<span class="text-xs uppercase tracking-[0.3em] text-[#b19777]">Social</span>
+<div class="flex flex-col gap-3 text-gray-400 text-sm">
+<a class="hover:text-white transition-colors" href="#">Instagram</a>
+<a class="hover:text-white transition-colors" href="#">LinkedIn</a>
+</div>
+</div>
+<div class="flex flex-col gap-8">
+<span class="text-xs uppercase tracking-[0.3em] text-[#b19777]">Location</span>
+<p class="text-gray-400 text-sm leading-relaxed">Borrowdale Road<br/>Harare, Zimbabwe</p>
+</div>
+<div class="flex flex-col gap-8">
+<span class="text-xs uppercase tracking-[0.3em] text-[#b19777]">Inquiries</span>
+<div class="flex flex-col gap-3 text-gray-400 text-sm">
+<a class="hover:text-white transition-colors" href="mailto:info@equinox.co.zw">info@equinox.co.zw</a>
+<a class="hover:text-white transition-colors" href="tel:+26312345678">+263 77 123 4567</a>
+</div>
+</div>
+<div class="flex flex-col justify-end">
+<span class="text-xs text-gray-500 uppercase tracking-[0.3em]">
+                        © 2024 EQUINOX
+                    </span>
+</div>
+</div>
+</div>
+</footer>
+
+<script data-img-fallback-handler="">!function(){var f=["https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/917d6f93-fb36-439a-8c48-884b67b35381_1600w.jpg","https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/4734259a-bad7-422f-981e-ce01e79184f2_1600w.jpg","https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/c543a9e1-f226-4ced-80b0-feb8445a75b9_1600w.jpg","https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/5bab247f-35d9-400d-a82b-fd87cfe913d2_1600w.webp","https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/30104e3c-5eea-4b93-93e9-5313698a7156_1600w.webp"],h=new Set;function g(s){for(var x=0,i=0;i<s.length;i++)x=(x<<5)-x+s.charCodeAt(i)|0;return f[Math.abs(x)%f.length]}function r(t){var s=t.src;if(s&&!h.has(s)){h.add(s);t.src=g(s)}}window.addEventListener("error",function(e){var t=e.target;if(t&&t.tagName==="IMG")r(t)},!0);function c(){document.querySelectorAll("img").forEach(function(i){if(i.complete&&!i.naturalWidth&&i.src)r(i)})}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",c);else c()}()</script></body></html>

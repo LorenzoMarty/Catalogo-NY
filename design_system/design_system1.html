@@ -1,0 +1,3186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design System 01 | Aura Hybrid Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="aura.build_templates_digital_product_61/assets/css2_e3221e25488b.css" />
+  <link rel="stylesheet" href="aura.build_templates_luxury_real_estate_8/assets/css2_3184cbed031d.css" />
+  <script src="aura.build_templates_luxury_real_estate_8/assets/resource_3fa48481346f.es"></script>
+  <script src="aura.build_templates_digital_product_61/assets/iconify-icon_e19829e7f0e8.js"></script>
+  <script src="aura.build_templates_luxury_real_estate_8/assets/lucide_latest_2eebd0ebe8c2.es"></script>
+  <script src="aura.build_templates_luxury_real_estate_8/assets/gsap_4f0dc5b47bd1.js"></script>
+  <script src="aura.build_templates_luxury_real_estate_8/assets/ScrollTrigger_270ba6162bc6.js"></script>
+  <style>
+    :root {
+      --lux-bg: #f8f8f8;
+      --lux-card: #ffffff;
+      --lux-muted: #f9f9f9;
+      --lux-ink: #111111;
+      --lux-dark: #0a0a0a;
+      --lux-accent: #b19777;
+      --dp-bg: #f4f4f4;
+      --dp-ink: #161616;
+      --dp-accent: #0f62fe;
+      --dp-accent-strong: #0043ce;
+      --dp-rail: #e0e0e0;
+      --dp-border: #d1d5db;
+      --border: rgba(17, 17, 17, 0.08);
+      --white-border: rgba(255, 255, 255, 0.12);
+      --font-display: "Space Grotesk", sans-serif;
+      --font-body: "Inter", sans-serif;
+      --font-digital: "IBM Plex Sans", sans-serif;
+      --font-mono: "IBM Plex Mono", monospace;
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --shadow-soft: 0 24px 70px rgba(17, 17, 17, 0.08);
+      --shadow-deep: 0 28px 90px rgba(0, 0, 0, 0.26);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      font-family: var(--font-body);
+      color: var(--lux-ink);
+      background:
+        radial-gradient(circle at top right, rgba(15, 98, 254, 0.09), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(177, 151, 119, 0.12), transparent 24%),
+        linear-gradient(180deg, var(--lux-bg), var(--dp-bg));
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.menu-open {
+      overflow: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.4;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.32) 0, transparent 18%),
+        radial-gradient(circle at 85% 25%, rgba(255, 255, 255, 0.18) 0, transparent 16%),
+        radial-gradient(circle at 40% 78%, rgba(17, 17, 17, 0.06) 0, transparent 22%);
+      mix-blend-mode: soft-light;
+    }
+
+    .grid-lines {
+      background-size: 40px 40px;
+      background-image:
+        linear-gradient(to right, rgba(209, 213, 219, 0.35) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(209, 213, 219, 0.35) 1px, transparent 1px);
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .display-font {
+      font-family: var(--font-display);
+    }
+
+    .font-mono {
+      font-family: var(--font-mono);
+    }
+
+    .shell {
+      width: min(1280px, calc(100% - 40px));
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 40;
+      padding: 20px 0;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 14px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(248, 248, 248, 0.72);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 24px 60px rgba(17, 17, 17, 0.08);
+    }
+
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-symbol {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--dp-accent), var(--lux-accent));
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .brand-copy {
+      display: grid;
+      gap: 4px;
+    }
+
+    .brand-copy strong {
+      font-family: var(--font-display);
+      font-size: 1.08rem;
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-copy span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(17, 17, 17, 0.56);
+    }
+
+    .brand-logo {
+      width: 88px;
+      object-fit: contain;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .nav-links a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: rgba(17, 17, 17, 0.62);
+      transition: color 0.3s ease, background 0.3s ease, transform 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--dp-accent);
+      background: rgba(15, 98, 254, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .menu-button,
+    .nav-cta,
+    .button-shell {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      transition:
+        transform 0.35s ease,
+        color 0.35s ease,
+        background 0.35s ease,
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
+    }
+
+    .menu-button:hover,
+    .nav-cta:hover,
+    .button-shell:hover {
+      transform: translateY(-2px);
+    }
+
+    .nav-cta {
+      background: rgba(17, 17, 17, 0.92);
+      color: white;
+      box-shadow: 0 16px 40px rgba(17, 17, 17, 0.15);
+    }
+
+    .nav-cta:hover {
+      background: var(--lux-accent);
+      color: var(--lux-dark);
+    }
+
+    .menu-button {
+      display: none;
+      width: 44px;
+      height: 44px;
+      justify-content: center;
+      position: relative;
+      background: rgba(17, 17, 17, 0.08);
+      color: var(--lux-ink);
+    }
+
+    .icon-shell,
+    .button-shell svg,
+    .nav-cta svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.5;
+    }
+
+    .menu-button .icon-shell {
+      position: absolute;
+      transition: opacity 0.3s ease;
+    }
+
+    .menu-button .icon-close {
+      opacity: 0;
+    }
+
+    .menu-button.is-open .icon-menu {
+      opacity: 0;
+    }
+
+    .menu-button.is-open .icon-close {
+      opacity: 1;
+    }
+
+    .mobile-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 38;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+      background:
+        linear-gradient(180deg, rgba(10, 10, 10, 0.96), rgba(22, 22, 22, 0.96)),
+        radial-gradient(circle at top right, rgba(15, 98, 254, 0.2), transparent 28%);
+      color: white;
+      transform: translateX(100%);
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .mobile-menu.is-open {
+      transform: translateX(0);
+    }
+
+    .mobile-menu nav {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      text-align: center;
+    }
+
+    .mobile-menu a {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 7vw, 4rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+
+    .mobile-menu a:hover {
+      color: var(--lux-accent);
+    }
+
+    .mobile-menu-note {
+      position: absolute;
+      bottom: 24px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.42);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      padding-top: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .hero-backdrop {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .hero-backdrop::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(10, 10, 10, 0.24), rgba(10, 10, 10, 0.82)),
+        linear-gradient(110deg, rgba(15, 98, 254, 0.12) 0%, transparent 38%, rgba(177, 151, 119, 0.18) 100%);
+    }
+
+    .hero-image-main {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.42) contrast(1.04) saturate(0.9);
+      transform: scale(1.04);
+    }
+
+    .ambient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(34px);
+      opacity: 0.7;
+      mix-blend-mode: screen;
+      animation: drift 13s ease-in-out infinite alternate;
+    }
+
+    .orb-blue {
+      top: 10%;
+      right: -8rem;
+      width: 34rem;
+      height: 34rem;
+      background: radial-gradient(circle, rgba(15, 98, 254, 0.38), rgba(15, 98, 254, 0) 72%);
+    }
+
+    .orb-gold {
+      bottom: 6%;
+      left: -4rem;
+      width: 30rem;
+      height: 30rem;
+      background: radial-gradient(circle, rgba(177, 151, 119, 0.42), rgba(177, 151, 119, 0) 72%);
+      animation-duration: 16s;
+    }
+
+    .orb-white {
+      top: 28%;
+      left: 24%;
+      width: 20rem;
+      height: 20rem;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 72%);
+      animation-duration: 11s;
+    }
+
+    .hero-grid {
+      min-height: calc(100vh - 110px);
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
+      gap: 24px;
+      align-items: end;
+      padding-bottom: 44px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-copy,
+    .hero-rail {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-copy {
+      color: white;
+      padding: 48px 0 18px;
+    }
+
+    .section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .section-kicker::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--lux-accent);
+      box-shadow: 0 0 0 8px rgba(177, 151, 119, 0.12);
+      animation: pulseDot 2.5s ease-in-out infinite;
+    }
+
+    .hero-text-huge {
+      margin: 0;
+      font-size: clamp(4.5rem, 13vw, 11rem);
+      line-height: 0.82;
+      letter-spacing: -0.07em;
+      text-transform: uppercase;
+    }
+
+    .hero-title-l {
+      font-family: var(--font-display);
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.96);
+    }
+
+    .hero-title-r {
+      margin-left: clamp(24px, 9vw, 160px);
+      font-family: var(--font-digital);
+      font-weight: 600;
+    }
+
+    .clip-text-image {
+      background-image: url("aura.build_templates_digital_product_61/assets/photo-1451187580459-43490279c0_db6c9a5bcb5e.jpg");
+      background-size: cover;
+      background-position: center;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero-summary {
+      max-width: 50rem;
+      margin: 26px 0 0;
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      line-height: 1.75;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 26px;
+    }
+
+    .button-shell {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid transparent;
+    }
+
+    .button-shell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.18) 48%, transparent 100%);
+      transform: translateX(-120%);
+      transition: transform 0.8s ease;
+    }
+
+    .button-shell:hover::after {
+      transform: translateX(120%);
+    }
+
+    .luxury-button {
+      background: rgba(17, 17, 17, 0.84);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: var(--shadow-deep);
+    }
+
+    .luxury-button:hover {
+      background: var(--lux-accent);
+      color: var(--lux-dark);
+    }
+
+    .digital-button {
+      background: var(--dp-accent);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.16);
+      box-shadow: 0 18px 52px rgba(15, 98, 254, 0.35);
+    }
+
+    .digital-button:hover {
+      background: var(--dp-accent-strong);
+    }
+
+    .ghost-button {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(14px);
+    }
+
+    .ghost-button:hover {
+      color: var(--lux-accent);
+      border-color: rgba(177, 151, 119, 0.42);
+    }
+
+    .hero-meta-grid {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hero-meta-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-meta-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-family: var(--font-digital);
+      font-size: 1.35rem;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-meta-card span {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.66);
+    }
+
+    .hero-rail {
+      display: grid;
+      gap: 18px;
+      padding-bottom: 10px;
+    }
+
+    .hero-rail-card,
+    .section-panel,
+    .component-card,
+    .icon-wall,
+    .motion-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero-rail-card {
+      min-height: 400px;
+      padding: 26px;
+      background:
+        linear-gradient(180deg, rgba(10, 10, 10, 0.9), rgba(17, 17, 17, 0.76)),
+        radial-gradient(circle at top right, rgba(15, 98, 254, 0.3), transparent 34%);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+    }
+
+    .hero-rail-card::before,
+    .section-panel::before,
+    .component-card::before,
+    .icon-wall::before,
+    .motion-card::before {
+      content: "";
+      position: absolute;
+      inset: -40% auto auto -12%;
+      width: 14rem;
+      height: 14rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(177, 151, 119, 0.18), transparent 70%);
+      animation: auroraShift 12s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-rail-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -20% auto;
+      width: 16rem;
+      height: 16rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(15, 98, 254, 0.28), transparent 72%);
+      filter: blur(4px);
+      animation: auroraShift 15s ease-in-out infinite reverse;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-rail-card > *,
+    .section-panel > *,
+    .component-card > *,
+    .icon-wall > *,
+    .motion-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.84);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: fit-content;
+    }
+
+    .live-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #50d890;
+      box-shadow: 0 0 0 7px rgba(80, 216, 144, 0.14);
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+
+    .rail-head {
+      margin: 20px 0 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .rail-head h2,
+    .section-title,
+    .footer-copy h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3.75rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+    }
+
+    .rail-head p,
+    .section-description,
+    .footer-copy p {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .rail-specs,
+    .token-list,
+    .spec-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .spec-row strong {
+      font-family: var(--font-digital);
+      font-size: 13px;
+      letter-spacing: 0;
+    }
+
+    .rail-stat-grid,
+    .mini-stat-grid {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .rail-stat,
+    .mini-stat {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .rail-stat strong,
+    .mini-stat strong {
+      display: block;
+      margin-bottom: 8px;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      letter-spacing: -0.04em;
+    }
+
+    .rail-stat span,
+    .mini-stat span {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.7;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.62);
+    }
+
+    .hero-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .media-tile,
+    .surface-card,
+    .image-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: white;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .media-tile {
+      min-height: 252px;
+      color: white;
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.16);
+      animation: floatCard 8s ease-in-out infinite;
+    }
+
+    .media-tile:nth-child(2) {
+      animation-delay: -3s;
+      animation-duration: 9.5s;
+    }
+
+    .media-tile img,
+    .image-card img,
+    .motion-stage img,
+    .modal-media img,
+    .footer-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .media-tile::after,
+    .image-card::after,
+    .motion-stage::after,
+    .footer-panel::after,
+    .modal-media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(10, 10, 10, 0) 18%, rgba(10, 10, 10, 0.82) 100%),
+        linear-gradient(120deg, rgba(15, 98, 254, 0.18), transparent 44%, rgba(177, 151, 119, 0.22));
+    }
+
+    .tile-copy,
+    .image-card-copy {
+      position: absolute;
+      inset: auto 18px 18px 18px;
+      z-index: 2;
+      display: grid;
+      gap: 8px;
+    }
+
+    .tile-copy strong,
+    .image-card-copy strong {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+
+    .tile-copy span,
+    .image-card-copy span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .marquee-band {
+      position: relative;
+      z-index: 3;
+      overflow: hidden;
+      padding: 16px 0 22px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(10, 10, 10, 0.28);
+      backdrop-filter: blur(18px);
+    }
+
+    @keyframes ticker {
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .animate-ticker {
+      animation: ticker 22s linear infinite;
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      white-space: nowrap;
+    }
+
+    .marquee-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 14px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .marquee-pill i,
+    .marquee-pill iconify-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .section-shell {
+      position: relative;
+      padding: 108px 0;
+    }
+
+    .section-shell::before {
+      content: "";
+      position: absolute;
+      inset: 7% 4% auto;
+      height: 58%;
+      border-radius: 48px;
+      background:
+        radial-gradient(circle at top left, rgba(15, 98, 254, 0.08), transparent 38%),
+        radial-gradient(circle at bottom right, rgba(177, 151, 119, 0.12), transparent 30%);
+      filter: blur(2px);
+      animation: auroraShift 16s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    .section-intro {
+      display: grid;
+      grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 26px;
+    }
+
+    .section-index {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(17, 17, 17, 0.46);
+    }
+
+    .section-index::before {
+      content: "";
+      width: 34px;
+      height: 1px;
+      background: rgba(17, 17, 17, 0.24);
+    }
+
+    .section-description {
+      color: rgba(17, 17, 17, 0.68);
+    }
+
+    .section-panel {
+      padding: 30px;
+    }
+
+    .section-panel.dark {
+      background:
+        linear-gradient(180deg, rgba(10, 10, 10, 0.96), rgba(17, 17, 17, 0.9)),
+        radial-gradient(circle at top right, rgba(15, 98, 254, 0.25), transparent 34%);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow-deep);
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 20px;
+    }
+
+    .font-card-grid,
+    .palette-grid,
+    .component-grid,
+    .token-grid,
+    .motion-list {
+      display: grid;
+      gap: 18px;
+    }
+
+    .font-card-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .font-card {
+      position: relative;
+      min-height: 260px;
+      padding: 22px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 244, 244, 0.92)),
+        radial-gradient(circle at top right, rgba(15, 98, 254, 0.08), transparent 30%);
+      overflow: hidden;
+    }
+
+    .font-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -24px -40px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(177, 151, 119, 0.14), transparent 70%);
+    }
+
+    .font-card h3,
+    .component-card h3,
+    .palette-card h3,
+    .icon-usage h3,
+    .motion-card h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+
+    .font-card p,
+    .component-card p,
+    .palette-card p,
+    .icon-usage p,
+    .motion-card p {
+      margin: 0;
+      line-height: 1.75;
+      color: rgba(17, 17, 17, 0.66);
+    }
+
+    .font-card .sample {
+      margin-top: 18px;
+      font-size: clamp(2rem, 5vw, 3.35rem);
+      line-height: 0.92;
+      letter-spacing: -0.06em;
+      text-transform: uppercase;
+    }
+
+    .font-card.primary .sample {
+      font-family: var(--font-display);
+      font-weight: 500;
+    }
+
+    .font-card.digital .sample {
+      font-family: var(--font-digital);
+      font-weight: 600;
+    }
+
+    .font-card.mono .sample {
+      font-family: var(--font-mono);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      letter-spacing: -0.03em;
+      text-transform: none;
+    }
+
+    .loading-card {
+      height: 100%;
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(248, 248, 248, 0.92), rgba(255, 255, 255, 0.96));
+    }
+
+    .type-demo-stack {
+      display: grid;
+      gap: 8px;
+      height: 100%;
+    }
+
+    .type-line {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(17, 17, 17, 0.08);
+    }
+
+    .type-line:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .type-line strong {
+      font-family: var(--font-display);
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+    }
+
+    .type-line span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(17, 17, 17, 0.46);
+    }
+
+    .type-spec-grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .type-spec-card,
+    .usage-card,
+    .contrast-card {
+      padding: 22px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 18px 40px rgba(17, 17, 17, 0.05);
+    }
+
+    .type-spec-card .spec-preview {
+      margin: 0;
+      color: var(--dp-ink);
+    }
+
+    .type-spec-card h4,
+    .usage-card h4,
+    .contrast-card h4,
+    .footer-stat h4 {
+      margin: 0 0 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(17, 17, 17, 0.48);
+    }
+
+    .type-spec-card .spec-preview.caption {
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .image-card {
+      min-height: 100%;
+      color: white;
+    }
+
+    .image-card.copy-light .image-card-copy span,
+    .image-card.copy-light .image-card-copy strong {
+      color: white;
+    }
+
+    .palette-grid {
+      margin-top: 22px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .palette-card {
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.84);
+      box-shadow: 0 20px 50px rgba(17, 17, 17, 0.05);
+    }
+
+    .palette-swatch {
+      position: relative;
+      min-height: 170px;
+      padding: 18px;
+      border-radius: 22px;
+      color: white;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .palette-swatch::before {
+      content: "";
+      position: absolute;
+      inset: auto -30px -40px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 72%);
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+
+    .is-primary {
+      background: linear-gradient(145deg, #0f62fe, #0043ce);
+    }
+
+    .is-secondary {
+      background: linear-gradient(145deg, #111111, #0a0a0a);
+    }
+
+    .is-accent {
+      background: linear-gradient(145deg, #b19777, #8a7257);
+    }
+
+    .is-neutral {
+      color: var(--lux-ink);
+      background: linear-gradient(145deg, #ffffff, #f4f4f4);
+    }
+
+    .is-feedback {
+      background: linear-gradient(145deg, #2e8b57, #18553c);
+    }
+
+    .is-decorative {
+      background:
+        linear-gradient(145deg, rgba(15, 98, 254, 0.92), rgba(177, 151, 119, 0.9)),
+        url("aura.build_templates_digital_product_61/assets/photo-1518770660439-4636190af4_1f9f3c212978.avif") center/cover;
+      background-blend-mode: screen, normal;
+    }
+
+    .swatch-code {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 6px;
+    }
+
+    .swatch-code strong {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+
+    .swatch-code span,
+    .swatch-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .opacity-row,
+    .badge-row,
+    .button-row,
+    .mini-nav-links,
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .opacity-chip,
+    .badge,
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      border: 1px solid rgba(17, 17, 17, 0.08);
+    }
+
+    .chip,
+    .opacity-chip {
+      background: rgba(17, 17, 17, 0.04);
+      color: rgba(17, 17, 17, 0.58);
+    }
+
+    .token-grid {
+      margin-top: 22px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .token-card {
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 248, 248, 0.94));
+    }
+
+    .token-card h4 {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+    }
+
+    .token-card p {
+      margin: 0 0 16px;
+      line-height: 1.75;
+      color: rgba(17, 17, 17, 0.64);
+    }
+
+    .token-list {
+      margin-top: 0;
+    }
+
+    .token-list .spec-row {
+      border-bottom-color: rgba(17, 17, 17, 0.08);
+      color: rgba(17, 17, 17, 0.54);
+    }
+
+    .token-list .spec-row strong {
+      color: var(--lux-ink);
+    }
+
+    .component-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .component-card,
+    .motion-card,
+    .icon-usage {
+      padding: 24px;
+    }
+
+    .component-card.dark {
+      background:
+        linear-gradient(180deg, rgba(10, 10, 10, 0.98), rgba(17, 17, 17, 0.94)),
+        radial-gradient(circle at top right, rgba(177, 151, 119, 0.18), transparent 30%);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow-deep);
+    }
+
+    .component-card.dark p,
+    .component-card.dark .field label,
+    .component-card.dark .mini-nav-links a,
+    .component-card.dark .component-note,
+    .component-card.dark .spec-note,
+    .component-card.dark .brand-copy span {
+      color: rgba(255, 255, 255, 0.66);
+    }
+
+    .component-card.dark .chip,
+    .component-card.dark .badge {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.78);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .component-note,
+    .spec-note {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.8;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(17, 17, 17, 0.48);
+    }
+
+    .button-row {
+      margin: 18px 0 22px;
+    }
+
+    .button-shell[disabled] {
+      opacity: 0.46;
+      cursor: not-allowed;
+      pointer-events: none;
+      box-shadow: none;
+    }
+
+    .field-group {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(17, 17, 17, 0.52);
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      padding: 15px 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(17, 17, 17, 0.12);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--lux-ink);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      outline: none;
+      border-color: rgba(15, 98, 254, 0.48);
+      box-shadow: 0 0 0 5px rgba(15, 98, 254, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .field textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .navbar-demo {
+      margin-top: 18px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mini-nav-links a {
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.08);
+      transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+    }
+
+    .mini-nav-links a:hover {
+      transform: translateY(-2px);
+      background: rgba(177, 151, 119, 0.18);
+      color: white;
+    }
+
+    .surface-card {
+      min-height: 220px;
+      padding: 20px;
+      display: grid;
+      align-content: end;
+      gap: 10px;
+      color: var(--lux-ink);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.96)),
+        url("aura.build_templates_digital_product_61/assets/photo-1600607686527-6fb8860907_2bf47c28ce3e.avif") center/cover;
+    }
+
+    .surface-card.alt {
+      color: white;
+      background:
+        linear-gradient(180deg, rgba(10, 10, 10, 0.08), rgba(10, 10, 10, 0.74)),
+        url("aura.build_templates_luxury_real_estate_8/assets/photo-1600607687939-ce8a6c2511_cf259dfa4192.avif") center/cover;
+    }
+
+    .surface-card strong {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+
+    .surface-card span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .tooltip-demo {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .tooltip-anchor {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .tooltip-bubble {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 12px);
+      transform: translate(-50%, 8px);
+      min-width: 180px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(10, 10, 10, 0.94);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.7;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease, transform 0.28s ease;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    .tooltip-anchor:hover .tooltip-bubble,
+    .tooltip-anchor:focus-within .tooltip-bubble {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .badge {
+      background: rgba(17, 17, 17, 0.06);
+      color: rgba(17, 17, 17, 0.7);
+    }
+
+    .badge.primary {
+      background: rgba(15, 98, 254, 0.12);
+      color: var(--dp-accent);
+    }
+
+    .badge.luxury {
+      background: rgba(177, 151, 119, 0.12);
+      color: #8a7257;
+    }
+
+    .badge.positive {
+      background: rgba(46, 139, 87, 0.12);
+      color: #256c46;
+    }
+
+    .icon-showcase {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: 18px;
+    }
+
+    .icon-usage {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .icon-wall {
+      padding: 24px;
+    }
+
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .icon-tile {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(17, 17, 17, 0.04);
+      border: 1px solid rgba(17, 17, 17, 0.06);
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    }
+
+    .icon-tile:hover {
+      transform: translateY(-4px);
+      border-color: rgba(15, 98, 254, 0.18);
+      box-shadow: 0 18px 38px rgba(15, 98, 254, 0.08);
+    }
+
+    .icon-tile .icon-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, rgba(15, 98, 254, 0.12), rgba(177, 151, 119, 0.14));
+    }
+
+    .icon-tile svg,
+    .icon-badge iconify-icon {
+      width: 22px;
+      height: 22px;
+    }
+
+    .icon-tile strong {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+    }
+
+    .icon-tile span {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(17, 17, 17, 0.48);
+    }
+
+    .iconify-ribbon {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .iconify-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(17, 17, 17, 0.04);
+      border: 1px solid rgba(17, 17, 17, 0.08);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .iconify-pill iconify-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .motion-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+      gap: 18px;
+    }
+
+    .motion-stage {
+      position: relative;
+      min-height: 100%;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow-deep);
+      background: #0a0a0a;
+    }
+
+    .motion-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 26px;
+      color: white;
+    }
+
+    .motion-overlay .chip {
+      width: fit-content;
+      color: rgba(255, 255, 255, 0.82);
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .motion-overlay h3 {
+      margin: 0;
+      max-width: 18rem;
+      font-family: var(--font-display);
+      font-size: clamp(2.1rem, 4vw, 3.3rem);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+    }
+
+    .motion-overlay p {
+      margin: 0;
+      max-width: 24rem;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.76);
+    }
+
+    .floating-card {
+      position: absolute;
+      z-index: 3;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(10, 10, 10, 0.52);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+      animation: floatCard 9s ease-in-out infinite;
+    }
+
+    .floating-card.left {
+      left: 24px;
+      top: 24px;
+    }
+
+    .floating-card.right {
+      right: 24px;
+      bottom: 24px;
+      animation-delay: -3.4s;
+    }
+
+    .floating-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+    }
+
+    .floating-card span {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.66);
+    }
+
+    .motion-list {
+      grid-template-columns: 1fr;
+    }
+
+    .motion-item {
+      padding: 18px 20px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.82);
+      display: grid;
+      gap: 10px;
+    }
+
+    .motion-item strong {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+    }
+
+    .motion-item p {
+      margin: 0;
+      line-height: 1.75;
+      color: rgba(17, 17, 17, 0.66);
+    }
+
+    .motion-item span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(17, 17, 17, 0.46);
+    }
+
+    .footer-shell {
+      padding: 0 0 64px;
+    }
+
+    .footer-panel {
+      position: relative;
+      min-height: 460px;
+      overflow: hidden;
+      border-radius: 36px;
+      background: var(--lux-dark);
+      box-shadow: var(--shadow-deep);
+    }
+
+    .footer-bg,
+    .modal-media {
+      position: absolute;
+      inset: 0;
+    }
+
+    .footer-content {
+      position: relative;
+      z-index: 2;
+      min-height: 460px;
+      padding: 42px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+      gap: 22px;
+      align-items: end;
+      color: white;
+    }
+
+    .footer-copy {
+      display: grid;
+      gap: 18px;
+    }
+
+    .footer-copy p {
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .footer-stat {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(14px);
+    }
+
+    .footer-stat p {
+      margin: 0;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.74);
+    }
+
+    .demo-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(10, 10, 10, 0.72);
+      backdrop-filter: blur(14px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .demo-modal.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .demo-modal-panel {
+      position: relative;
+      width: min(980px, 100%);
+      display: grid;
+      grid-template-columns: minmax(280px, 0.88fr) minmax(0, 1.12fr);
+      overflow: hidden;
+      border-radius: 34px;
+      background: white;
+      box-shadow: var(--shadow-deep);
+    }
+
+    .modal-copy {
+      position: relative;
+      z-index: 2;
+      padding: 34px;
+      display: grid;
+      gap: 18px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 244, 244, 0.96)),
+        radial-gradient(circle at top right, rgba(15, 98, 254, 0.08), transparent 30%);
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 4;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(17, 17, 17, 0.08);
+      color: var(--lux-ink);
+    }
+
+    .close-modal:hover {
+      background: rgba(15, 98, 254, 0.12);
+      color: var(--dp-accent);
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes drift {
+      0% {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+
+      100% {
+        transform: translate3d(26px, -22px, 0) scale(1.08);
+      }
+    }
+
+    @keyframes pulseDot {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.2);
+      }
+    }
+
+    @keyframes floatCard {
+      0%,
+      100% {
+        transform: translateY(0) rotate(0.001deg);
+      }
+
+      50% {
+        transform: translateY(-10px) rotate(-1deg);
+      }
+    }
+
+    @keyframes auroraShift {
+      0% {
+        transform: translate3d(-12px, 0, 0) scale(1);
+      }
+
+      100% {
+        transform: translate3d(20px, 16px, 0) scale(1.12);
+      }
+    }
+
+    @media (max-width: 1120px) {
+      .hero-grid,
+      .panel-grid,
+      .icon-showcase,
+      .motion-grid,
+      .footer-content {
+        grid-template-columns: 1fr;
+      }
+
+      .font-card-grid,
+      .palette-grid,
+      .token-grid,
+      .component-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hero-rail {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hero-rail-card {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .shell {
+        width: min(100% - 24px, 1280px);
+      }
+
+      .nav-links,
+      .nav-cta {
+        display: none;
+      }
+
+      .menu-button {
+        display: inline-flex;
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 96px;
+      }
+
+      .hero-grid,
+      .hero-rail,
+      .hero-preview-grid,
+      .section-intro,
+      .font-card-grid,
+      .type-spec-grid,
+      .palette-grid,
+      .token-grid,
+      .component-grid,
+      .icon-grid,
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-meta-grid,
+      .rail-stat-grid,
+      .mini-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .section-shell {
+        padding: 84px 0;
+      }
+
+      .section-panel,
+      .component-card,
+      .motion-card,
+      .icon-wall,
+      .icon-usage,
+      .modal-copy {
+        padding: 22px;
+      }
+
+      .demo-modal-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-media {
+        position: relative;
+        min-height: 260px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hero-text-huge {
+        font-size: clamp(3.2rem, 17vw, 5rem);
+      }
+
+      .hero-title-r {
+        margin-left: 0;
+      }
+
+      .hero-actions,
+      .button-row,
+      .modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .button-shell,
+      .nav-cta {
+        justify-content: center;
+      }
+
+      .hero-meta-grid,
+      .rail-stat-grid,
+      .mini-stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .navbar-demo {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .footer-content {
+        padding: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <nav>
+      <a href="#hero">Hero</a>
+      <a href="#typography">Type</a>
+      <a href="#colors">Color</a>
+      <a href="#components">UI</a>
+      <a href="#icons">Icons</a>
+      <a href="#motion">Motion</a>
+    </nav>
+    <div class="mobile-menu-note">Imported assets. Shared motion. Live tokens.</div>
+  </div>
+
+  <div class="wrapper">
+    <header class="top-nav">
+      <div class="shell">
+        <div class="nav-inner">
+          <a class="brand-link" href="#hero">
+            <span class="brand-symbol">DS</span>
+            <span class="brand-copy">
+              <strong>Aura Hybrid</strong>
+              <span>Design System Showcase</span>
+            </span>
+          </a>
+
+          <nav class="nav-links" aria-label="Primary">
+            <a href="#hero">Hero</a>
+            <a href="#typography">Type</a>
+            <a href="#colors">Color</a>
+            <a href="#components">Components</a>
+            <a href="#icons">Icons</a>
+            <a href="#motion">Motion</a>
+          </nav>
+
+          <a class="nav-cta" href="#components">
+            Inspect UI
+            <i data-lucide="arrow-up-right"></i>
+          </a>
+
+          <button class="menu-button" id="menuToggle" type="button" aria-expanded="false" aria-controls="mobileMenu">
+            <span class="sr-only">Open menu</span>
+            <i class="icon-shell icon-menu" data-lucide="menu"></i>
+            <i class="icon-shell icon-close" data-lucide="x"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="hero">
+        <div class="hero-backdrop">
+          <img class="hero-image-main" src="aura.build_templates_luxury_real_estate_8/assets/photo-1618221195710-dd6b41faae_aa36ad505289.avif" alt="Luxury interior backdrop" />
+          <div class="grid-lines" aria-hidden="true" style="position:absolute; inset:0; opacity:0.14;"></div>
+          <div class="ambient-orb orb-blue" aria-hidden="true"></div>
+          <div class="ambient-orb orb-gold" aria-hidden="true"></div>
+          <div class="ambient-orb orb-white" aria-hidden="true"></div>
+        </div>
+
+        <div class="shell hero-grid">
+          <div class="hero-copy reveal">
+            <div class="section-kicker">Luxury spatial language + digital system logic</div>
+            <h1 class="hero-text-huge">
+              <span class="hero-title-l display-font">AURA</span>
+              <span class="hero-title-r clip-text-image">SYSTEM</span>
+            </h1>
+            <p class="hero-summary">
+              A single demonstration page that imports the original template CSS and JS, keeps the shared visual grammar intact,
+              and exposes typography, color, UI components, icons, and motion as one working reference surface.
+            </p>
+
+            <div class="hero-actions">
+              <a class="button-shell luxury-button" href="#typography">
+                Explore type
+                <i data-lucide="type"></i>
+              </a>
+              <a class="button-shell digital-button" href="#colors">
+                Inspect tokens
+                <i data-lucide="swatch-book"></i>
+              </a>
+              <button class="button-shell ghost-button" type="button" data-modal-open>
+                Open modal spec
+                <i data-lucide="panel-top-open"></i>
+              </button>
+            </div>
+
+            <div class="hero-meta-grid">
+              <div class="hero-meta-card">
+                <strong>09</strong>
+                <span>Core text roles documented</span>
+              </div>
+              <div class="hero-meta-card">
+                <strong>06</strong>
+                <span>Semantic color families</span>
+              </div>
+              <div class="hero-meta-card">
+                <strong>08</strong>
+                <span>Component specs in view</span>
+              </div>
+              <div class="hero-meta-card">
+                <strong>GSAP</strong>
+                <span>Scroll reveal + parallax active</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-rail">
+            <article class="hero-rail-card reveal">
+              <div class="eyebrow">
+                <span class="live-dot"></span>
+                Live reference surface
+              </div>
+              <div class="rail-head">
+                <img class="brand-logo" src="aura.build_templates_luxury_real_estate_8/assets/ED-Logo-horizontal_ez5rg2_57deed770ac0.png" alt="Existing brand asset" />
+                <h2>Two imported kits, one polished language.</h2>
+                <p>
+                  Space Grotesk and Inter drive premium narrative UI. IBM Plex Sans and IBM Plex Mono keep the system technical,
+                  precise, and inspectable for product documentation.
+                </p>
+              </div>
+
+              <div class="rail-specs">
+                <div class="spec-row">
+                  <span>Imported CSS</span>
+                  <strong>2 stylesheets + Google font stacks</strong>
+                </div>
+                <div class="spec-row">
+                  <span>Imported JS</span>
+                  <strong>Lucide, Iconify, GSAP, ScrollTrigger</strong>
+                </div>
+                <div class="spec-row">
+                  <span>Pattern mix</span>
+                  <strong>Luxury editorial + digital dashboard</strong>
+                </div>
+              </div>
+
+              <div class="rail-stat-grid">
+                <div class="rail-stat">
+                  <strong>AAA</strong>
+                  <span>Dark text on light surfaces and white on dark shells</span>
+                </div>
+                <div class="rail-stat">
+                  <strong>AA</strong>
+                  <span>Primary blue on light UI surfaces for actionable states</span>
+                </div>
+                <div class="rail-stat">
+                  <strong>03</strong>
+                  <span>Font families surfaced with explicit weight ranges</span>
+                </div>
+                <div class="rail-stat">
+                  <strong>100%</strong>
+                  <span>Existing assets reused from the attached templates</span>
+                </div>
+              </div>
+            </article>
+
+            <div class="hero-preview-grid">
+              <article class="media-tile reveal">
+                <img src="aura.build_templates_digital_product_61/assets/photo-1600607686527-6fb8860907_2bf47c28ce3e.avif" alt="Architectural surface used in cards and section blocks" />
+                <div class="tile-copy">
+                  <span>Surface preview</span>
+                  <strong>Cards / sections / layered depth</strong>
+                </div>
+              </article>
+
+              <article class="media-tile reveal">
+                <img src="aura.build_templates_digital_product_61/assets/photo-1451187580459-43490279c0_db6c9a5bcb5e.jpg" alt="Digital image used as texture and clip background" />
+                <div class="tile-copy">
+                  <span>Visual texture</span>
+                  <strong>Hero typography / ambient imagery</strong>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <div class="marquee-band">
+          <div class="marquee-track animate-ticker">
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Typography scale</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Color tokens</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Motion choreography</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Buttons and states</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Cards and sections</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Navbar patterns</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Modal behavior</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Icon sizing</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Typography scale</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Color tokens</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Motion choreography</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Buttons and states</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Cards and sections</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Navbar patterns</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Modal behavior</span>
+            <span class="marquee-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>Icon sizing</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="stack-section section-shell" id="typography">
+        <div class="shell">
+          <div class="section-intro reveal">
+            <div>
+              <div class="section-index">01 / Typography</div>
+              <h2 class="section-title">Families, loading strategy, and exact role specs.</h2>
+            </div>
+            <p class="section-description">
+              The page preserves the original font delivery pattern from the attached files: Google Fonts preconnect, imported
+              stylesheet bundles, and a split between editorial display type, versatile UI sans, and monospace diagnostics.
+            </p>
+          </div>
+
+          <div class="section-panel reveal">
+            <div class="panel-grid">
+              <div class="font-card-grid">
+                <article class="font-card primary">
+                  <h3>Primary Display</h3>
+                  <p>Space Grotesk is used for headlines, section titles, and compact premium statements.</p>
+                  <div class="sample">Aura</div>
+                  <div class="pill-row">
+                    <span class="chip">family / Space Grotesk</span>
+                    <span class="chip">weights / 300-600</span>
+                    <span class="chip">source / imported CSS</span>
+                  </div>
+                </article>
+
+                <article class="font-card digital">
+                  <h3>System Sans</h3>
+                  <p>IBM Plex Sans covers technical headings, dense UI labels, and clear information blocks.</p>
+                  <div class="sample">Signal</div>
+                  <div class="pill-row">
+                    <span class="chip">family / IBM Plex Sans</span>
+                    <span class="chip">weights / 300-600</span>
+                    <span class="chip">mode / product docs</span>
+                  </div>
+                </article>
+
+                <article class="font-card mono">
+                  <h3>Monospace</h3>
+                  <p>IBM Plex Mono annotates specs, tokens, and meta labels with a precise technical rhythm.</p>
+                  <div class="sample">grid_mode = live</div>
+                  <div class="pill-row">
+                    <span class="chip">family / IBM Plex Mono</span>
+                    <span class="chip">weights / 300-500</span>
+                    <span class="chip">usage / labels + code</span>
+                  </div>
+                </article>
+              </div>
+
+              <article class="loading-card">
+                <div class="type-demo-stack">
+                  <div class="type-line">
+                    <strong style="font-size:4.5rem; line-height:0.82;">H1</strong>
+                    <span>Space Grotesk / 500 / 72px / 82% / -0.07em / uppercase</span>
+                  </div>
+                  <div class="type-line">
+                    <strong style="font-size:3.75rem; line-height:0.9;">H2</strong>
+                    <span>Space Grotesk / 500 / 60px / 90% / -0.05em / uppercase</span>
+                  </div>
+                  <div class="type-line">
+                    <strong style="font-size:3rem; line-height:0.94;">H3</strong>
+                    <span>Space Grotesk / 500 / 48px / 94% / -0.05em / uppercase</span>
+                  </div>
+                  <div class="type-line">
+                    <strong style="font-size:2.125rem; line-height:1;">H4</strong>
+                    <span>IBM Plex Sans / 600 / 34px / 100% / -0.03em / uppercase</span>
+                  </div>
+                  <div class="type-line">
+                    <strong style="font-size:1.5rem; line-height:1.1;">H5</strong>
+                    <span>IBM Plex Sans / 600 / 24px / 110% / -0.02em / none</span>
+                  </div>
+                  <div class="type-line">
+                    <strong style="font-size:1.125rem; line-height:1.2;">H6</strong>
+                    <span>Inter / 600 / 18px / 120% / -0.01em / uppercase</span>
+                  </div>
+                  <div class="type-line">
+                    <strong style="font-size:1.35rem; line-height:1.75; font-family:var(--font-body);">Body LG</strong>
+                    <span>Inter / 400 / 21.6px / 175% / 0 / none</span>
+                  </div>
+                  <div class="type-line">
+                    <strong style="font-size:1rem; line-height:1.8; font-family:var(--font-body);">Body</strong>
+                    <span>Inter / 400 / 16px / 180% / 0 / none</span>
+                  </div>
+                  <div class="type-line">
+                    <strong style="font-size:0.875rem; line-height:1.7; font-family:var(--font-body);">Body SM</strong>
+                    <span>Inter / 400 / 14px / 170% / 0 / none</span>
+                  </div>
+                  <div class="type-line">
+                    <strong style="font-size:0.75rem; line-height:1.6; font-family:var(--font-mono); letter-spacing:0.18em;">Label</strong>
+                    <span>IBM Plex Mono / 400 / 12px / 160% / 0.18em / uppercase</span>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div class="type-spec-grid">
+              <article class="type-spec-card">
+                <h4>H1</h4>
+                <p class="spec-preview display-font" style="font-size:4.5rem; line-height:0.82; letter-spacing:-0.07em; text-transform:uppercase; font-weight:500;">Design Hero</p>
+                <div class="spec-list">
+                  <div class="spec-row"><span>font-family</span><strong>Space Grotesk</strong></div>
+                  <div class="spec-row"><span>font-weight</span><strong>500</strong></div>
+                  <div class="spec-row"><span>size / line</span><strong>72px / 82%</strong></div>
+                  <div class="spec-row"><span>tracking / transform</span><strong>-0.07em / uppercase</strong></div>
+                </div>
+              </article>
+
+              <article class="type-spec-card">
+                <h4>H2</h4>
+                <p class="spec-preview display-font" style="font-size:3.75rem; line-height:0.9; letter-spacing:-0.05em; text-transform:uppercase; font-weight:500;">Section Headline</p>
+                <div class="spec-list">
+                  <div class="spec-row"><span>font-family</span><strong>Space Grotesk</strong></div>
+                  <div class="spec-row"><span>font-weight</span><strong>500</strong></div>
+                  <div class="spec-row"><span>size / line</span><strong>60px / 90%</strong></div>
+                  <div class="spec-row"><span>tracking / transform</span><strong>-0.05em / uppercase</strong></div>
+                </div>
+              </article>
+
+              <article class="type-spec-card">
+                <h4>H3</h4>
+                <p class="spec-preview display-font" style="font-size:3rem; line-height:0.94; letter-spacing:-0.05em; text-transform:uppercase; font-weight:500;">Panel Leader</p>
+                <div class="spec-list">
+                  <div class="spec-row"><span>font-family</span><strong>Space Grotesk</strong></div>
+                  <div class="spec-row"><span>font-weight</span><strong>500</strong></div>
+                  <div class="spec-row"><span>size / line</span><strong>48px / 94%</strong></div>
+                  <div class="spec-row"><span>tracking / transform</span><strong>-0.05em / uppercase</strong></div>
+                </div>
+              </article>
+
+              <article class="type-spec-card">
+                <h4>H4</h4>
+                <p class="spec-preview" style="font-family:var(--font-digital); font-size:2.125rem; line-height:1; letter-spacing:-0.03em; text-transform:uppercase; font-weight:600;">System Cluster</p>
+                <div class="spec-list">
+                  <div class="spec-row"><span>font-family</span><strong>IBM Plex Sans</strong></div>
+                  <div class="spec-row"><span>font-weight</span><strong>600</strong></div>
+                  <div class="spec-row"><span>size / line</span><strong>34px / 100%</strong></div>
+                  <div class="spec-row"><span>tracking / transform</span><strong>-0.03em / uppercase</strong></div>
+                </div>
+              </article>
+
+              <article class="type-spec-card">
+                <h4>H5</h4>
+                <p class="spec-preview" style="font-family:var(--font-digital); font-size:1.5rem; line-height:1.1; letter-spacing:-0.02em; font-weight:600;">Component Header</p>
+                <div class="spec-list">
+                  <div class="spec-row"><span>font-family</span><strong>IBM Plex Sans</strong></div>
+                  <div class="spec-row"><span>font-weight</span><strong>600</strong></div>
+                  <div class="spec-row"><span>size / line</span><strong>24px / 110%</strong></div>
+                  <div class="spec-row"><span>tracking / transform</span><strong>-0.02em / none</strong></div>
+                </div>
+              </article>
+
+              <article class="type-spec-card">
+                <h4>H6</h4>
+                <p class="spec-preview" style="font-family:var(--font-body); font-size:1.125rem; line-height:1.2; letter-spacing:-0.01em; text-transform:uppercase; font-weight:600;">Utility Heading</p>
+                <div class="spec-list">
+                  <div class="spec-row"><span>font-family</span><strong>Inter</strong></div>
+                  <div class="spec-row"><span>font-weight</span><strong>600</strong></div>
+                  <div class="spec-row"><span>size / line</span><strong>18px / 120%</strong></div>
+                  <div class="spec-row"><span>tracking / transform</span><strong>-0.01em / uppercase</strong></div>
+                </div>
+              </article>
+
+              <article class="type-spec-card">
+                <h4>Body LG</h4>
+                <p class="spec-preview" style="font-family:var(--font-body); font-size:1.35rem; line-height:1.75; font-weight:400;">Long-form statements and hero summaries carry more air and softer pacing.</p>
+                <div class="spec-list">
+                  <div class="spec-row"><span>font-family</span><strong>Inter</strong></div>
+                  <div class="spec-row"><span>font-weight</span><strong>400</strong></div>
+                  <div class="spec-row"><span>size / line</span><strong>21.6px / 175%</strong></div>
+                  <div class="spec-row"><span>tracking / transform</span><strong>0 / none</strong></div>
+                </div>
+              </article>
+
+              <article class="type-spec-card">
+                <h4>Body / Body SM</h4>
+                <p class="spec-preview" style="font-family:var(--font-body); font-size:1rem; line-height:1.8; font-weight:400;">Default body supports content blocks. Small body compresses meta copy without losing clarity.</p>
+                <div class="spec-list">
+                  <div class="spec-row"><span>body</span><strong>Inter / 400 / 16px / 180%</strong></div>
+                  <div class="spec-row"><span>body-sm</span><strong>Inter / 400 / 14px / 170%</strong></div>
+                  <div class="spec-row"><span>tracking</span><strong>0</strong></div>
+                  <div class="spec-row"><span>transform</span><strong>none</strong></div>
+                </div>
+              </article>
+
+              <article class="type-spec-card">
+                <h4>Caption / Label / Helper</h4>
+                <p class="spec-preview caption">Spec labels, helper text, and token annotations live in uppercase mono.</p>
+                <div class="spec-list">
+                  <div class="spec-row"><span>caption</span><strong>IBM Plex Mono / 12px / 160%</strong></div>
+                  <div class="spec-row"><span>label</span><strong>IBM Plex Mono / 11px / 160%</strong></div>
+                  <div class="spec-row"><span>helper</span><strong>Inter / 13px / 170%</strong></div>
+                  <div class="spec-row"><span>tracking / transform</span><strong>0.12em-0.18em / uppercase</strong></div>
+                </div>
+              </article>
+
+              <article class="image-card copy-light">
+                <img src="aura.build_templates_luxury_real_estate_8/assets/photo-1613545325278-f24b0cae12_6b2bcda4b2ce.avif" alt="Architectural image used as typography section asset" />
+                <div class="image-card-copy">
+                  <span>Visual reference</span>
+                  <strong>Editorial scale meets product precision.</strong>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stack-section section-shell" id="colors">
+        <div class="shell">
+          <div class="section-intro reveal">
+            <div>
+              <div class="section-index">02 / Color System</div>
+              <h2 class="section-title">Semantic tokens, opacity variants, and contrast intent.</h2>
+            </div>
+            <p class="section-description">
+              The palette merges quiet luxury neutrals with product blue. Each token below records HEX, RGB, HSL, intended usage,
+              opacity behavior, and where it belongs in text, background, border, hover, active, or disabled states.
+            </p>
+          </div>
+
+          <div class="section-panel reveal">
+            <div class="panel-grid">
+              <article class="image-card copy-light">
+                <img src="aura.build_templates_digital_product_61/assets/photo-1518770660439-4636190af4_1f9f3c212978.avif" alt="Digital circuitry image used as color system asset" />
+                <div class="image-card-copy">
+                  <span>Gradient participation</span>
+                  <strong>Blue carries action. Gold softens the system. Neutrals stabilize everything.</strong>
+                </div>
+              </article>
+
+              <article class="usage-card">
+                <h4>Context Rules</h4>
+                <div class="token-list">
+                  <div class="spec-row"><span>text</span><strong>#111111 and #161616 on light surfaces</strong></div>
+                  <div class="spec-row"><span>background</span><strong>#F8F8F8, #F4F4F4, white, and dark shells</strong></div>
+                  <div class="spec-row"><span>border</span><strong>Low alpha neutrals for soft separation</strong></div>
+                  <div class="spec-row"><span>hover / active</span><strong>#0F62FE to #0043CE, gold for luxury emphasis</strong></div>
+                  <div class="spec-row"><span>disabled</span><strong>Opacity reduced to 46%-60% with no shadow</strong></div>
+                  <div class="spec-row"><span>contrast intent</span><strong>AAA for core text, AA for primary action blue</strong></div>
+                </div>
+              </article>
+            </div>
+
+            <div class="palette-grid">
+              <article class="palette-card">
+                <div class="palette-swatch is-primary">
+                  <div class="swatch-tag">Primary / Action</div>
+                  <div class="swatch-code">
+                    <strong>#0F62FE</strong>
+                    <span>rgb(15, 98, 254)</span>
+                    <span>hsl(219, 99%, 53%)</span>
+                  </div>
+                </div>
+                <p>Used for primary CTA, focus rings, active indicators, and digital emphasis. AA on light surfaces.</p>
+                <div class="opacity-row">
+                  <span class="opacity-chip">100%</span>
+                  <span class="opacity-chip">60%</span>
+                  <span class="opacity-chip">12%</span>
+                </div>
+              </article>
+
+              <article class="palette-card">
+                <div class="palette-swatch is-secondary">
+                  <div class="swatch-tag">Secondary / Ink</div>
+                  <div class="swatch-code">
+                    <strong>#111111</strong>
+                    <span>rgb(17, 17, 17)</span>
+                    <span>hsl(0, 0%, 7%)</span>
+                  </div>
+                </div>
+                <p>Primary text, dark shells, strong nav CTA, and high-contrast backgrounds. AAA on light surfaces.</p>
+                <div class="opacity-row">
+                  <span class="opacity-chip">100%</span>
+                  <span class="opacity-chip">72%</span>
+                  <span class="opacity-chip">8%</span>
+                </div>
+              </article>
+
+              <article class="palette-card">
+                <div class="palette-swatch is-accent">
+                  <div class="swatch-tag">Accent / Luxury</div>
+                  <div class="swatch-code">
+                    <strong>#B19777</strong>
+                    <span>rgb(177, 151, 119)</span>
+                    <span>hsl(33, 27%, 58%)</span>
+                  </div>
+                </div>
+                <p>Decorative focus, premium hovers, hero signal dots, and gradient endpoints. Strong on dark surfaces.</p>
+                <div class="opacity-row">
+                  <span class="opacity-chip">100%</span>
+                  <span class="opacity-chip">42%</span>
+                  <span class="opacity-chip">12%</span>
+                </div>
+              </article>
+
+              <article class="palette-card">
+                <div class="palette-swatch is-neutral">
+                  <div class="swatch-tag">Neutral / Surface</div>
+                  <div class="swatch-code">
+                    <strong>#F8F8F8</strong>
+                    <span>rgb(248, 248, 248)</span>
+                    <span>hsl(0, 0%, 97%)</span>
+                  </div>
+                </div>
+                <p>Primary background plane, content shell, and soft card base paired with thin borders.</p>
+                <div class="opacity-row">
+                  <span class="opacity-chip">100%</span>
+                  <span class="opacity-chip">92%</span>
+                  <span class="opacity-chip">72%</span>
+                </div>
+              </article>
+
+              <article class="palette-card">
+                <div class="palette-swatch is-feedback">
+                  <div class="swatch-tag">Feedback / Positive</div>
+                  <div class="swatch-code">
+                    <strong>#2E8B57</strong>
+                    <span>rgb(46, 139, 87)</span>
+                    <span>hsl(146, 50%, 36%)</span>
+                  </div>
+                </div>
+                <p>Used sparingly for live status, health indicators, and positive validation inside diagnostic UI.</p>
+                <div class="opacity-row">
+                  <span class="opacity-chip">100%</span>
+                  <span class="opacity-chip">32%</span>
+                  <span class="opacity-chip">12%</span>
+                </div>
+              </article>
+
+              <article class="palette-card">
+                <div class="palette-swatch is-decorative">
+                  <div class="swatch-tag">Decorative / Gradient</div>
+                  <div class="swatch-code">
+                    <strong>Blue + Gold</strong>
+                    <span>blend for hero and animated glows</span>
+                    <span>texture overlay via digital asset</span>
+                  </div>
+                </div>
+                <p>Reserved for ambient backgrounds, section glow, clip effects, and premium motion surfaces.</p>
+                <div class="opacity-row">
+                  <span class="opacity-chip">18%</span>
+                  <span class="opacity-chip">28%</span>
+                  <span class="opacity-chip">screen blend</span>
+                </div>
+              </article>
+            </div>
+
+            <div class="token-grid">
+              <article class="token-card">
+                <h4>Text and Background</h4>
+                <p>Keep strong text on pale surfaces and invert to white on dark shells. Gold is decorative, not default body text on white.</p>
+                <div class="token-list">
+                  <div class="spec-row"><span>text default</span><strong>#111111 / #161616</strong></div>
+                  <div class="spec-row"><span>background default</span><strong>#F8F8F8 / #F4F4F4 / #FFFFFF</strong></div>
+                  <div class="spec-row"><span>inverse</span><strong>#FFFFFF on #0A0A0A</strong></div>
+                </div>
+              </article>
+
+              <article class="token-card">
+                <h4>Border and States</h4>
+                <p>Use low-alpha borders for resting states, blue for focus and active, gold for luxury hover, and opacity reduction for disabled components.</p>
+                <div class="token-list">
+                  <div class="spec-row"><span>border</span><strong>rgba(17,17,17,0.08)</strong></div>
+                  <div class="spec-row"><span>hover</span><strong>gold accent or blue tint</strong></div>
+                  <div class="spec-row"><span>active</span><strong>#0043CE</strong></div>
+                  <div class="spec-row"><span>disabled</span><strong>46%-60% opacity</strong></div>
+                </div>
+              </article>
+
+              <article class="token-card">
+                <h4>Contrast Intent</h4>
+                <p>The imported palette comfortably supports high-contrast editorial layouts while keeping interactive blue within acceptable accessibility targets.</p>
+                <div class="token-list">
+                  <div class="spec-row"><span>#111111 on #F8F8F8</span><strong>17.78:1 / AAA</strong></div>
+                  <div class="spec-row"><span>#FFFFFF on #0A0A0A</span><strong>19.80:1 / AAA</strong></div>
+                  <div class="spec-row"><span>#B19777 on #0A0A0A</span><strong>7.13:1 / AAA large</strong></div>
+                  <div class="spec-row"><span>#0F62FE on #F4F4F4</span><strong>4.55:1 / AA</strong></div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stack-section section-shell" id="components">
+        <div class="shell">
+          <div class="section-intro reveal">
+            <div>
+              <div class="section-index">03 / UI Components</div>
+              <h2 class="section-title">Buttons, inputs, cards, navbars, sections, modals, badges, and tooltips.</h2>
+            </div>
+            <p class="section-description">
+              Every block below stays inside the existing design vocabulary: soft luxury radii, mono labels, interactive blue states,
+              ambient glow, and hover transitions reused across buttons, cards, overlays, and navigation.
+            </p>
+          </div>
+
+          <div class="component-grid">
+            <article class="component-card reveal">
+              <h3>Buttons and Badges</h3>
+              <p>Primary, luxury, and ghost actions share rounded shells, hover lift, and a passing sheen animation.</p>
+
+              <div class="button-row">
+                <button class="button-shell digital-button" type="button">
+                  Primary
+                  <i data-lucide="arrow-right"></i>
+                </button>
+                <button class="button-shell luxury-button" type="button">
+                  Luxury
+                  <i data-lucide="gem"></i>
+                </button>
+                <button class="button-shell ghost-button" type="button">
+                  Ghost
+                  <i data-lucide="sparkles"></i>
+                </button>
+                <button class="button-shell digital-button" type="button" disabled>
+                  Disabled
+                  <i data-lucide="minus"></i>
+                </button>
+              </div>
+
+              <div class="badge-row">
+                <span class="badge primary">Primary badge</span>
+                <span class="badge luxury">Luxury accent</span>
+                <span class="badge positive">System live</span>
+                <span class="badge">Neutral helper</span>
+              </div>
+
+              <div class="spec-list">
+                <div class="spec-row"><span>buttons</span><strong>pill radius / 11px mono / hover lift / sheen</strong></div>
+                <div class="spec-row"><span>primary</span><strong>blue fill / white text / deep shadow</strong></div>
+                <div class="spec-row"><span>luxury</span><strong>dark shell to gold hover / premium CTA</strong></div>
+                <div class="spec-row"><span>badges</span><strong>soft tint / compact uppercase / token status</strong></div>
+              </div>
+            </article>
+
+            <article class="component-card reveal">
+              <h3>Inputs and Tooltips</h3>
+              <p>Form fields keep calm surfaces and a crisp blue focus ring. Tooltips use dark shells and fast rise transitions.</p>
+
+              <div class="field-group">
+                <div class="field">
+                  <label for="demo-name">Input / default</label>
+                  <input id="demo-name" name="demo-name" type="text" value="Premium interactive field" />
+                </div>
+                <div class="field">
+                  <label for="demo-role">Select / semantic</label>
+                  <select id="demo-role" name="demo-role">
+                    <option>Primary action</option>
+                    <option>Secondary support</option>
+                    <option>Decorative helper</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="demo-note">Textarea / helper</label>
+                  <textarea id="demo-note" name="demo-note">Focus state uses #0F62FE plus a low-alpha outer ring.</textarea>
+                </div>
+              </div>
+
+              <div class="tooltip-demo">
+                <div class="tooltip-anchor">
+                  <button class="button-shell luxury-button" type="button">
+                    Hover tooltip
+                    <i data-lucide="info"></i>
+                  </button>
+                  <div class="tooltip-bubble">Tooltip spec / dark shell / 10px mono / 280ms rise-in / pointerless overlay</div>
+                </div>
+                <span class="component-note">Labels stay mono and uppercase for scan speed.</span>
+              </div>
+
+              <div class="spec-list">
+                <div class="spec-row"><span>inputs</span><strong>16px radius / neutral border / blue focus ring</strong></div>
+                <div class="spec-row"><span>select</span><strong>same shell as input for consistency</strong></div>
+                <div class="spec-row"><span>textarea</span><strong>vertical resize / helper-density content</strong></div>
+                <div class="spec-row"><span>tooltip</span><strong>dark overlay / 12px padding / fade + rise</strong></div>
+              </div>
+            </article>
+
+            <article class="component-card dark reveal">
+              <h3>Cards, Navbars, Sections, Modal</h3>
+              <p>Section panels rely on layered imagery, glass surfaces, and compact navigation or command groups for premium structure.</p>
+
+              <div class="navbar-demo">
+                <div class="brand-copy">
+                  <strong>Panel Nav</strong>
+                  <span>Glass shell / compact route list</span>
+                </div>
+                <div class="mini-nav-links">
+                  <a href="#hero">Hero</a>
+                  <a href="#colors">Color</a>
+                  <a href="#motion">Motion</a>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <article class="surface-card">
+                  <span>Section card</span>
+                  <strong>Light content shell with architectural depth</strong>
+                </article>
+                <article class="surface-card alt">
+                  <span>Premium card</span>
+                  <strong>Darkened media block for feature highlights</strong>
+                </article>
+              </div>
+
+              <div class="button-row">
+                <button class="button-shell ghost-button" type="button" data-modal-open>
+                  Launch modal
+                  <i data-lucide="monitor-up"></i>
+                </button>
+              </div>
+
+              <div class="spec-list">
+                <div class="spec-row"><span>cards</span><strong>24px-32px radius / image depth / blur shell</strong></div>
+                <div class="spec-row"><span>navbars</span><strong>pill frame / blur / mono links / hover tint</strong></div>
+                <div class="spec-row"><span>sections</span><strong>stack-section wrapper / animated background / shell width</strong></div>
+                <div class="spec-row"><span>modal</span><strong>blur backdrop / split media-copy layout / ESC close</strong></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="stack-section section-shell" id="icons">
+        <div class="shell">
+          <div class="section-intro reveal">
+            <div>
+              <div class="section-index">04 / Icons</div>
+              <h2 class="section-title">Lucide primitives plus Iconify accent marks.</h2>
+            </div>
+            <p class="section-description">
+              Lucide provides the core outline icon language for controls and navigation. Iconify extends the visual vocabulary for
+              decorative ribbons and badges without disturbing the overall stroke-driven feel.
+            </p>
+          </div>
+
+          <div class="icon-showcase">
+            <article class="icon-wall reveal">
+              <h3>Core icon set</h3>
+              <p>Use outline icons at 18px to 22px with light stroke emphasis. Keep them paired with monospace labels or short action text.</p>
+
+              <div class="icon-grid">
+                <div class="icon-tile">
+                  <div class="icon-badge"><i data-lucide="compass"></i></div>
+                  <strong>Navigation</strong>
+                  <span>menus / wayfinding / anchors</span>
+                </div>
+                <div class="icon-tile">
+                  <div class="icon-badge"><i data-lucide="building-2"></i></div>
+                  <strong>Property</strong>
+                  <span>real estate / layout / site context</span>
+                </div>
+                <div class="icon-tile">
+                  <div class="icon-badge"><i data-lucide="layers-3"></i></div>
+                  <strong>Layers</strong>
+                  <span>sections / stacking / depth</span>
+                </div>
+                <div class="icon-tile">
+                  <div class="icon-badge"><i data-lucide="grid-2x2"></i></div>
+                  <strong>System</strong>
+                  <span>grids / modules / token clusters</span>
+                </div>
+                <div class="icon-tile">
+                  <div class="icon-badge"><i data-lucide="shield-check"></i></div>
+                  <strong>Trust</strong>
+                  <span>validation / secure states / confidence</span>
+                </div>
+                <div class="icon-tile">
+                  <div class="icon-badge"><i data-lucide="wand-sparkles"></i></div>
+                  <strong>Motion</strong>
+                  <span>enhancements / reveal / transitions</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="icon-usage reveal">
+              <h3>Usage spec</h3>
+              <p>Pair icons with short verbs, use mono labels for metadata, and reserve decorative icons for ribbon or marquee contexts.</p>
+
+              <div class="iconify-ribbon">
+                <span class="iconify-pill"><iconify-icon icon="solar:flash-circle-linear"></iconify-icon>scroll cue</span>
+                <span class="iconify-pill"><iconify-icon icon="solar:code-linear"></iconify-icon>dev token</span>
+                <span class="iconify-pill"><iconify-icon icon="solar:star-linear"></iconify-icon>premium accent</span>
+                <span class="iconify-pill"><iconify-icon icon="solar:bolt-linear"></iconify-icon>state change</span>
+              </div>
+
+              <div class="spec-list">
+                <div class="spec-row"><span>core size</span><strong>18px-22px</strong></div>
+                <div class="spec-row"><span>stroke feel</span><strong>outline / low visual weight / sharp legibility</strong></div>
+                <div class="spec-row"><span>placement</span><strong>buttons, navbars, badges, metadata rows</strong></div>
+                <div class="spec-row"><span>accent usage</span><strong>marquee, pills, and helper highlights only</strong></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="stack-section section-shell" id="motion">
+        <div class="shell">
+          <div class="section-intro reveal">
+            <div>
+              <div class="section-index">05 / Motion</div>
+              <h2 class="section-title">Ambient backgrounds, reveal transitions, and component feedback.</h2>
+            </div>
+            <p class="section-description">
+              Motion is deliberately repeated across folds: animated background orbs, ticker movement, button sheen, floating media tiles,
+              tooltip rise, modal fade, and GSAP-driven scroll reveal to keep the page feeling cohesive and intentional.
+            </p>
+          </div>
+
+          <div class="motion-grid">
+            <div class="motion-stage reveal">
+              <img src="aura.build_templates_luxury_real_estate_8/assets/photo-1600607687939-ce8a6c2511_cf259dfa4192.avif" alt="Interior scene used as motion stage background" />
+              <div class="motion-overlay">
+                <span class="chip">scroll choreography</span>
+                <h3>Parallax media plus floating glass telemetry.</h3>
+                <p>GSAP and ScrollTrigger handle image scale, orb drift, reveal timing, and subtle section parallax.</p>
+              </div>
+              <div class="floating-card left">
+                <strong>Ambient drift</strong>
+                <span>13s orb motion / blend-mode glow</span>
+              </div>
+              <div class="floating-card right">
+                <strong>Reveal cadence</strong>
+                <span>0.9s power3 easing / scroll-triggered</span>
+              </div>
+            </div>
+
+            <article class="motion-card reveal">
+              <h3>Animation spec</h3>
+              <p>Motion stays soft, layered, and premium. Nothing snaps aggressively; interactions glide, brighten, or rise with purpose.</p>
+
+              <div class="motion-list">
+                <div class="motion-item">
+                  <strong>Background Orbs</strong>
+                  <p>Large radial gradients drift slowly to keep every section alive even before user input.</p>
+                  <span>keyframe / drift / 11s-16s / alternate</span>
+                </div>
+                <div class="motion-item">
+                  <strong>Reveal Transitions</strong>
+                  <p>Sections and components rise from 32px below with opacity ramp-in once they enter the viewport.</p>
+                  <span>gsap / scrolltrigger / 0.9s / power3.out</span>
+                </div>
+                <div class="motion-item">
+                  <strong>Buttons and Tooltips</strong>
+                  <p>CTA shells lift by 2px and sweep a sheen layer across the surface. Tooltips fade and rise on hover.</p>
+                  <span>hover / 280ms-800ms / transform + opacity</span>
+                </div>
+                <div class="motion-item">
+                  <strong>Media Tiles and Modal</strong>
+                  <p>Media cards float gently while the modal uses a blur-backed fade to separate the demo layer from the page.</p>
+                  <span>floatCard / 8s-9.5s / modal fade 350ms</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer-shell">
+      <div class="shell">
+        <div class="footer-panel reveal">
+          <div class="footer-bg">
+            <img src="aura.build_templates_luxury_real_estate_8/assets/photo-1582268611958-ebfd161ef9_e5960b35cf87.avif" alt="Luxury exterior used as final CTA background" />
+          </div>
+
+          <div class="footer-content">
+            <div class="footer-copy">
+              <div class="section-kicker">Final system checkpoint</div>
+              <h2>Every attached asset is now part of one coherent design system page.</h2>
+              <p>
+                This file imports the existing template resources directly, leaves the rest of the project untouched,
+                and showcases the shared typography, color, icon, component, and motion language in a production-style layout.
+              </p>
+              <div class="hero-actions">
+                <a class="button-shell luxury-button" href="#hero">
+                  Back to hero
+                  <i data-lucide="arrow-up"></i>
+                </a>
+                <button class="button-shell ghost-button" type="button" data-modal-open>
+                  Review modal
+                  <i data-lucide="panel-top-open"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="footer-grid">
+              <article class="footer-stat">
+                <h4>Imported fonts</h4>
+                <p>Space Grotesk, Inter, IBM Plex Sans, and IBM Plex Mono exposed with explicit numeric weights.</p>
+              </article>
+              <article class="footer-stat">
+                <h4>Token surfaces</h4>
+                <p>Hex, RGB, HSL, opacity, gradient use, and contextual guidance remain visible in one place.</p>
+              </article>
+              <article class="footer-stat">
+                <h4>Interactive layer</h4>
+                <p>Menu, buttons, tooltips, modal, and scroll reveal all use the attached JS resources.</p>
+              </article>
+              <article class="footer-stat">
+                <h4>Project impact</h4>
+                <p>Only one new file added inside <span class="font-mono">design_system/</span>. No existing assets changed.</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <div class="demo-modal" id="demoModal" aria-hidden="true">
+    <div class="demo-modal-panel">
+      <button class="close-modal" type="button" data-modal-close aria-label="Close modal">
+        <i data-lucide="x"></i>
+      </button>
+
+      <div class="modal-media">
+        <img src="aura.build_templates_digital_product_61/assets/photo-1550751827-4bd374c3f58b_b34cf9f7ae35.avif" alt="Digital asset used inside modal showcase" />
+      </div>
+
+      <div class="modal-copy">
+        <div class="section-index">Modal / Interactive Spec</div>
+        <h2 class="section-title">Split layout modal with blur backdrop and documented states.</h2>
+        <p class="section-description">
+          This modal reuses the same rounded, layered visual grammar as the rest of the page. It opens from buttons in multiple sections,
+          closes on backdrop click or Escape, and keeps the body locked while active.
+        </p>
+
+        <div class="mini-stat-grid">
+          <div class="mini-stat">
+            <strong>Trigger</strong>
+            <span>Button shell using existing hover language</span>
+          </div>
+          <div class="mini-stat">
+            <strong>Backdrop</strong>
+            <span>72% dark overlay plus 14px blur</span>
+          </div>
+          <div class="mini-stat">
+            <strong>Layout</strong>
+            <span>Media left, copy right, stacked on small screens</span>
+          </div>
+          <div class="mini-stat">
+            <strong>Close</strong>
+            <span>Icon button, backdrop click, and Escape key</span>
+          </div>
+        </div>
+
+        <div class="spec-list">
+          <div class="spec-row"><span>transition</span><strong>opacity + visibility / 350ms</strong></div>
+          <div class="spec-row"><span>surface</span><strong>white content shell with blue ambient tint</strong></div>
+          <div class="spec-row"><span>radius</span><strong>34px outer / 16px internal controls</strong></div>
+          <div class="spec-row"><span>purpose</span><strong>component detail, onboarding, or focused preview</strong></div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="button-shell digital-button" type="button" data-modal-close>
+            Close overlay
+            <i data-lucide="check"></i>
+          </button>
+          <a class="button-shell luxury-button" href="#components">
+            Back to UI
+            <i data-lucide="arrow-up-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const body = document.body;
+      const menuToggle = document.getElementById("menuToggle");
+      const mobileMenu = document.getElementById("mobileMenu");
+      const modal = document.getElementById("demoModal");
+      const menuLinks = mobileMenu.querySelectorAll("a");
+      const modalTriggers = document.querySelectorAll("[data-modal-open]");
+      const modalClosers = document.querySelectorAll("[data-modal-close]");
+
+      const syncBodyLock = function () {
+        const shouldLock = mobileMenu.classList.contains("is-open") || modal.classList.contains("is-open");
+        body.classList.toggle("menu-open", shouldLock);
+      };
+
+      const toggleMenu = function (force) {
+        const shouldOpen = typeof force === "boolean" ? force : !mobileMenu.classList.contains("is-open");
+        mobileMenu.classList.toggle("is-open", shouldOpen);
+        menuToggle.classList.toggle("is-open", shouldOpen);
+        menuToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+        mobileMenu.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
+        syncBodyLock();
+      };
+
+      const toggleModal = function (force) {
+        const shouldOpen = typeof force === "boolean" ? force : !modal.classList.contains("is-open");
+        modal.classList.toggle("is-open", shouldOpen);
+        modal.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
+        syncBodyLock();
+      };
+
+      menuToggle.addEventListener("click", function () {
+        toggleMenu();
+      });
+
+      menuLinks.forEach(function (link) {
+        link.addEventListener("click", function () {
+          toggleMenu(false);
+        });
+      });
+
+      modalTriggers.forEach(function (trigger) {
+        trigger.addEventListener("click", function () {
+          toggleModal(true);
+        });
+      });
+
+      modalClosers.forEach(function (closer) {
+        closer.addEventListener("click", function () {
+          toggleModal(false);
+        });
+      });
+
+      modal.addEventListener("click", function (event) {
+        if (event.target === modal) {
+          toggleModal(false);
+        }
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          toggleMenu(false);
+          toggleModal(false);
+        }
+      });
+
+      if (window.lucide && typeof window.lucide.createIcons === "function") {
+        window.lucide.createIcons({
+          attrs: {
+            "stroke-width": 1.6
+          }
+        });
+      }
+
+      if (window.gsap) {
+        if (window.ScrollTrigger) {
+          window.gsap.registerPlugin(window.ScrollTrigger);
+        }
+
+        window.gsap.set(".reveal", {
+          autoAlpha: 0,
+          y: 32
+        });
+
+        window.gsap.utils.toArray(".reveal").forEach(function (element, index) {
+          window.gsap.to(element, {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.9,
+            ease: "power3.out",
+            delay: index * 0.03,
+            scrollTrigger: {
+              trigger: element,
+              start: "top 86%",
+              once: true
+            }
+          });
+        });
+
+        window.gsap.to(".hero-image-main", {
+          scale: 1.12,
+          yPercent: 8,
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+
+        window.gsap.to(".orb-blue", {
+          xPercent: -12,
+          yPercent: 14,
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+
+        window.gsap.to(".orb-gold", {
+          xPercent: 10,
+          yPercent: -10,
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+
+        window.gsap.to(".marquee-band", {
+          yPercent: -10,
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+      } else {
+        document.querySelectorAll(".reveal").forEach(function (element) {
+          element.classList.add("is-visible");
+        });
+      }
+    }());
+  </script>
+</body>
+</html>
