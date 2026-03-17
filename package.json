@@ -2,7 +2,8 @@
   "name": "catalogo-ny",
   "private": true,
   "scripts": {
-    "sync:product-images": "node scripts/sync-product-images.cjs"
+    "sync:product-images": "node scripts/sync-product-images.cjs",
+    "optimize:ui-images": "node scripts/optimize-ui-images.cjs"
   },
   "dependencies": {
     "sharp": "^0.34.4"

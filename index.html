@@ -7,12 +7,15 @@
   <title>New York Freeshop | Hero Editorial</title>
   <link href="https://fonts.googleapis.com" rel="preconnect" />
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link as="font" crossorigin="" href="assets/fonts/inter-latin-400-600.woff2" rel="preload" type="font/woff2" />
+  <link as="image" fetchpriority="high" href="public/ui/new-york-hero-860.webp"
+    imagesizes="100vw"
+    imagesrcset="public/ui/new-york-hero-640.webp 640w, public/ui/new-york-hero-860.webp 860w"
+    rel="preload" type="image/webp" />
   <link href="assets/css/fonts.css" rel="stylesheet" />
   <link
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap"
     rel="stylesheet" />
-  <script src="assets/js/vendor/gsap.min.js"></script>
-  <script src="assets/js/vendor/ScrollTrigger.min.js"></script>
   <style>
     :root {
       --lux-bg: #080a0d;
@@ -511,8 +514,10 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: brightness(0.34) contrast(0.86) saturate(0.76) blur(1.4px);
-      transform: scale(1.08);
+      filter: brightness(0.34) contrast(0.88) saturate(0.78);
+      transform: translate3d(0, var(--hero-media-y, 0px), 0) scale(var(--hero-media-scale, 1.08));
+      transform-origin: center center;
+      will-change: transform;
       opacity: 0.92;
     }
 
@@ -650,11 +655,13 @@
     .hero-title-r {
       display: block;
       text-shadow: 0 18px 54px rgba(0, 0, 0, 0.2);
+      animation: heroEnter 1.02s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .hero-title-l {
       font-weight: 600;
       color: rgba(245, 240, 232, 0.96);
+      animation-delay: 0.02s;
     }
 
     .hero-title-r {
@@ -664,6 +671,26 @@
       background-size: 100% 100%;
       -webkit-background-clip: text;
       background-clip: text;
+      animation-delay: 0.1s;
+    }
+
+    .hero-copy .reveal,
+    .hero-rail .reveal {
+      opacity: 0;
+      animation: heroReveal 0.92s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .hero-copy .hero-note.reveal {
+      animation-delay: 0.26s;
+    }
+
+    .hero-copy .hero-lead.reveal {
+      animation-delay: 0.36s;
+    }
+
+    .hero-rail .reveal {
+      animation-delay: 0.44s;
     }
 
     .hero-note {
@@ -848,6 +875,8 @@
       padding: clamp(36px, 6vw, 72px) 16px 92px;
       scroll-margin-top: calc(var(--nav-h) + 28px);
       isolation: isolate;
+      content-visibility: auto;
+      contain-intrinsic-size: 1400px;
       background:
         radial-gradient(circle at 14% 16%, var(--catalog-accent-soft), transparent 26%),
         radial-gradient(circle at 88% 10%, rgba(255, 255, 255, 0.06), transparent 20%),
@@ -1571,6 +1600,7 @@
       min-height: var(--app-height);
       height: var(--app-height);
       overflow: hidden;
+      overflow: clip;
       isolation: isolate;
       touch-action: pan-y pinch-zoom;
     }
@@ -1608,6 +1638,7 @@
       width: 100vw;
       min-height: var(--app-height);
       overflow: hidden;
+      overflow: clip;
       background: #07090d;
       touch-action: pan-y pinch-zoom;
     }
@@ -1646,6 +1677,7 @@
 
     .store-scene {
       overflow: hidden;
+      overflow: clip;
       pointer-events: none;
     }
 
@@ -1658,7 +1690,7 @@
       height: 28%;
       border-radius: 999px;
       background: var(--store-accent);
-      filter: blur(92px);
+      filter: blur(68px);
       opacity: 0.8;
       pointer-events: none;
     }
@@ -1671,7 +1703,9 @@
       transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease, opacity 0.8s ease;
       pointer-events: none;
       user-select: none;
+      -webkit-user-select: none;
       -webkit-user-drag: none;
+      -webkit-touch-callout: none;
     }
 
     .store-panel.is-active .store-image {
@@ -2017,6 +2051,30 @@
       }
     }
 
+    @keyframes heroEnter {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 34px, 0);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    @keyframes heroReveal {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 24px, 0);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
     @keyframes catalogRise {
       0% {
         opacity: 0;
@@ -2097,6 +2155,35 @@
     }
 
     @media (max-width: 767px) {
+      .noise {
+        display: none;
+      }
+
+      .hero-shade::before,
+      .hero-shade::after,
+      .catalog-stage::after,
+      .product-node::before {
+        animation: none;
+      }
+
+      .hero-shade::before,
+      .hero-shade::after {
+        filter: blur(28px);
+      }
+
+      .store-scene::after,
+      .lightbox-media::after {
+        filter: blur(32px);
+      }
+
+      .nav-shell,
+      .marquee-band,
+      .store-marker,
+      .product-brand-mark,
+      .lightbox-close {
+        backdrop-filter: blur(8px);
+      }
+
       .stores-track-shell::after {
         inset: calc(var(--nav-h) + 82px) 16px 20px;
         border-radius: 26px;
@@ -2490,6 +2577,14 @@
         scroll-behavior: auto;
       }
 
+      .hero-title-l,
+      .hero-title-r,
+      .hero-copy .reveal,
+      .hero-rail .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+
       *,
       *::before,
       *::after {
@@ -2591,7 +2686,11 @@
   <div class="wrapper">
     <header class="hero-stage" id="hero">
       <div class="hero-media parallax-media">
-        <img alt="" aria-hidden="true" src="assets/images/new_york.png" />
+        <img alt="" aria-hidden="true" decoding="async" fetchpriority="high" height="538"
+          sizes="100vw"
+          src="public/ui/new-york-hero-860.webp"
+          srcset="public/ui/new-york-hero-640.webp 640w, public/ui/new-york-hero-860.webp 860w"
+          width="860" />
       </div>
       <div class="hero-grid grid-lines"></div>
       <div class="hero-overlay"></div>
@@ -2625,7 +2724,11 @@
 
           <aside aria-label="Notas editoriais" class="hero-rail" id="mood">
             <figure class="hero-rail-figure reveal">
-              <img alt="" aria-hidden="true" src="assets/images/statue.png" />
+              <img alt="" aria-hidden="true" decoding="async" height="1080"
+                sizes="(min-width: 1040px) 360px, (max-width: 767px) 172px, 30vw"
+                src="public/ui/statue-360.webp"
+                srcset="public/ui/statue-360.webp 360w, public/ui/statue-720.webp 720w"
+                width="720" />
             </figure>
           </aside>
         </div>
@@ -2705,8 +2808,11 @@
           <article class="store-panel is-active" data-store-index="0" data-store-name="New York Filial Bento"
             style="--store-accent: rgba(207, 164, 102, 0.24); --store-accent-strong: rgba(245, 214, 161, 0.5); --store-position: center 42%;">
             <div class="store-scene">
-              <img alt="Fachada da New York Filial Bento no Centro de Uruguaiana" class="store-image"
-                src="assets/images/filial-bento.png" />
+              <img alt="Fachada da New York Filial Bento no Centro de Uruguaiana" class="store-image" decoding="async"
+                draggable="false" height="1536" loading="lazy" sizes="100vw"
+                src="public/ui/store-bento-768.webp"
+                srcset="public/ui/store-bento-768.webp 768w, public/ui/store-bento-1024.webp 1024w"
+                width="1024" />
               <div aria-hidden="true" class="store-marker-stack">
                 <span class="store-marker store-marker-main">Gen. Bento Martins</span>
               </div>
@@ -2741,8 +2847,11 @@
           <article class="store-panel" data-store-index="1" data-store-name="New York Filial Duque"
             style="--store-accent: rgba(150, 181, 202, 0.2); --store-accent-strong: rgba(214, 232, 245, 0.44); --store-position: center 48%;">
             <div class="store-scene">
-              <img alt="Fachada da New York Filial Duque no Centro de Uruguaiana" class="store-image"
-                src="assets/images/filial-duque.png" />
+              <img alt="Fachada da New York Filial Duque no Centro de Uruguaiana" class="store-image" decoding="async"
+                draggable="false" height="1536" loading="lazy" sizes="100vw"
+                src="public/ui/store-duque-768.webp"
+                srcset="public/ui/store-duque-768.webp 768w, public/ui/store-duque-1024.webp 1024w"
+                width="1024" />
               <div aria-hidden="true" class="store-marker-stack">
                 <span class="store-marker store-marker-main">Duque de Caxias</span>
               </div>
@@ -2777,8 +2886,11 @@
           <article class="store-panel" data-store-index="2" data-store-name="New York Matriz"
             style="--store-accent: rgba(132, 149, 208, 0.2); --store-accent-strong: rgba(209, 220, 255, 0.46); --store-position: center 46%;">
             <div class="store-scene">
-              <img alt="Fachada da New York Matriz no Centro de Uruguaiana" class="store-image"
-                src="assets/images/matriz.png" />
+              <img alt="Fachada da New York Matriz no Centro de Uruguaiana" class="store-image" decoding="async"
+                draggable="false" height="1536" loading="lazy" sizes="100vw"
+                src="public/ui/store-matriz-768.webp"
+                srcset="public/ui/store-matriz-768.webp 768w, public/ui/store-matriz-1024.webp 1024w"
+                width="1024" />
               <div aria-hidden="true" class="store-marker-stack">
                 <span class="store-marker store-marker-main">Domingos de Almeida</span>
               </div>
@@ -2842,10 +2954,10 @@
     </div>
   </div>
 
-  <script src="assets/catalog-image-manifest.js"></script>
-  <script src="assets/catalog-fold.js"></script>
-  <script src="assets/store-fold.js"></script>
-  <script src="assets/js/app.js"></script>
+  <script defer src="assets/catalog-image-manifest.js"></script>
+  <script defer src="assets/catalog-fold.js"></script>
+  <script defer src="assets/store-fold.js"></script>
+  <script defer src="assets/js/app.js"></script>
 </body>
 
 </html>
