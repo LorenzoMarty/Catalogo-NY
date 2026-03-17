@@ -1526,6 +1526,7 @@
     .stores-stage {
       position: relative;
       overflow: visible;
+      touch-action: pan-y pinch-zoom;
       background:
         radial-gradient(circle at 14% 22%, rgba(190, 148, 93, 0.16), transparent 24%),
         radial-gradient(circle at 86% 72%, rgba(116, 150, 201, 0.12), transparent 30%),
@@ -1561,6 +1562,7 @@
       min-height: var(--stores-section-height, var(--app-height));
       height: var(--stores-section-height, var(--app-height));
       overflow: visible;
+      touch-action: pan-y pinch-zoom;
     }
 
     .stores-track-shell {
@@ -1569,8 +1571,8 @@
       min-height: var(--app-height);
       height: var(--app-height);
       overflow: hidden;
-      overscroll-behavior: contain;
       isolation: isolate;
+      touch-action: pan-y pinch-zoom;
     }
 
     .stores-track-shell::before {
@@ -1593,6 +1595,7 @@
       height: var(--app-height);
       will-change: transform;
       transform: translate3d(0, 0, 0);
+      touch-action: pan-y pinch-zoom;
     }
 
     .store-panel {
@@ -1606,6 +1609,7 @@
       min-height: var(--app-height);
       overflow: hidden;
       background: #07090d;
+      touch-action: pan-y pinch-zoom;
     }
 
     .store-panel::before,
@@ -1642,6 +1646,7 @@
 
     .store-scene {
       overflow: hidden;
+      pointer-events: none;
     }
 
     .store-scene::after {
@@ -1655,6 +1660,7 @@
       background: var(--store-accent);
       filter: blur(92px);
       opacity: 0.8;
+      pointer-events: none;
     }
 
     .store-image {
@@ -1663,6 +1669,9 @@
       transform: scale(1.1);
       filter: saturate(0.82) contrast(1.04) brightness(0.86);
       transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease, opacity 0.8s ease;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
     }
 
     .store-panel.is-active .store-image {
@@ -1749,6 +1758,25 @@
       align-content: space-between;
       min-height: var(--app-height);
       padding: calc(var(--nav-h) + 28px) clamp(18px, 4vw, 44px) 24px;
+      pointer-events: none;
+    }
+
+    .store-topline,
+    .store-topline *,
+    .store-editorial,
+    .store-editorial *,
+    .store-note,
+    .store-note *,
+    .store-note::before {
+      pointer-events: none;
+    }
+
+    .store-layout a,
+    .store-layout button,
+    .store-layout input,
+    .store-layout select,
+    .store-layout textarea {
+      pointer-events: auto;
     }
 
     .store-topline {
@@ -1867,6 +1895,7 @@
       transform: translate3d(0, 26px, 0);
       opacity: 0.4;
       transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.75s ease;
+      pointer-events: none;
     }
 
     .store-note::before {
