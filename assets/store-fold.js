@@ -2,42 +2,75 @@
   "use strict";
 
   var stage = document.getElementById("stores");
+  var section = stage ? stage.querySelector(".stores-shell") : null;
   var shell = document.getElementById("stores-track-shell");
   var track = document.getElementById("stores-track");
   var currentLabel = document.getElementById("stores-current");
   var progressName = document.getElementById("stores-progress-name");
   var progressFill = document.getElementById("stores-progress-fill");
 
-  if (!stage || !shell || !track || !progressFill) {
+  if (!stage || !section || !shell || !track || !progressFill) {
     return;
   }
 
   var panels = Array.prototype.slice.call(track.querySelectorAll(".store-panel"));
-  var reducedMotionMatch = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var images = Array.prototype.slice.call(stage.querySelectorAll(".store-image"));
   var wideMatch = window.matchMedia("(min-width: 768px)");
-  var pinnedTween = null;
-  var pinnedTriggers = [];
-  var nativeScrollBound = false;
-  var lastProgress = 0;
+  var viewport = window.visualViewport || null;
+  var state = {
+    viewportHeight: 0,
+    viewportWidth: 0,
+    sectionTop: 0,
+    sectionHeight: 0,
+    maxHorizontal: 0,
+    maxVertical: 0,
+    current: 0,
+    progress: 0,
+    translateX: 0
+  };
+  var activeIndex = -1;
+  var progressValue = -1;
+  var renderFrame = 0;
+  var measureFrame = 0;
+  var resizeObserver = null;
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
   }
 
+  function getViewportHeight() {
+    var visualHeight = viewport && viewport.height ? viewport.height : 0;
+    var innerHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    return Math.max(1, Math.round(visualHeight || innerHeight));
+  }
+
+  function getViewportWidth() {
+    return Math.max(window.innerWidth || document.documentElement.clientWidth || 0, 1);
+  }
+
+  function setViewportHeight(viewportHeight) {
+    var resolvedHeight = Math.max(1, Math.round(viewportHeight));
+    document.documentElement.style.setProperty("--app-height", resolvedHeight + "px");
+    stage.style.setProperty("--app-height", resolvedHeight + "px");
+  }
+
   function setActivePanel(index) {
     var safeIndex = clamp(index, 0, panels.length - 1);
-    var activePanel = panels[safeIndex];
+    var panel = panels[safeIndex];
 
-    panels.forEach(function (panel, panelIndex) {
-      panel.classList.toggle("is-active", panelIndex === safeIndex);
-    });
+    if (safeIndex !== activeIndex) {
+      activeIndex = safeIndex;
+      panels.forEach(function (item, itemIndex) {
+        item.classList.toggle("is-active", itemIndex === safeIndex);
+      });
 
-    if (currentLabel) {
-      currentLabel.textContent = String(safeIndex + 1).padStart(2, "0");
-    }
+      if (currentLabel) {
+        currentLabel.textContent = String(safeIndex + 1).padStart(2, "0");
+      }
 
-    if (progressName && activePanel) {
-      progressName.textContent = activePanel.getAttribute("data-store-name") || "";
+      if (progressName && panel) {
+        progressName.textContent = panel.getAttribute("data-store-name") || "";
+      }
     }
   }
 
@@ -47,7 +80,13 @@
       ? ((clampedProgress * (panels.length - 1)) + 1) / panels.length
       : 1;
 
-    if (wideMatch.matches && !stage.classList.contains("is-native-scroll")) {
+    if (Math.abs(clampedProgress - progressValue) < 0.001) {
+      return;
+    }
+
+    progressValue = clampedProgress;
+
+    if (wideMatch.matches) {
       progressFill.style.height = (resolvedFill * 100).toFixed(2) + "%";
       progressFill.style.width = "100%";
       return;
@@ -57,167 +96,150 @@
     progressFill.style.height = "100%";
   }
 
-  function syncState(progress, index) {
-    var resolvedIndex = typeof index === "number"
-      ? clamp(index, 0, panels.length - 1)
-      : clamp(Math.round(clamp(progress || 0, 0, 1) * (panels.length - 1)), 0, panels.length - 1);
-    var resolvedProgress = typeof progress === "number"
-      ? clamp(progress, 0, 1)
-      : (panels.length > 1 ? resolvedIndex / (panels.length - 1) : 1);
-
-    lastProgress = resolvedProgress;
+  function syncState(progress, translateX) {
+    var panelWidth = Math.max(state.viewportWidth, 1);
+    var resolvedIndex = clamp(Math.round((translateX || 0) / panelWidth), 0, panels.length - 1);
 
     setActivePanel(resolvedIndex);
-    setProgress(resolvedProgress);
+    setProgress(progress);
   }
 
-  function handleNativeScroll() {
-    var maxScroll = Math.max(shell.scrollWidth - shell.clientWidth, 1);
-    var progress = shell.scrollLeft / maxScroll;
-    var index = Math.round(shell.scrollLeft / Math.max(shell.clientWidth, 1));
-    syncState(progress, index);
+  function render(force) {
+    renderFrame = 0;
+
+    var scrollY = window.scrollY || window.pageYOffset || 0;
+    var current = clamp(scrollY - state.sectionTop, 0, state.maxVertical);
+    var progress = state.maxVertical > 0 ? current / state.maxVertical : 0;
+    var translateX = progress * state.maxHorizontal;
+
+    state.current = current;
+    state.progress = progress;
+
+    if (force || Math.abs(translateX - state.translateX) > 0.1) {
+      track.style.transform = "translate3d(" + (-translateX).toFixed(3) + "px, 0, 0)";
+      state.translateX = translateX;
+    }
+
+    syncState(progress, translateX);
   }
 
-  function bindNativeScroll() {
-    if (nativeScrollBound) {
+  function scheduleRender(force) {
+    if (force) {
+      if (renderFrame) {
+        cancelAnimationFrame(renderFrame);
+        renderFrame = 0;
+      }
+
+      render(true);
       return;
     }
 
-    shell.addEventListener("scroll", handleNativeScroll, { passive: true });
-    nativeScrollBound = true;
-  }
-
-  function unbindNativeScroll() {
-    if (!nativeScrollBound) {
+    if (renderFrame) {
       return;
     }
 
-    shell.removeEventListener("scroll", handleNativeScroll);
-    nativeScrollBound = false;
+    renderFrame = requestAnimationFrame(function () {
+      render(false);
+    });
   }
 
-  function destroyPinnedScroll() {
-    pinnedTriggers.forEach(function (trigger) {
-      trigger.kill();
-    });
-    pinnedTriggers = [];
+  function measure() {
+    measureFrame = 0;
 
-    if (pinnedTween) {
-      if (pinnedTween.scrollTrigger) {
-        pinnedTween.scrollTrigger.kill();
-      }
-      pinnedTween.kill();
-      pinnedTween = null;
+    var viewportHeight = getViewportHeight();
+    var viewportWidth = getViewportWidth();
+    var scrollY = window.scrollY || window.pageYOffset || 0;
+    var sectionTop = stage.getBoundingClientRect().top + scrollY;
+    var maxHorizontal = Math.max(track.scrollWidth - viewportWidth, 0);
+    var sectionHeight = maxHorizontal + viewportHeight;
+
+    setViewportHeight(viewportHeight);
+
+    state.viewportHeight = viewportHeight;
+    state.viewportWidth = viewportWidth;
+    state.sectionTop = sectionTop;
+    state.sectionHeight = sectionHeight;
+    state.maxHorizontal = maxHorizontal;
+    state.maxVertical = Math.max(sectionHeight - viewportHeight, 0);
+
+    stage.style.setProperty("--stores-section-height", sectionHeight + "px");
+    section.style.height = sectionHeight + "px";
+    section.style.minHeight = sectionHeight + "px";
+
+    if (maxHorizontal <= 0) {
+      state.translateX = 0;
+      track.style.transform = "translate3d(0px, 0, 0)";
+      syncState(0, 0);
+      return;
     }
 
-    track.style.transform = "";
+    scheduleRender(true);
   }
 
-  function buildPinnedScroll() {
-    if (!window.gsap || !window.ScrollTrigger) {
-      return false;
+  function scheduleMeasure() {
+    if (measureFrame) {
+      return;
     }
 
-    window.gsap.registerPlugin(window.ScrollTrigger);
+    measureFrame = requestAnimationFrame(measure);
+  }
 
-    var travel = function () {
-      return Math.max(track.scrollWidth - window.innerWidth, 0);
-    };
-
-    pinnedTween = window.gsap.to(track, {
-      x: function () {
-        return -travel();
-      },
-      ease: "none",
-      overwrite: "auto",
-      scrollTrigger: {
-        trigger: stage,
-        start: "top top",
-        end: function () {
-          return "+=" + travel();
-        },
-        pin: true,
-        scrub: window.innerWidth < 768 ? 1.15 : 1,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        onUpdate: function (self) {
-          syncState(self.progress);
-        }
-      }
-    });
-
-    panels.forEach(function (panel) {
-      var image = panel.querySelector(".store-image");
-
-      if (!image) {
+  function bindImageLoad() {
+    images.forEach(function (image) {
+      if (image.complete) {
         return;
       }
 
-      var trigger = window.gsap.to(image, {
-        scale: 1,
-        ease: "none",
-        scrollTrigger: {
-          trigger: panel,
-          containerAnimation: pinnedTween,
-          start: "left right",
-          end: "right left",
-          scrub: true
-        }
-      }).scrollTrigger;
+      image.addEventListener("load", scheduleMeasure, { once: true });
+      image.addEventListener("error", scheduleMeasure, { once: true });
+    });
+  }
 
-      pinnedTriggers.push(trigger);
+  function bindResizeObserver() {
+    if (typeof window.ResizeObserver !== "function") {
+      return;
+    }
+
+    resizeObserver = new window.ResizeObserver(function () {
+      scheduleMeasure();
     });
 
-    syncState(0, 0);
-    window.ScrollTrigger.refresh();
-    return true;
+    resizeObserver.observe(stage);
+    resizeObserver.observe(section);
+    resizeObserver.observe(shell);
+    resizeObserver.observe(track);
   }
 
-  function enableNativeMode() {
-    destroyPinnedScroll();
-    stage.classList.add("is-native-scroll");
-    bindNativeScroll();
-    requestAnimationFrame(handleNativeScroll);
-  }
+  function bindViewportEvents() {
+    window.addEventListener("scroll", function () {
+      scheduleRender(false);
+    }, { passive: true });
+    window.addEventListener("resize", scheduleMeasure, { passive: true });
+    window.addEventListener("orientationchange", scheduleMeasure, { passive: true });
+    window.addEventListener("load", scheduleMeasure, { passive: true });
 
-  function enablePinnedMode() {
-    stage.classList.remove("is-native-scroll");
-    unbindNativeScroll();
-    shell.scrollLeft = 0;
+    if (viewport) {
+      viewport.addEventListener("resize", scheduleMeasure);
+      viewport.addEventListener("scroll", scheduleMeasure);
+    }
 
-    if (!buildPinnedScroll()) {
-      enableNativeMode();
+    if (typeof wideMatch.addEventListener === "function") {
+      wideMatch.addEventListener("change", scheduleMeasure);
+    } else if (typeof wideMatch.addListener === "function") {
+      wideMatch.addListener(scheduleMeasure);
     }
   }
 
-  function syncMode() {
-    if (!reducedMotionMatch.matches) {
-      enablePinnedMode();
-      return;
-    }
+  bindImageLoad();
+  bindResizeObserver();
+  bindViewportEvents();
 
-    enableNativeMode();
-  }
-
-  function handleResize() {
-    if (stage.classList.contains("is-native-scroll")) {
-      handleNativeScroll();
-      return;
-    }
-
-    setProgress(lastProgress);
+  if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === "function") {
+    document.fonts.ready.then(function () {
+      scheduleMeasure();
+    });
   }
 
   syncState(0, 0);
-  syncMode();
-
-  if (typeof wideMatch.addEventListener === "function") {
-    wideMatch.addEventListener("change", syncMode);
-    reducedMotionMatch.addEventListener("change", syncMode);
-  } else if (typeof wideMatch.addListener === "function") {
-    wideMatch.addListener(syncMode);
-    reducedMotionMatch.addListener(syncMode);
-  }
-
-  window.addEventListener("resize", handleResize, { passive: true });
+  scheduleMeasure();
 }());
