@@ -1,0 +1,122 @@
+[
+  {
+    "id": "pf1",
+    "brand": "Dior",
+    "name": "Sauvage Elixir 60ml",
+    "imageUrl": "https://images.pexels.com/photos/34882894/pexels-photo-34882894.jpeg?cs=srgb&dl=pexels-christopher-welsch-leveroni-2150186467-34882894.jpg&fm=jpg"
+  },
+  {
+    "id": "pf2",
+    "brand": "Chanel",
+    "name": "No.5 Eau de Parfum",
+    "imageUrl": "https://images.pexels.com/photos/36226235/pexels-photo-36226235.jpeg?cs=srgb&dl=pexels-samuel-gay-820551583-36226235.jpg&fm=jpg"
+  },
+  {
+    "id": "pf3",
+    "brand": "Carolina Herrera",
+    "name": "212 Sexy Eau de Parfum",
+    "imageUrl": "https://images.pexels.com/photos/17217406/pexels-photo-17217406.jpeg?cs=srgb&dl=pexels-agustina-r-street-353574760-17217406.jpg&fm=jpg"
+  },
+  {
+    "id": "pf4",
+    "brand": "Dior",
+    "name": "Miss Dior Eau de Parfum",
+    "imageUrl": "https://images.pexels.com/photos/32630385/pexels-photo-32630385.jpeg?cs=srgb&dl=pexels-fashionneedles-32630385.jpg&fm=jpg"
+  },
+  {
+    "id": "el1",
+    "brand": "Apple",
+    "name": "AirPods Pro Travel",
+    "imageUrl": "https://images.pexels.com/photos/33033055/pexels-photo-33033055.jpeg?cs=srgb&dl=pexels-regeci-33033055.jpg&fm=jpg"
+  },
+  {
+    "id": "el2",
+    "brand": "Apple",
+    "name": "Apple Watch Transit",
+    "imageUrl": "https://images.pexels.com/photos/5081417/pexels-photo-5081417.jpeg?cs=srgb&dl=pexels-cottonbro-5081417.jpg&fm=jpg"
+  },
+  {
+    "id": "el3",
+    "brand": "Sony",
+    "name": "WH-1000XM5 Quiet Set",
+    "imageUrl": "https://images.pexels.com/photos/7772548/pexels-photo-7772548.jpeg?cs=srgb&dl=pexels-caleboquendo-7772548.jpg&fm=jpg"
+  },
+  {
+    "id": "el4",
+    "brand": "JBL",
+    "name": "Clip Speaker",
+    "imageUrl": "https://images.pexels.com/photos/18589085/pexels-photo-18589085.jpeg?cs=srgb&dl=pexels-gupta-sahil-140074270-18589085.jpg&fm=jpg"
+  },
+  {
+    "id": "dr1",
+    "brand": "Johnnie Walker",
+    "name": "Black Label 1L",
+    "imageUrl": "https://images.pexels.com/photos/35326382/pexels-photo-35326382.jpeg?cs=srgb&dl=pexels-didsss-35326382.jpg&fm=jpg"
+  },
+  {
+    "id": "dr2",
+    "brand": "Jack Daniel's",
+    "name": "Old No. 7 1L",
+    "imageUrl": "https://images.pexels.com/photos/616833/pexels-photo-616833.jpeg?cs=srgb&dl=pexels-isabella-mendes-107313-616833.jpg&fm=jpg"
+  },
+  {
+    "id": "dr3",
+    "brand": "Bombay Sapphire",
+    "name": "Bombay Sapphire 750ml",
+    "imageUrl": "https://images.pexels.com/photos/5947033/pexels-photo-5947033.jpeg?cs=srgb&dl=pexels-polina-tankilevitch-5947033.jpg&fm=jpg"
+  },
+  {
+    "id": "dr4",
+    "brand": "Corona",
+    "name": "Corona Extra 330ml",
+    "imageUrl": "https://images.pexels.com/photos/12907616/pexels-photo-12907616.jpeg?cs=srgb&dl=pexels-ylanite-koppens-1826990-12907616.jpg&fm=jpg"
+  },
+  {
+    "id": "fd1",
+    "brand": "Lindt",
+    "name": "Swiss Gift Selection",
+    "imageUrl": "https://images.pexels.com/photos/32054000/pexels-photo-32054000.jpeg?cs=srgb&dl=pexels-banu-422109548-32054000.jpg&fm=jpg"
+  },
+  {
+    "id": "fd2",
+    "brand": "Toblerone",
+    "name": "Travel Chocolate Pack",
+    "imageUrl": "https://images.pexels.com/photos/14456348/pexels-photo-14456348.jpeg?cs=srgb&dl=pexels-karolina-grabowska-5632371-14456348.jpg&fm=jpg"
+  },
+  {
+    "id": "fd3",
+    "brand": "Pringles",
+    "name": "Snack Break Crisps",
+    "imageUrl": "https://images.pexels.com/photos/13428176/pexels-photo-13428176.jpeg?cs=srgb&dl=pexels-mateusz-feliksik-2142543928-13428176.jpg&fm=jpg"
+  },
+  {
+    "id": "fd4",
+    "brand": "Reese's",
+    "name": "Peanut Candy Mix",
+    "imageUrl": "https://images.pexels.com/photos/32054002/pexels-photo-32054002.jpeg?cs=srgb&dl=pexels-banu-422109548-32054002.jpg&fm=jpg"
+  },
+  {
+    "id": "vt1",
+    "brand": "Polo Ralph Lauren",
+    "name": "Travel Polo Midnight",
+    "imageUrl": "https://images.pexels.com/photos/9558768/pexels-photo-9558768.jpeg?cs=srgb&dl=pexels-jcproductionsdigitalart-9558768.jpg&fm=jpg"
+  },
+  {
+    "id": "vt2",
+    "brand": "Tommy Hilfiger",
+    "name": "Downtown Bomber",
+    "imageUrl": "https://images.pexels.com/photos/7760256/pexels-photo-7760256.jpeg?cs=srgb&dl=pexels-pavel-danilyuk-7760256.jpg&fm=jpg"
+  },
+  {
+    "id": "vt3",
+    "brand": "Calvin Klein",
+    "name": "Essential Knit Sand",
+    "imageUrl": "https://images.pexels.com/photos/6311611/pexels-photo-6311611.jpeg?cs=srgb&dl=pexels-kowalievska-6311611.jpg&fm=jpg"
+  },
+  {
+    "id": "vt4",
+    "brand": "Nike Sportswear",
+    "name": "Manhattan Hoodie",
+    "imageUrl": "https://images.pexels.com/photos/9594667/pexels-photo-9594667.jpeg?cs=srgb&dl=pexels-ron-lach-9594667.jpg&fm=jpg"
+  }
+]

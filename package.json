@@ -1,0 +1,10 @@
+{
+  "name": "catalogo-ny",
+  "private": true,
+  "scripts": {
+    "sync:product-images": "node scripts/sync-product-images.cjs"
+  },
+  "dependencies": {
+    "sharp": "^0.34.4"
+  }
+}
