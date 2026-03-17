@@ -1055,7 +1055,10 @@
     }
   });
 
-  if (window.location.hash === "#categories" || window.location.hash === "#stores") {
+  var initialViewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+  var stageIsNearViewport = catalogStage.getBoundingClientRect().top <= (initialViewportHeight * 1.4);
+
+  if (window.location.hash === "#categories" || window.location.hash === "#stores" || stageIsNearViewport) {
     ensureCatalogReady();
   } else {
     scheduleCatalogInit();
