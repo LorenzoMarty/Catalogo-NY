@@ -5,17 +5,13 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>New York Freeshop | Hero Editorial</title>
-  <link href="https://fonts.googleapis.com" rel="preconnect" />
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-  <link as="font" crossorigin="" href="assets/fonts/inter-latin-400-600.woff2" rel="preload" type="font/woff2" />
-  <link as="image" fetchpriority="high" href="assets/ui/new-york-hero-860.webp"
+  <link as="font" crossorigin="" href="assets/fonts/cormorant-garamond-latin-500-600.woff2" rel="preload"
+    type="font/woff2" />
+  <link as="image" fetchpriority="high" href="assets/ui/new-york-hero-720.webp"
     imagesizes="100vw"
-    imagesrcset="assets/ui/new-york-hero-640.webp 640w, assets/ui/new-york-hero-860.webp 860w"
+    imagesrcset="assets/ui/new-york-hero-640.webp 640w, assets/ui/new-york-hero-720.webp 720w, assets/ui/new-york-hero-860.webp 860w"
     rel="preload" type="image/webp" />
   <link href="assets/css/fonts.css" rel="stylesheet" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap"
-    rel="stylesheet" />
   <style>
     :root {
       --lux-bg: #080a0d;
@@ -2180,14 +2176,31 @@
       .marquee-band,
       .store-marker,
       .product-brand-mark,
-      .lightbox-close {
-        backdrop-filter: blur(8px);
+      .lightbox-close,
+      .lightbox-sheet,
+      .store-note {
+        backdrop-filter: none;
+      }
+
+      body.is-scrolled .nav-shell {
+        background:
+          linear-gradient(180deg, rgba(16, 18, 24, 0.7), rgba(9, 11, 15, 0.54)),
+          rgba(8, 10, 13, 0.66);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+      }
+
+      .hero-rail-figure {
+        filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.26)) brightness(1.14) contrast(1.02) saturate(1.01);
+      }
+
+      .product-lightbox.is-open {
+        backdrop-filter: blur(10px);
       }
 
       .stores-track-shell::after {
         inset: calc(var(--nav-h) + 82px) 16px 20px;
         border-radius: 26px;
-        opacity: 0.18;
+        opacity: 0.12;
       }
 
       .stores-track-shell::before {
@@ -2688,8 +2701,8 @@
       <div class="hero-media parallax-media">
         <img alt="" aria-hidden="true" decoding="async" fetchpriority="high" height="538"
           sizes="100vw"
-          src="assets/ui/new-york-hero-860.webp"
-          srcset="assets/ui/new-york-hero-640.webp 640w, assets/ui/new-york-hero-860.webp 860w"
+          src="assets/ui/new-york-hero-720.webp"
+          srcset="assets/ui/new-york-hero-640.webp 640w, assets/ui/new-york-hero-720.webp 720w, assets/ui/new-york-hero-860.webp 860w"
           width="860" />
       </div>
       <div class="hero-grid grid-lines"></div>
@@ -2727,7 +2740,7 @@
               <img alt="" aria-hidden="true" decoding="async" height="1080"
                 sizes="(min-width: 1040px) 360px, (max-width: 767px) 260px, 30vw"
                 src="assets/ui/statue-360.webp"
-                srcset="assets/ui/statue-360.webp 360w, assets/ui/statue-720.webp 720w"
+                srcset="assets/ui/statue-360.webp 360w, assets/ui/statue-520.webp 520w, assets/ui/statue-720.webp 720w"
                 width="720" />
             </figure>
           </aside>
@@ -2810,8 +2823,8 @@
             <div class="store-scene">
               <img alt="Fachada da New York Filial Bento no Centro de Uruguaiana" class="store-image" decoding="async"
                 draggable="false" height="1536" loading="lazy" sizes="100vw"
-                src="assets/ui/store-bento-768.webp"
-                srcset="assets/ui/store-bento-768.webp 768w, assets/ui/store-bento-1024.webp 1024w"
+                src="assets/ui/store-bento-640.webp"
+                srcset="assets/ui/store-bento-640.webp 640w, assets/ui/store-bento-768.webp 768w, assets/ui/store-bento-1024.webp 1024w"
                 width="1024" />
               <div aria-hidden="true" class="store-marker-stack">
                 <span class="store-marker store-marker-main">Gen. Bento Martins</span>
@@ -2849,8 +2862,8 @@
             <div class="store-scene">
               <img alt="Fachada da New York Filial Duque no Centro de Uruguaiana" class="store-image" decoding="async"
                 draggable="false" height="1536" loading="lazy" sizes="100vw"
-                src="assets/ui/store-duque-768.webp"
-                srcset="assets/ui/store-duque-768.webp 768w, assets/ui/store-duque-1024.webp 1024w"
+                src="assets/ui/store-duque-640.webp"
+                srcset="assets/ui/store-duque-640.webp 640w, assets/ui/store-duque-768.webp 768w, assets/ui/store-duque-1024.webp 1024w"
                 width="1024" />
               <div aria-hidden="true" class="store-marker-stack">
                 <span class="store-marker store-marker-main">Duque de Caxias</span>
@@ -2888,8 +2901,8 @@
             <div class="store-scene">
               <img alt="Fachada da New York Matriz no Centro de Uruguaiana" class="store-image" decoding="async"
                 draggable="false" height="1536" loading="lazy" sizes="100vw"
-                src="assets/ui/store-matriz-768.webp"
-                srcset="assets/ui/store-matriz-768.webp 768w, assets/ui/store-matriz-1024.webp 1024w"
+                src="assets/ui/store-matriz-640.webp"
+                srcset="assets/ui/store-matriz-640.webp 640w, assets/ui/store-matriz-768.webp 768w, assets/ui/store-matriz-1024.webp 1024w"
                 width="1024" />
               <div aria-hidden="true" class="store-marker-stack">
                 <span class="store-marker store-marker-main">Domingos de Almeida</span>
@@ -2954,9 +2967,6 @@
     </div>
   </div>
 
-  <script defer src="assets/catalog-image-manifest.js"></script>
-  <script defer src="assets/catalog-fold.js"></script>
-  <script defer src="assets/store-fold.js"></script>
   <script defer src="assets/js/app.js"></script>
 </body>
 
