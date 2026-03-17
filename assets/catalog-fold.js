@@ -22,6 +22,9 @@
   var lightboxDescription = document.getElementById("lightbox-description");
   var lightboxClose = document.getElementById("lightbox-close");
   var imageManifest = window.CATALOG_IMAGE_MANIFEST || {};
+  var catalogReady = false;
+  var catalogObserver = null;
+  var idleHandle = 0;
 
   if (!catalogStage || !sectorList || !productGrid) {
     return;
@@ -955,7 +958,59 @@
     renderProducts();
   }
 
+  function clearScheduledInit() {
+    if (catalogObserver) {
+      catalogObserver.disconnect();
+      catalogObserver = null;
+    }
+
+    if (!idleHandle) {
+      return;
+    }
+
+    if (typeof window.cancelIdleCallback === "function") {
+      window.cancelIdleCallback(idleHandle);
+    } else {
+      window.clearTimeout(idleHandle);
+    }
+
+    idleHandle = 0;
+  }
+
+  function ensureCatalogReady() {
+    if (catalogReady) {
+      return;
+    }
+
+    catalogReady = true;
+    clearScheduledInit();
+    renderCatalog();
+  }
+
+  function scheduleCatalogInit() {
+    if ("IntersectionObserver" in window) {
+      catalogObserver = new window.IntersectionObserver(function (entries) {
+        if (entries.some(function (entry) { return entry.isIntersecting || entry.intersectionRatio > 0; })) {
+          ensureCatalogReady();
+        }
+      }, {
+        rootMargin: "420px 0px"
+      });
+
+      catalogObserver.observe(catalogStage);
+    }
+
+    if (typeof window.requestIdleCallback === "function") {
+      idleHandle = window.requestIdleCallback(ensureCatalogReady, { timeout: 1600 });
+      return;
+    }
+
+    idleHandle = window.setTimeout(ensureCatalogReady, 900);
+  }
+
   sectorList.addEventListener("click", function (event) {
+    ensureCatalogReady();
+
     var target = event.target.closest("[data-sector-id]");
     if (!target) {
       return;
@@ -967,6 +1022,8 @@
   });
 
   productGrid.addEventListener("click", function (event) {
+    ensureCatalogReady();
+
     var target = event.target.closest("[data-product-id]");
     if (!target) {
       return;
@@ -998,5 +1055,9 @@
     }
   });
 
-  renderCatalog();
+  if (window.location.hash === "#categories" || window.location.hash === "#stores") {
+    ensureCatalogReady();
+  } else {
+    scheduleCatalogInit();
+  }
 }());

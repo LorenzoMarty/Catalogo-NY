@@ -214,6 +214,12 @@
     window.addEventListener("scroll", function () {
       scheduleRender(false);
     }, { passive: true });
+    window.addEventListener("touchstart", function () {
+      scheduleRender(false);
+    }, { passive: true });
+    window.addEventListener("touchmove", function () {
+      scheduleRender(false);
+    }, { passive: true });
     window.addEventListener("resize", scheduleMeasure, { passive: true });
     window.addEventListener("orientationchange", scheduleMeasure, { passive: true });
     window.addEventListener("load", scheduleMeasure, { passive: true });
