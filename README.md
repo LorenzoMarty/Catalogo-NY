@@ -8,7 +8,7 @@ Este projeto:
 
 - usa `index.html` na raiz
 - serve assets locais diretamente do repositorio
-- gera imagens otimizadas de produtos em `public/products/`
+- gera imagens otimizadas de produtos em `assets/products/`
 - nao depende de Next, React, Vite ou outro framework de build
 
 ## Estrutura importante
@@ -19,7 +19,8 @@ Este projeto:
 - `scripts/sync-product-images.cjs`
 - `data/product-image-sources.json`
 - `data/catalog-image-manifest.json`
-- `public/products/`
+- `assets/products/`
+- `assets/ui/`
 
 ## Fluxo recomendado
 
@@ -56,7 +57,8 @@ Esse comando:
 
 Antes do deploy, confirme que estes arquivos estao commitados:
 
-- `public/products/*`
+- `assets/products/*`
+- `assets/ui/*`
 - `assets/catalog-image-manifest.js`
 - `data/catalog-image-manifest.json`
 
@@ -78,6 +80,7 @@ Output Directory: deixe vazio
 6. Clique em `Deploy`.
 
 Como o projeto e estatico e o `index.html` esta na raiz, o Vercel serve os arquivos diretamente do repositorio publicado.
+Os assets otimizados ficam em `assets/`, evitando conflito com a heuristica especial do Vercel para uma pasta top-level `public/`.
 
 ## Deploy no Vercel via CLI
 
@@ -115,7 +118,7 @@ vercel --prod
 npm run sync:product-images
 ```
 
-3. Revise os arquivos gerados em `public/products/`.
+3. Revise os arquivos gerados em `assets/products/` e `assets/ui/`.
 4. Faca commit dos arquivos novos ou alterados.
 5. Publique no Vercel.
 
@@ -124,7 +127,7 @@ npm run sync:product-images
 O frontend usa caminhos locais como:
 
 ```txt
-public/products/pf1-sauvage-elixir-60ml.webp
+assets/products/pf1-sauvage-elixir-60ml.webp
 ```
 
 Como esses arquivos fazem parte do repositorio publicado, o Vercel os entrega localmente sem depender do servidor de origem da imagem.
@@ -139,7 +142,7 @@ Rode novamente:
 npm run sync:product-images
 ```
 
-Depois confirme se o arquivo existe em `public/products/`.
+Depois confirme se o arquivo existe em `assets/products/`.
 
 ### URL externa quebrada
 
@@ -149,9 +152,14 @@ O script gera um fallback local para manter o deploy funcional, mas o ideal e co
 
 Deixe `Build Command` vazio e mantenha o preset como `Other`.
 
+### Continua dando 404 no projeto ja conectado
+
+Confirme em `Project Settings > Build and Output Settings` que `Output Directory` nao ficou salvo como `public`.
+Se estiver preenchido, limpe o campo ou defina `.` e redeploy.
+
 ### Preciso regenerar tudo do zero
 
-1. Apague os arquivos dentro de `public/products/`.
+1. Apague os arquivos dentro de `assets/products/` e `assets/ui/`.
 2. Rode `npm run sync:product-images`.
 3. Faca commit dos arquivos gerados novamente.
 
@@ -159,7 +167,8 @@ Deixe `Build Command` vazio e mantenha o preset como `Other`.
 
 - `npm install`
 - `npm run sync:product-images`
-- revisar `public/products/`
+- revisar `assets/products/`
+- revisar `assets/ui/`
 - revisar `assets/catalog-image-manifest.js`
 - revisar `data/catalog-image-manifest.json`
 - commitar os arquivos gerados
