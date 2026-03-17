@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html class="antialiased overflow-x-hidden" lang="pt-BR">
+<html class="antialiased" lang="pt-BR">
 
 <head>
   <meta charset="utf-8" />
@@ -32,6 +32,7 @@
       --shadow-strong: 0 32px 96px rgba(0, 0, 0, 0.42);
       --radius-lg: 24px;
       --nav-h: 70px;
+      --app-height: 100vh;
     }
 
     * {
@@ -40,7 +41,7 @@
 
     html {
       scroll-behavior: smooth;
-      overflow-x: hidden;
+      overflow-x: clip;
       background: var(--lux-dark);
     }
 
@@ -54,7 +55,7 @@
         radial-gradient(circle at top left, rgba(5, 52, 151, 0.16), transparent 30%),
         radial-gradient(circle at 82% 12%, rgba(121, 195, 255, 0.14), transparent 24%),
         linear-gradient(180deg, #111419 0%, var(--lux-dark) 100%);
-      overflow-x: hidden;
+      overflow-x: clip;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -1527,7 +1528,7 @@
 
     .stores-stage {
       position: relative;
-      overflow: hidden;
+      overflow: visible;
       background:
         radial-gradient(circle at 14% 22%, rgba(190, 148, 93, 0.16), transparent 24%),
         radial-gradient(circle at 86% 72%, rgba(116, 150, 201, 0.12), transparent 30%),
@@ -1547,7 +1548,7 @@
       mask-image: linear-gradient(180deg, transparent 0, black 14%, black 88%, transparent 100%);
     }
 
-    .stores-stage::after {
+    .stores-track-shell::after {
       content: "";
       position: absolute;
       inset: 12% 5%;
@@ -1558,15 +1559,24 @@
       mask-image: linear-gradient(135deg, transparent 0, black 18%, black 84%, transparent 100%);
     }
 
-    .stores-shell,
-    .stores-track-shell {
+    .stores-shell {
       position: relative;
-      min-height: 100vh;
-      min-height: 100svh;
-      overflow: hidden;
+      min-height: var(--stores-section-height, var(--app-height));
+      height: var(--stores-section-height, var(--app-height));
+      overflow: visible;
     }
 
-    .stores-shell::before {
+    .stores-track-shell {
+      position: sticky;
+      top: 0;
+      min-height: var(--app-height);
+      height: var(--app-height);
+      overflow: hidden;
+      overscroll-behavior: contain;
+      isolation: isolate;
+    }
+
+    .stores-track-shell::before {
       content: "";
       position: absolute;
       left: clamp(20px, 6vw, 72px);
@@ -1582,9 +1592,10 @@
     .stores-track {
       display: flex;
       width: max-content;
-      height: 100vh;
-      height: 100svh;
+      min-height: var(--app-height);
+      height: var(--app-height);
       will-change: transform;
+      transform: translate3d(0, 0, 0);
     }
 
     .store-panel {
@@ -1595,8 +1606,7 @@
       isolation: isolate;
       flex: 0 0 100vw;
       width: 100vw;
-      min-height: 100vh;
-      min-height: 100svh;
+      min-height: var(--app-height);
       overflow: hidden;
       background: #07090d;
     }
@@ -1740,8 +1750,7 @@
         "editorial note";
       gap: clamp(28px, 4vw, 40px) clamp(24px, 4vw, 56px);
       align-content: space-between;
-      min-height: 100vh;
-      min-height: 100svh;
+      min-height: var(--app-height);
       padding: calc(var(--nav-h) + 28px) clamp(18px, 4vw, 44px) 24px;
     }
 
@@ -1972,25 +1981,6 @@
       gap: 8px;
     }
 
-    .stores-stage.is-native-scroll .stores-track-shell {
-      overflow-x: auto;
-      overflow-y: hidden;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior-x: contain;
-      touch-action: pan-x;
-    }
-
-    .stores-stage.is-native-scroll .stores-track-shell::-webkit-scrollbar {
-      display: none;
-    }
-
-    .stores-stage.is-native-scroll .store-panel {
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-    }
-
     @keyframes brandFloat {
       0% {
         transform: translateX(0);
@@ -2081,13 +2071,13 @@
     }
 
     @media (max-width: 767px) {
-      .stores-stage::after {
+      .stores-track-shell::after {
         inset: calc(var(--nav-h) + 82px) 16px 20px;
         border-radius: 26px;
         opacity: 0.18;
       }
 
-      .stores-shell::before {
+      .stores-track-shell::before {
         display: none;
       }
 
@@ -2195,15 +2185,6 @@
         display: none;
       }
 
-      .stores-stage.is-native-scroll .stores-track-shell {
-        scroll-snap-type: x proximity;
-        scroll-behavior: smooth;
-        touch-action: pan-x pan-y;
-      }
-
-      .stores-stage.is-native-scroll .store-panel {
-        scroll-snap-stop: normal;
-      }
     }
 
     @media (max-width: 560px) {
@@ -2658,10 +2639,13 @@
       </div>
     </section>
 
-    <section aria-labelledby="stores-heading" class="stores-stage" id="stores">
-      <h2 class="sr-only" id="stores-heading">Tres lojas fisicas do New York Freeshop no Centro de Uruguaiana</h2>
+  </div>
 
-      <div class="stores-shell">
+  <section aria-labelledby="stores-heading" class="stores-stage" id="stores">
+    <h2 class="sr-only" id="stores-heading">Tres lojas fisicas do New York Freeshop no Centro de Uruguaiana</h2>
+
+    <div class="stores-shell">
+      <div class="stores-track-shell" id="stores-track-shell">
         <div aria-hidden="true" class="stores-progress">
           <span class="stores-progress-kicker">Centro de Uruguaiana / 3 enderecos</span>
           <p class="stores-progress-name display-font" id="stores-progress-name">New York Filial Bento</p>
@@ -2674,120 +2658,118 @@
           </div>
         </div>
 
-        <div class="stores-track-shell" id="stores-track-shell">
-          <div class="stores-track" id="stores-track">
-            <article class="store-panel is-active" data-store-index="0" data-store-name="New York Filial Bento"
-              style="--store-accent: rgba(207, 164, 102, 0.24); --store-accent-strong: rgba(245, 214, 161, 0.5); --store-position: center 42%;">
-              <div class="store-scene">
-                <img alt="Fachada da New York Filial Bento no Centro de Uruguaiana" class="store-image"
-                  src="assets/images/filial-bento.png" />
-                <div aria-hidden="true" class="store-marker-stack">
-                  <span class="store-marker store-marker-main">Gen. Bento Martins</span>
+        <div class="stores-track" id="stores-track">
+          <article class="store-panel is-active" data-store-index="0" data-store-name="New York Filial Bento"
+            style="--store-accent: rgba(207, 164, 102, 0.24); --store-accent-strong: rgba(245, 214, 161, 0.5); --store-position: center 42%;">
+            <div class="store-scene">
+              <img alt="Fachada da New York Filial Bento no Centro de Uruguaiana" class="store-image"
+                src="assets/images/filial-bento.png" />
+              <div aria-hidden="true" class="store-marker-stack">
+                <span class="store-marker store-marker-main">Gen. Bento Martins</span>
+              </div>
+            </div>
+
+            <div class="store-layout">
+              <div class="store-topline">
+                <span>01 / centro de uruguaiana</span>
+                <span class="store-status">Uruguaiana - RS</span>
+              </div>
+
+              <div class="store-editorial">
+                <span class="store-district">Centro de Uruguaiana / Gen. Bento Martins</span>
+                <h3 class="store-title display-font">New York Filial Bento</h3>
+                <p class="store-mobile-signature">Centro &bull; Gen. Bento Martins, 2968</p>
+                <p class="store-tagline">A poucos passos da principal avenida.</p>
+              </div>
+
+              <div class="store-note">
+                <span class="store-note-label">Endereco oficial</span>
+                <p class="store-note-location">R. Gen. Bento Martins, 2968</p>
+                <p class="store-address">Centro, Uruguaiana - RS, 97501-636</p>
+                <div class="store-note-meta">
+                  <span>No coracao do centro</span>
                 </div>
               </div>
 
-              <div class="store-layout">
-                <div class="store-topline">
-                  <span>01 / centro de uruguaiana</span>
-                  <span class="store-status">Uruguaiana - RS</span>
-                </div>
+              <span aria-hidden="true" class="store-number">01</span>
+            </div>
+          </article>
 
-                <div class="store-editorial">
-                  <span class="store-district">Centro de Uruguaiana / Gen. Bento Martins</span>
-                  <h3 class="store-title display-font">New York Filial Bento</h3>
-                  <p class="store-mobile-signature">Centro &bull; Gen. Bento Martins, 2968</p>
-                  <p class="store-tagline">A poucos passos da principal avenida.</p>
-                </div>
-
-                <div class="store-note">
-                  <span class="store-note-label">Endereco oficial</span>
-                  <p class="store-note-location">R. Gen. Bento Martins, 2968</p>
-                  <p class="store-address">Centro, Uruguaiana - RS, 97501-636</p>
-                  <div class="store-note-meta">
-                    <span>No coracao do centro</span>
-                  </div>
-                </div>
-
-                <span aria-hidden="true" class="store-number">01</span>
+          <article class="store-panel" data-store-index="1" data-store-name="New York Filial Duque"
+            style="--store-accent: rgba(150, 181, 202, 0.2); --store-accent-strong: rgba(214, 232, 245, 0.44); --store-position: center 48%;">
+            <div class="store-scene">
+              <img alt="Fachada da New York Filial Duque no Centro de Uruguaiana" class="store-image"
+                src="assets/images/filial-duque.png" />
+              <div aria-hidden="true" class="store-marker-stack">
+                <span class="store-marker store-marker-main">Duque de Caxias</span>
               </div>
-            </article>
+            </div>
 
-            <article class="store-panel" data-store-index="1" data-store-name="New York Filial Duque"
-              style="--store-accent: rgba(150, 181, 202, 0.2); --store-accent-strong: rgba(214, 232, 245, 0.44); --store-position: center 48%;">
-              <div class="store-scene">
-                <img alt="Fachada da New York Filial Duque no Centro de Uruguaiana" class="store-image"
-                  src="assets/images/filial-duque.png" />
-                <div aria-hidden="true" class="store-marker-stack">
-                  <span class="store-marker store-marker-main">Duque de Caxias</span>
-                </div>
+            <div class="store-layout">
+              <div class="store-topline">
+                <span>02 / centro de uruguaiana</span>
+                <span class="store-status">Uruguaiana - RS</span>
               </div>
 
-              <div class="store-layout">
-                <div class="store-topline">
-                  <span>02 / centro de uruguaiana</span>
-                  <span class="store-status">Uruguaiana - RS</span>
-                </div>
-
-                <div class="store-editorial">
-                  <span class="store-district">Centro de Uruguaiana / Duque de Caxias</span>
-                  <h3 class="store-title display-font">New York Filial Duque</h3>
-                  <p class="store-mobile-signature">Centro &bull; Duque de Caxias, 1518</p>
-                  <p class="store-tagline">Entre vitrines e movimento urbano.</p>
-                </div>
-
-                <div class="store-note">
-                  <span class="store-note-label">Endereco oficial</span>
-                  <p class="store-note-location">Rua Duque de Caxias, 1518</p>
-                  <p class="store-address">Centro</p>
-                  <div class="store-note-meta">
-                    <span>Entre fluxo e conveniencia</span>
-                  </div>
-                </div>
-
-                <span aria-hidden="true" class="store-number">02</span>
+              <div class="store-editorial">
+                <span class="store-district">Centro de Uruguaiana / Duque de Caxias</span>
+                <h3 class="store-title display-font">New York Filial Duque</h3>
+                <p class="store-mobile-signature">Centro &bull; Duque de Caxias, 1518</p>
+                <p class="store-tagline">Entre vitrines e movimento urbano.</p>
               </div>
-            </article>
 
-            <article class="store-panel" data-store-index="2" data-store-name="New York Matriz"
-              style="--store-accent: rgba(132, 149, 208, 0.2); --store-accent-strong: rgba(209, 220, 255, 0.46); --store-position: center 46%;">
-              <div class="store-scene">
-                <img alt="Fachada da New York Matriz no Centro de Uruguaiana" class="store-image"
-                  src="assets/images/matriz.png" />
-                <div aria-hidden="true" class="store-marker-stack">
-                  <span class="store-marker store-marker-main">Domingos de Almeida</span>
+              <div class="store-note">
+                <span class="store-note-label">Endereco oficial</span>
+                <p class="store-note-location">Rua Duque de Caxias, 1518</p>
+                <p class="store-address">Centro</p>
+                <div class="store-note-meta">
+                  <span>Entre fluxo e conveniencia</span>
                 </div>
               </div>
 
-              <div class="store-layout">
-                <div class="store-topline">
-                  <span>03 / centro de uruguaiana</span>
-                  <span class="store-status">Uruguaiana - RS</span>
-                </div>
+              <span aria-hidden="true" class="store-number">02</span>
+            </div>
+          </article>
 
-                <div class="store-editorial">
-                  <span class="store-district">Centro de Uruguaiana / Domingos de Almeida</span>
-                  <h3 class="store-title display-font">New York Matriz</h3>
-                  <p class="store-mobile-signature">Centro &bull; Domingos de Almeida, 2006</p>
-                  <p class="store-tagline">Centro pulsando, vitrine consolidada.</p>
-                </div>
-
-                <div class="store-note">
-                  <span class="store-note-label">Endereco oficial</span>
-                  <p class="store-note-location">R. Domingos de Almeida, 2006</p>
-                  <p class="store-address">Centro, Uruguaiana - RS, 96501-516</p>
-                  <div class="store-note-meta">
-                    <span>Marca consolidada no centro</span>
-                  </div>
-                </div>
-
-                <span aria-hidden="true" class="store-number">03</span>
+          <article class="store-panel" data-store-index="2" data-store-name="New York Matriz"
+            style="--store-accent: rgba(132, 149, 208, 0.2); --store-accent-strong: rgba(209, 220, 255, 0.46); --store-position: center 46%;">
+            <div class="store-scene">
+              <img alt="Fachada da New York Matriz no Centro de Uruguaiana" class="store-image"
+                src="assets/images/matriz.png" />
+              <div aria-hidden="true" class="store-marker-stack">
+                <span class="store-marker store-marker-main">Domingos de Almeida</span>
               </div>
-            </article>
-          </div>
+            </div>
+
+            <div class="store-layout">
+              <div class="store-topline">
+                <span>03 / centro de uruguaiana</span>
+                <span class="store-status">Uruguaiana - RS</span>
+              </div>
+
+              <div class="store-editorial">
+                <span class="store-district">Centro de Uruguaiana / Domingos de Almeida</span>
+                <h3 class="store-title display-font">New York Matriz</h3>
+                <p class="store-mobile-signature">Centro &bull; Domingos de Almeida, 2006</p>
+                <p class="store-tagline">Centro pulsando, vitrine consolidada.</p>
+              </div>
+
+              <div class="store-note">
+                <span class="store-note-label">Endereco oficial</span>
+                <p class="store-note-location">R. Domingos de Almeida, 2006</p>
+                <p class="store-address">Centro, Uruguaiana - RS, 96501-516</p>
+                <div class="store-note-meta">
+                  <span>Marca consolidada no centro</span>
+                </div>
+              </div>
+
+              <span aria-hidden="true" class="store-number">03</span>
+            </div>
+          </article>
         </div>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 
   <div aria-hidden="true" class="product-lightbox" id="product-lightbox">
     <div class="lightbox-backdrop" data-close-lightbox></div>
