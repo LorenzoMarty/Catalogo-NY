@@ -5,7 +5,7 @@ const sharp = require("sharp");
 
 const sourceEntries = require("../data/product-image-sources.json");
 
-const OUTPUT_DIR = path.resolve(__dirname, "../public/products");
+const OUTPUT_DIR = path.resolve(__dirname, "../assets/products");
 const MANIFEST_JSON_PATH = path.resolve(__dirname, "../data/catalog-image-manifest.json");
 const MANIFEST_JS_PATH = path.resolve(__dirname, "../assets/catalog-image-manifest.js");
 const CONCURRENCY = 4;
@@ -124,7 +124,20 @@ async function fetchWithTimeout(url, timeoutMs) {
 }
 
 function relativeAssetPath(fileName) {
-  return "public/products/" + fileName;
+  return "assets/products/" + fileName;
+}
+
+function normalizeManifestEntry(entry) {
+  if (!entry) {
+    return entry;
+  }
+
+  return {
+    ...entry,
+    src: entry.src ? entry.src.replace(/^public\/products\//, "assets/products/") : entry.src,
+    thumb: entry.thumb ? entry.thumb.replace(/^public\/products\//, "assets/products/") : entry.thumb,
+    srcset: entry.srcset ? entry.srcset.replace(/public\/products\//g, "assets/products/") : entry.srcset
+  };
 }
 
 function createFallbackSvg(entry) {
@@ -257,7 +270,7 @@ async function processEntry(entry, previousManifest) {
     return {
       entryId: entry.id,
       status: "cached",
-      manifestEntry: previous
+      manifestEntry: normalizeManifestEntry(previous)
     };
   }
 
@@ -274,7 +287,7 @@ async function processEntry(entry, previousManifest) {
       return {
         entryId: entry.id,
         status: "stale-cache",
-        manifestEntry: previous,
+        manifestEntry: normalizeManifestEntry(previous),
         error: error.message
       };
     }
