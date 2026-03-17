@@ -21,6 +21,7 @@
   var lightboxNote = document.getElementById("lightbox-note");
   var lightboxDescription = document.getElementById("lightbox-description");
   var lightboxClose = document.getElementById("lightbox-close");
+  var imageManifest = window.CATALOG_IMAGE_MANIFEST || {};
 
   if (!catalogStage || !sectorList || !productGrid) {
     return;
@@ -741,10 +742,34 @@
     });
   }
 
+  function getProductImageAsset(product) {
+    if (!product || !product.id) {
+      return null;
+    }
+
+    return imageManifest[product.id] || null;
+  }
+
+  function createImageMarkup(product, asset, isLightbox) {
+    var src = isLightbox ? asset.src : (asset.thumb || asset.src);
+    var sizes = isLightbox ? (asset.lightboxSizes || asset.sizes || "92vw") : (asset.sizes || "50vw");
+    var loadingAttr = isLightbox
+      ? ' decoding="async" fetchpriority="high"'
+      : ' loading="lazy" decoding="async" fetchpriority="low"';
+    var srcsetAttr = asset.srcset ? ` srcset="${escapeHtml(asset.srcset)}"` : "";
+    var sizesAttr = sizes ? ` sizes="${escapeHtml(sizes)}"` : "";
+    var placeholderStyle = asset.placeholder
+      ? ` background-image:url('${escapeHtml(asset.placeholder)}'); background-size:cover;`
+      : "";
+
+    return `<img alt="${escapeHtml(product.name)}" height="${asset.height}" src="${escapeHtml(src)}"${srcsetAttr}${sizesAttr} style="object-position:${product.position || "center center"};${placeholderStyle}" width="${asset.width}"${loadingAttr} />`;
+  }
+
   function createMediaMarkup(product, isLightbox) {
-    var loadingAttr = isLightbox ? "" : ' loading="lazy" decoding="async"';
-    if (product.image) {
-      return `<img alt="${escapeHtml(product.name)}" src="${escapeHtml(product.image)}" style="object-position:${product.position || "center center"};"${loadingAttr} />`;
+    var asset = getProductImageAsset(product);
+
+    if (asset && asset.src) {
+      return createImageMarkup(product, asset, isLightbox);
     }
 
     if (product.art) {
