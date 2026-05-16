@@ -1,0 +1,79 @@
+<section aria-labelledby="stores-heading" class="stores-stage" id="stores" #stage>
+  <h2 class="sr-only" id="stores-heading">
+    Tr&ecirc;s lojas f&iacute;sicas do New York Freeshop no Centro de Uruguaiana
+  </h2>
+
+  <div class="stores-shell" #storesShell>
+    <div class="stores-track-shell" id="stores-track-shell" #trackShell>
+      <div aria-hidden="true" class="stores-progress">
+        <span class="stores-progress-kicker">Centro de Uruguaiana / 3 endere&ccedil;os</span>
+        <p class="stores-progress-name display-font" id="stores-progress-name">{{ currentStore().name }}</p>
+        <div class="stores-progress-bar">
+          <span class="stores-progress-fill" id="stores-progress-fill" #progressFill></span>
+        </div>
+        <div class="stores-progress-count">
+          <span id="stores-current">{{ currentStore().displayIndex }}</span>
+          <span>/ 03</span>
+        </div>
+      </div>
+
+      <div class="stores-track" id="stores-track" #track>
+        @for (store of stores; track store.id; let index = $index) {
+          <article
+            [attr.data-store-index]="index"
+            [attr.data-store-name]="store.name"
+            [class.is-active]="index === activeIndex()"
+            [style.--store-accent]="store.accent"
+            [style.--store-accent-strong]="store.accentStrong"
+            [style.--store-position]="store.position"
+            class="store-panel"
+          >
+            <div class="store-scene">
+              <img
+                #storeImage
+                [alt]="store.imageAlt"
+                [attr.height]="store.imageHeight"
+                [attr.width]="store.imageWidth"
+                [src]="store.imageSrc"
+                [attr.srcset]="store.imageSrcset"
+                class="store-image"
+                decoding="async"
+                draggable="false"
+                loading="lazy"
+                sizes="100vw"
+              />
+              <div aria-hidden="true" class="store-marker-stack">
+                <span class="store-marker store-marker-main">{{ store.marker }}</span>
+              </div>
+            </div>
+
+            <div class="store-layout">
+              <div class="store-topline">
+                <span>{{ store.displayIndex }} / centro de uruguaiana</span>
+                <span class="store-status">{{ store.status }}</span>
+              </div>
+
+              <div class="store-editorial">
+                <span class="store-district">{{ store.district }}</span>
+                <h3 class="store-title display-font">{{ store.title }}</h3>
+                <p class="store-mobile-signature">{{ store.mobileSignature }}</p>
+                <p class="store-tagline">{{ store.tagline }}</p>
+              </div>
+
+              <div class="store-note">
+                <span class="store-note-label">Endere&ccedil;o oficial</span>
+                <p class="store-note-location">{{ store.noteLocation }}</p>
+                <p class="store-address">{{ store.address }}</p>
+                <div class="store-note-meta">
+                  <span>{{ store.noteMeta }}</span>
+                </div>
+              </div>
+
+              <span aria-hidden="true" class="store-number">{{ store.displayIndex }}</span>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  </div>
+</section>
