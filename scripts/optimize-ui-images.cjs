@@ -4,43 +4,43 @@ const sharp = require("sharp");
 
 const jobs = [
   {
-    input: "assets/images/new_york.png",
+    input: "src/assets/images/new_york.png",
     outputs: [
-      { output: "assets/ui/new-york-hero-720.webp", width: 720, quality: 73 },
-      { output: "assets/ui/new-york-hero-860.webp", width: 860, quality: 74 },
-      { output: "assets/ui/new-york-hero-640.webp", width: 640, quality: 72 }
+      { output: "src/assets/ui/new-york-hero-720.webp", width: 720, quality: 73 },
+      { output: "src/assets/ui/new-york-hero-860.webp", width: 860, quality: 74 },
+      { output: "src/assets/ui/new-york-hero-640.webp", width: 640, quality: 72 }
     ]
   },
   {
-    input: "assets/images/statue.png",
+    input: "src/assets/images/statue.png",
     outputs: [
-      { output: "assets/ui/statue-520.webp", width: 520, quality: 73 },
-      { output: "assets/ui/statue-720.webp", width: 720, quality: 74 },
-      { output: "assets/ui/statue-360.webp", width: 360, quality: 72 }
+      { output: "src/assets/ui/statue-520.webp", width: 520, quality: 73 },
+      { output: "src/assets/ui/statue-720.webp", width: 720, quality: 74 },
+      { output: "src/assets/ui/statue-360.webp", width: 360, quality: 72 }
     ]
   },
   {
-    input: "assets/images/filial-bento.png",
+    input: "src/assets/images/filial-bento.png",
     outputs: [
-      { output: "assets/ui/store-bento-640.webp", width: 640, quality: 70 },
-      { output: "assets/ui/store-bento-1024.webp", width: 1024, quality: 76 },
-      { output: "assets/ui/store-bento-768.webp", width: 768, quality: 72 }
+      { output: "src/assets/ui/store-bento-640.webp", width: 640, quality: 70 },
+      { output: "src/assets/ui/store-bento-1024.webp", width: 1024, quality: 76 },
+      { output: "src/assets/ui/store-bento-768.webp", width: 768, quality: 72 }
     ]
   },
   {
-    input: "assets/images/filial-duque.png",
+    input: "src/assets/images/filial-duque.png",
     outputs: [
-      { output: "assets/ui/store-duque-640.webp", width: 640, quality: 70 },
-      { output: "assets/ui/store-duque-1024.webp", width: 1024, quality: 76 },
-      { output: "assets/ui/store-duque-768.webp", width: 768, quality: 72 }
+      { output: "src/assets/ui/store-duque-640.webp", width: 640, quality: 70 },
+      { output: "src/assets/ui/store-duque-1024.webp", width: 1024, quality: 76 },
+      { output: "src/assets/ui/store-duque-768.webp", width: 768, quality: 72 }
     ]
   },
   {
-    input: "assets/images/matriz.png",
+    input: "src/assets/images/matriz.png",
     outputs: [
-      { output: "assets/ui/store-matriz-640.webp", width: 640, quality: 70 },
-      { output: "assets/ui/store-matriz-1024.webp", width: 1024, quality: 76 },
-      { output: "assets/ui/store-matriz-768.webp", width: 768, quality: 72 }
+      { output: "src/assets/ui/store-matriz-640.webp", width: 640, quality: 70 },
+      { output: "src/assets/ui/store-matriz-1024.webp", width: 1024, quality: 76 },
+      { output: "src/assets/ui/store-matriz-768.webp", width: 768, quality: 72 }
     ]
   }
 ];

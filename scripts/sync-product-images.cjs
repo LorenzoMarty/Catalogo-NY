@@ -5,9 +5,8 @@ const sharp = require("sharp");
 
 const sourceEntries = require("../data/product-image-sources.json");
 
-const OUTPUT_DIR = path.resolve(__dirname, "../assets/products");
+const OUTPUT_DIR = path.resolve(__dirname, "../src/assets/products");
 const MANIFEST_JSON_PATH = path.resolve(__dirname, "../data/catalog-image-manifest.json");
-const MANIFEST_JS_PATH = path.resolve(__dirname, "../assets/catalog-image-manifest.js");
 const CONCURRENCY = 4;
 const MAX_WIDTH = 1200;
 const THUMB_WIDTH = 480;
@@ -312,23 +311,6 @@ async function processEntry(entry, previousManifest) {
   }
 }
 
-function buildManifestScript(manifest) {
-  return [
-    "(function (root, factory) {",
-    "  var manifest = factory();",
-    "",
-    "  if (typeof module === \"object\" && module.exports) {",
-    "    module.exports = manifest;",
-    "  }",
-    "",
-    "  root.CATALOG_IMAGE_MANIFEST = manifest;",
-    "}(typeof globalThis !== \"undefined\" ? globalThis : this, function () {",
-    "  return " + JSON.stringify(manifest, null, 2) + ";",
-    "}));",
-    ""
-  ].join("\n");
-}
-
 async function main() {
   await ensureDir(OUTPUT_DIR);
 
@@ -354,7 +336,6 @@ async function main() {
   });
 
   await fs.writeFile(MANIFEST_JSON_PATH, JSON.stringify(nextManifest, null, 2) + "\n", "utf8");
-  await fs.writeFile(MANIFEST_JS_PATH, buildManifestScript(nextManifest), "utf8");
 
   const summary = results.reduce(function (accumulator, result) {
     accumulator[result.status] = (accumulator[result.status] || 0) + 1;
