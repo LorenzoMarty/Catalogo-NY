@@ -3,31 +3,29 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "dev": "vite",
+    "start": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
     "sync:product-images": "node scripts/sync-product-images.cjs",
     "optimize:ui-images": "node scripts/optimize-ui-images.cjs"
   },
   "packageManager": "npm@10.9.4",
   "dependencies": {
-    "@angular/common": "^21.2.0",
-    "@angular/compiler": "^21.2.0",
-    "@angular/core": "^21.2.0",
-    "@angular/platform-browser": "^21.2.0",
-    "rxjs": "~7.8.0",
-    "sharp": "^0.34.4",
-    "tslib": "^2.3.0"
+    "@vitejs/plugin-react": "^6.0.2",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.15.1",
+    "vite": "^8.0.13"
   },
   "devDependencies": {
-    "@angular/build": "^21.2.7",
-    "@angular/cli": "^21.2.7",
-    "@angular/compiler-cli": "^21.2.0",
-    "jsdom": "^28.0.0",
-    "prettier": "^3.8.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "jsdom": "^28.1.0",
+    "prettier": "^3.8.3",
+    "sharp": "^0.34.5",
     "typescript": "~5.9.2",
-    "vitest": "^4.0.8"
+    "vitest": "^4.1.6"
   }
 }
