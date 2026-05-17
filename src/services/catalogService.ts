@@ -21,6 +21,10 @@ export function createInitialCatalogViewModel(): CatalogSectionViewModel {
   return buildCatalogViewModel(null);
 }
 
+export function getCatalogSearchProducts(): readonly CatalogProductViewModel[] {
+  return baseProducts.map((product) => hydrateProduct(product));
+}
+
 export function buildCatalogViewModel(sectorId: string | null): CatalogSectionViewModel {
   const currentSector = getSectorById(sectorId);
   const products = getVisibleProducts(currentSector);
@@ -37,9 +41,7 @@ export function buildCatalogViewModel(sectorId: string | null): CatalogSectionVi
     currentSector,
     products,
     productMap,
-    resultsKicker: currentSector
-      ? `${products.length} itens / ${currentSector.sup}`
-      : `${sectors.length} setores / best sellers`,
+    resultsKicker: '',
     resultsHeading: currentSector?.name ?? 'Produtos para descobrir',
     brandAnimationDuration: `${Math.max(34, (currentSector?.brands.length ?? 0) * 8)}s`,
   };
@@ -54,8 +56,28 @@ function buildBaseProducts(): readonly CatalogBaseProduct[] {
       accent: sector.accent,
       accentSoft: sector.soft,
       brandMark: product.brandMark ?? getCatalogBrandMark(product.brand),
+      searchTags: createProductTags(product, sector),
     })),
   );
+}
+
+function createProductTags(
+  product: CatalogSector['products'][number],
+  sector: CatalogSector,
+): readonly string[] {
+  return [
+    product.brand,
+    product.name,
+    product.note,
+    product.description,
+    sector.id,
+    sector.name,
+    sector.sup,
+    ...product.name.split(/\s+/),
+    ...product.note.split(/\s+/),
+  ]
+    .map((tag) => tag.trim())
+    .filter(Boolean);
 }
 
 function buildBaseProductMap(): Readonly<Record<string, CatalogBaseProduct>> {
@@ -72,10 +94,14 @@ function getVisibleProducts(
     ? baseProducts.filter((product) => product.sectorId === currentSector.id)
     : featuredMix.map((productId) => baseProductMap[productId]).filter(Boolean);
 
-  return visibleBaseProducts.map((product) => ({
+  return visibleBaseProducts.map((product) => hydrateProduct(product));
+}
+
+function hydrateProduct(product: CatalogBaseProduct): CatalogProductViewModel {
+  return {
     ...product,
     imageAsset: imageManifest[product.id] ?? null,
-  }));
+  };
 }
 
 function getSectorById(sectorId: string | null): CatalogSector | null {

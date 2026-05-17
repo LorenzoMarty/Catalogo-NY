@@ -1,4 +1,5 @@
-import { RefObject, useEffect } from 'react';
+import { RefObject, useLayoutEffect } from 'react';
+import gsap from 'gsap';
 
 interface NetworkConnectionLike {
   readonly effectiveType?: string;
@@ -15,7 +16,7 @@ export function useHeroParallax(
   heroStageRef: RefObject<HTMLElement | null>,
   heroMediaRef: RefObject<HTMLImageElement | null>,
 ): void {
-  useEffect(() => {
+  useLayoutEffect(() => {
     const heroStage = heroStageRef.current;
     const heroMedia = heroMediaRef.current;
 
@@ -33,13 +34,56 @@ export function useHeroParallax(
       navigatorRef.webkitConnection ??
       null;
 
-    let heroFrame = 0;
     let heroVisible = true;
 
     const shouldConserveData = (): boolean => {
       const effectiveType = connection?.effectiveType ?? '';
       return Boolean(connection?.saveData) || /^slow-?2g$|^2g$/.test(effectiveType);
     };
+
+    const ctx = gsap.context(() => {
+      if (reduceMotion.matches || shouldConserveData()) {
+        return;
+      }
+
+      const titleLines = heroStage.querySelectorAll('.hero-title-l, .hero-title-r');
+      const revealItems = heroStage.querySelectorAll('.hero-note, .hero-lead');
+
+      gsap.set(titleLines, {
+        autoAlpha: 0,
+        y: 34,
+        filter: 'blur(10px)',
+      });
+      gsap.set(revealItems, {
+        autoAlpha: 0,
+        y: 22,
+        filter: 'blur(12px)',
+      });
+
+      gsap
+        .timeline({ defaults: { ease: 'power3.out' } })
+        .to(titleLines, {
+          autoAlpha: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 1.05,
+          stagger: 0.08,
+        })
+        .to(
+          revealItems,
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.86,
+            stagger: 0.08,
+          },
+          '-=0.62',
+        );
+    }, heroStage);
+
+    const mediaY = gsap.quickSetter(heroMedia, '--hero-media-y');
+    const mediaScale = gsap.quickSetter(heroMedia, '--hero-media-scale');
 
     const resetHeroParallax = (): void => {
       heroMedia.style.removeProperty('--hero-media-y');
@@ -49,18 +93,7 @@ export function useHeroParallax(
     const canAnimateHero = (): boolean =>
       heroVisible && wideMotion.matches && !reduceMotion.matches && !shouldConserveData();
 
-    const cancelHeroParallaxFrame = (): void => {
-      if (!heroFrame) {
-        return;
-      }
-
-      window.cancelAnimationFrame(heroFrame);
-      heroFrame = 0;
-    };
-
     const updateHeroParallax = (): void => {
-      heroFrame = 0;
-
       if (!canAnimateHero()) {
         resetHeroParallax();
         return;
@@ -74,22 +107,17 @@ export function useHeroParallax(
       const translateY = progress * 34;
       const scale = 1.08 + progress * 0.04;
 
-      heroMedia.style.setProperty('--hero-media-y', `${translateY.toFixed(2)}px`);
-      heroMedia.style.setProperty('--hero-media-scale', scale.toFixed(4));
+      mediaY(`${translateY.toFixed(2)}px`);
+      mediaScale(scale.toFixed(4));
     };
 
     const scheduleHeroParallax = (): void => {
       if (!canAnimateHero()) {
-        cancelHeroParallaxFrame();
         resetHeroParallax();
         return;
       }
 
-      if (heroFrame) {
-        return;
-      }
-
-      heroFrame = window.requestAnimationFrame(updateHeroParallax);
+      updateHeroParallax();
     };
 
     if ('IntersectionObserver' in window) {
@@ -104,7 +132,6 @@ export function useHeroParallax(
             return;
           }
 
-          cancelHeroParallaxFrame();
           resetHeroParallax();
         },
         {
@@ -130,7 +157,7 @@ export function useHeroParallax(
 
     return () => {
       cleanups.forEach((cleanup) => cleanup());
-      cancelHeroParallaxFrame();
+      ctx.revert();
       resetHeroParallax();
     };
   }, [heroMediaRef, heroStageRef]);

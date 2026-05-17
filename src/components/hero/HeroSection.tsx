@@ -1,3 +1,4 @@
+import { m, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { useHeroParallax } from '../../hooks/useHeroParallax';
 import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
@@ -5,11 +6,24 @@ import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
 export function HeroSection() {
   const heroStageRef = useRef<HTMLElement | null>(null);
   const heroMediaRef = useRef<HTMLImageElement | null>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroStageRef,
+    offset: ['start start', 'end start'],
+  });
+  const railY = useTransform(scrollYProgress, [0, 1], [-110, -154]);
+  const copyY = useTransform(scrollYProgress, [0, 1], [0, 18]);
 
   useHeroParallax(heroStageRef, heroMediaRef);
 
   return (
-    <header className="hero-stage" id="hero" ref={heroStageRef}>
+    <m.header
+      animate={{ opacity: 1 }}
+      className="hero-stage"
+      id="hero"
+      initial={{ opacity: 0 }}
+      ref={heroStageRef}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    >
       <div className="hero-media parallax-media">
         <img
           alt=""
@@ -33,7 +47,7 @@ export function HeroSection() {
 
       <div className="hero-shell">
         <div className="hero-layout">
-          <div className="hero-copy" id="curation">
+          <m.div className="hero-copy" id="curation" style={{ y: copyY }}>
             <div className="hero-title-group">
               <div className="hero-title-stack">
                 <div className="hero-line">
@@ -53,26 +67,29 @@ export function HeroSection() {
               Essa est&eacute;tica entra apenas como atmosfera: luz filtrada, contraste sutil,
               vitrine contempor&acirc;nea e leitura limpa em qualquer tela.
             </p>
-          </div>
+          </m.div>
 
           <aside aria-label="Notas editoriais" className="hero-rail" id="mood">
-            <figure className="hero-rail-figure reveal">
-              <img
-                alt=""
-                aria-hidden="true"
-                decoding="async"
-                height="1080"
-                sizes="(min-width: 1040px) 720px, (min-width: 768px) 58vw, 92vw"
-                src={resolveAssetPath('assets/ui/statue-360.webp')}
-                srcSet={resolveSrcSet(
-                  'assets/ui/statue-360.webp 360w, assets/ui/statue-520.webp 520w, assets/ui/statue-720.webp 720w',
-                )}
-                width="720"
-              />
-            </figure>
+            <m.div className="hero-rail-motion" style={{ y: railY }}>
+              <figure className="hero-rail-figure">
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  decoding="async"
+                  fetchPriority="high"
+                  height="1080"
+                  sizes="(min-width: 1360px) 720px, (min-width: 1040px) 48vw, (min-width: 768px) 64vw, 128vw"
+                  src={resolveAssetPath('assets/ui/statue-360.webp')}
+                  srcSet={resolveSrcSet(
+                    'assets/ui/statue-360.webp 360w, assets/ui/statue-520.webp 520w, assets/ui/statue-720.webp 720w',
+                  )}
+                  width="720"
+                />
+              </figure>
+            </m.div>
           </aside>
         </div>
       </div>
-    </header>
+    </m.header>
   );
 }
