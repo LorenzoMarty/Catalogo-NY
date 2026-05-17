@@ -1,12 +1,22 @@
+import { lazy, Suspense } from 'react';
 import { CatalogSection } from '../components/catalog/CatalogSection';
-import { SiteFooter } from '../components/footer/SiteFooter';
 import { HeroSection } from '../components/hero/HeroSection';
 import { HeroTicker } from '../components/hero/HeroTicker';
 import { MobileMenu } from '../components/layout/MobileMenu';
 import { SiteNav } from '../components/layout/SiteNav';
-import { StoresSection } from '../components/stores/StoresSection';
 import { CatalogProvider } from '../context/CatalogContext';
 import { useMobileMenu } from '../hooks/useMobileMenu';
+
+const StoresSection = lazy(() =>
+  import('../components/stores/StoresSection').then((module) => ({
+    default: module.StoresSection,
+  })),
+);
+const SiteFooter = lazy(() =>
+  import('../components/footer/SiteFooter').then((module) => ({
+    default: module.SiteFooter,
+  })),
+);
 
 export function HomePage() {
   const { closeMenu, menuOpen, toggleMenu } = useMobileMenu();
@@ -26,8 +36,10 @@ export function HomePage() {
         </CatalogProvider>
       </div>
 
-      <StoresSection />
-      <SiteFooter />
+      <Suspense fallback={<div className="section-lazy-shell" aria-hidden="true" />}>
+        <StoresSection />
+        <SiteFooter />
+      </Suspense>
     </>
   );
 }

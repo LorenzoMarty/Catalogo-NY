@@ -61,6 +61,7 @@ export interface CatalogProductViewModel extends CatalogProduct {
   readonly accentSoft: string;
   readonly brandMark: string;
   readonly imageAsset: CatalogImageAsset | null;
+  readonly searchTags: readonly string[];
 }
 
 export interface CatalogSectionViewModel {

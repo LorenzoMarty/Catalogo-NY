@@ -434,7 +434,8 @@ export const CATALOG_SECTORS: readonly CatalogSector[] = [
         name: 'Old No. 7 1L',
         note: 'label iconic',
         price: 'US$ 48 info',
-        description: 'Volume mais marcado e leitura grafica direta, sem copiar o rotulo literalmente.',
+        description:
+          'Volume mais marcado e leitura grafica direta, sem copiar o rotulo literalmente.',
         tone: 'rgba(210, 170, 121, 0.18)',
         position: 'center center',
         art: bottleArt({

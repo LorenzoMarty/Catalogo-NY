@@ -1,25 +1,61 @@
-import { useRef } from 'react';
+import { AnimatePresence, m } from 'framer-motion';
+import { useMemo, useRef, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
 import { useCatalog } from '../../context/CatalogContext';
+import { useBodyClass } from '../../hooks/useBodyClass';
 import { useLightbox } from '../../hooks/useLightbox';
+import { normalizeSearchValue, useProductSearch } from '../../hooks/useProductSearch';
 import { CatalogImageAsset, CatalogProductViewModel } from '../../models/catalog.models';
+import { getCatalogSearchProducts } from '../../services/catalogService';
 import { CSSVars } from '../../utils/styles';
+import { ProductSearch } from './ProductSearch';
 
 const brandLaneCopies = [0, 1, 2, 3] as const;
 
 export function CatalogSection() {
   const { toggleSector, viewModel: vm } = useCatalog();
   const lightboxCloseButtonRef = useRef<HTMLButtonElement | null>(null);
+  const allProducts = useMemo(() => getCatalogSearchProducts(), []);
+  const allProductMap = useMemo(
+    () =>
+      allProducts.reduce<Record<string, CatalogProductViewModel>>((productMap, product) => {
+        productMap[product.id] = product;
+        return productMap;
+      }, {}),
+    [allProducts],
+  );
+  const {
+    clearSearch,
+    isFocused,
+    query,
+    results,
+    saveRecentSearch,
+    selectSuggestion,
+    setIsFocused,
+    setQuery,
+    suggestions,
+  } = useProductSearch({
+    allProducts,
+    currentProducts: vm.products,
+    currentSector: vm.currentSector,
+  });
   const { activeProduct, closeLightbox, openLightbox } = useLightbox(
-    vm.productMap,
+    allProductMap,
     lightboxCloseButtonRef,
   );
+  useBodyClass('product-detail-open', Boolean(activeProduct));
+  const hasSearchQuery = query.trim().length > 0;
 
   return (
     <>
-      <section
+      <m.section
         aria-labelledby="results-heading"
-        className="catalog-stage"
+        className={`catalog-stage${isFocused ? ' is-searching' : ''}`}
         id="categories"
+        initial={{ opacity: 0, y: 24 }}
+        transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: true, margin: '-8% 0px' }}
+        whileInView={{ opacity: 1, y: 0 }}
         style={
           {
             '--catalog-accent': vm.currentSector?.accent ?? '#8faeff',
@@ -31,14 +67,20 @@ export function CatalogSection() {
           <div aria-label="Setores do freeshop" className="sector-rail">
             <div className="sector-list" id="sector-list">
               {vm.sectors.map((sector, index) => (
-                <button
+                <m.button
                   aria-label={`Selecionar ${sector.name}`}
                   aria-pressed={vm.currentSector?.id === sector.id}
                   className={`sector-pill${vm.currentSector?.id === sector.id ? ' is-active' : ''}`}
+                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
                   key={sector.id}
                   onClick={() => toggleSector(sector.id)}
                   style={{ '--delay': getDelay(index, 0.05) } as CSSVars}
+                  transition={{ delay: index * 0.035, duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
                   type="button"
+                  viewport={{ once: true }}
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <span
                     aria-hidden="true"
@@ -46,24 +88,45 @@ export function CatalogSection() {
                     dangerouslySetInnerHTML={{ __html: sector.icon }}
                   />
                   <span className="sector-name">{sector.name}</span>
-                </button>
+                </m.button>
               ))}
             </div>
           </div>
 
-          <div aria-live="polite" className="catalog-brand-shell" id="brand-shell">
+          <ProductSearch
+            clearSearch={clearSearch}
+            currentSector={vm.currentSector}
+            isFocused={isFocused}
+            query={query}
+            resultCount={results.length}
+            saveRecentSearch={saveRecentSearch}
+            selectSuggestion={selectSuggestion}
+            setIsFocused={setIsFocused}
+            setQuery={setQuery}
+            suggestions={suggestions}
+            totalCount={vm.currentSector ? vm.products.length : allProducts.length}
+          />
+
+          <div
+            aria-live="polite"
+            className="catalog-brand-shell"
+            hidden={Boolean(vm.currentSector)}
+            id="brand-shell"
+          >
             <p className="brand-prompt" hidden={Boolean(vm.currentSector)} id="brand-prompt">
-              Selecione um setor para revelar as marcas como wordmarks em voo cont&iacute;nuo.
+              Selecione um setor para revelar as marcas.
             </p>
           </div>
 
           <div aria-live="polite" className="catalog-results">
             <div>
               <p className="catalog-results-kicker font-mono" id="results-kicker">
-                {vm.resultsKicker}
+                {hasSearchQuery
+                  ? `${results.length} resultados / busca instantânea`
+                  : vm.resultsKicker}
               </p>
               <h3 className="catalog-results-title display-font" id="results-heading">
-                {vm.resultsHeading}
+                {hasSearchQuery ? 'Seleção encontrada' : vm.resultsHeading}
               </h3>
             </div>
           </div>
@@ -92,84 +155,133 @@ export function CatalogSection() {
             ) : null}
           </div>
 
-          <div className="product-grid" id="product-grid">
-            {vm.products.map((product, index) => (
-              <ProductNode
-                key={product.id}
-                onOpen={(trigger) => openLightbox(product, trigger)}
-                product={product}
-                revealDelay={getDelay(index, 0.06)}
-              />
-            ))}
-          </div>
+          <m.div className="product-grid" id="product-grid" layout>
+            <AnimatePresence mode="popLayout">
+              {results.length > 0 ? (
+                results.map((product, index) => (
+                  <ProductNode
+                    key={product.id}
+                    onOpen={(trigger) => {
+                      saveRecentSearch(query);
+                      openLightbox(product, trigger);
+                    }}
+                    product={product}
+                    revealDelay={getDelay(index, 0.04)}
+                    searchQuery={hasSearchQuery ? query : ''}
+                  />
+                ))
+              ) : (
+                <m.div
+                  animate={{ opacity: 1, y: 0 }}
+                  className="catalog-empty-state"
+                  exit={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 12 }}
+                  key="empty"
+                >
+                  <span className="font-mono">Sem resultados</span>
+                  <p>Ajuste a busca ou troque o escopo para revelar mais produtos.</p>
+                </m.div>
+              )}
+            </AnimatePresence>
+          </m.div>
         </div>
-      </section>
+      </m.section>
 
-      <div
-        aria-hidden={activeProduct ? 'false' : 'true'}
-        className={`product-lightbox${activeProduct ? ' is-open' : ''}`}
-        id="product-lightbox"
-        style={
-          {
-            '--catalog-accent': activeProduct?.accent ?? '#8faeff',
-            '--catalog-accent-soft': activeProduct?.accentSoft ?? 'rgba(143, 174, 255, 0.16)',
-          } as CSSVars
-        }
-      >
-        <div className="lightbox-backdrop" data-close-lightbox onClick={closeLightbox} />
-
-        <div
-          aria-describedby="lightbox-description"
-          aria-labelledby="lightbox-title"
-          aria-modal="true"
-          className="lightbox-sheet"
-          role="dialog"
-        >
-          <button
-            aria-label="Fechar produto"
-            className="lightbox-close"
-            id="lightbox-close"
-            onClick={closeLightbox}
-            ref={lightboxCloseButtonRef}
-            type="button"
+      <AnimatePresence>
+        {activeProduct ? (
+          <m.div
+            animate={{ opacity: 1, backdropFilter: 'blur(18px)' }}
+            aria-hidden="false"
+            className="product-lightbox is-open"
+            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            id="product-lightbox"
+            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            style={
+              {
+                '--catalog-accent': activeProduct.accent,
+                '--catalog-accent-soft': activeProduct.accentSoft,
+              } as CSSVars
+            }
           >
-            <span className="sr-only">Fechar produto</span>
-          </button>
+            <div className="lightbox-backdrop" data-close-lightbox onClick={closeLightbox} />
 
-          <div className="lightbox-shell">
-            <div className="lightbox-media" id="lightbox-media">
-              {activeProduct ? <ProductMedia product={activeProduct} variant="lightbox" /> : null}
-            </div>
+            <m.div
+              animate={{ y: 0, scale: 1, filter: 'blur(0px)' }}
+              aria-describedby="lightbox-specs"
+              aria-labelledby="lightbox-title"
+              aria-modal="true"
+              className="lightbox-sheet"
+              exit={{ y: 28, scale: 0.98, filter: 'blur(12px)' }}
+              initial={{ y: 28, scale: 0.98, filter: 'blur(12px)' }}
+              role="dialog"
+              transition={{ duration: 0.44, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <button
+                aria-label="Fechar produto"
+                className="lightbox-close"
+                id="lightbox-close"
+                onClick={closeLightbox}
+                ref={lightboxCloseButtonRef}
+                type="button"
+              >
+                <span className="sr-only">Fechar produto</span>
+              </button>
 
-            <div className="lightbox-copy">
-              <p className="lightbox-sector font-mono" id="lightbox-sector">
-                {activeProduct?.sectorName
-                  ? `${activeProduct.sectorName} / editorial selection`
-                  : ''}
-              </p>
+              <div className="lightbox-shell">
+                <div className="lightbox-media" id="lightbox-media">
+                  <ProductMedia product={activeProduct} variant="lightbox" />
+                </div>
 
-              <div className="lightbox-head">
-                <span className="lightbox-brand" id="lightbox-brand">
-                  {activeProduct?.brand ?? ''}
-                </span>
-                <span className="lightbox-price" id="lightbox-price">
-                  {activeProduct?.price ?? ''}
-                </span>
+                <div className="lightbox-copy">
+                  <div className="lightbox-head">
+                    <p className="lightbox-sector font-mono" id="lightbox-sector">
+                      {activeProduct.sectorName}
+                    </p>
+                    <span className="lightbox-brand" id="lightbox-brand">
+                      {activeProduct.brand}
+                    </span>
+                  </div>
+
+                  <h3 className="lightbox-title display-font" id="lightbox-title">
+                    {activeProduct.name}
+                  </h3>
+
+                  <ul className="lightbox-specs" id="lightbox-specs">
+                    <li>
+                      <span>Categoria</span>
+                      <strong>{activeProduct.sectorName}</strong>
+                    </li>
+                    <li>
+                      <span>Marca</span>
+                      <strong>{activeProduct.brand}</strong>
+                    </li>
+                    <li>
+                      <span>Destaque</span>
+                      <strong>{activeProduct.note}</strong>
+                    </li>
+                  </ul>
+
+                  <div className="lightbox-commerce">
+                    <span className="lightbox-price" id="lightbox-price">
+                      {getDisplayPrice(activeProduct.price)}
+                    </span>
+                    <m.a
+                      className="lightbox-whatsapp"
+                      href={getWhatsAppHref(activeProduct)}
+                      rel="noreferrer"
+                      target="_blank"
+                      whileHover={{ y: -2, scale: 1.01 }}
+                      whileTap={{ scale: 0.985 }}
+                    >
+                      Entrar em contato no WhatsApp
+                    </m.a>
+                  </div>
+                </div>
               </div>
-
-              <h3 className="lightbox-title display-font" id="lightbox-title">
-                {activeProduct?.name ?? ''}
-              </h3>
-              <p className="lightbox-note" id="lightbox-note">
-                {activeProduct?.note ?? ''}
-              </p>
-              <p className="lightbox-description" id="lightbox-description">
-                {activeProduct?.description ?? ''}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+            </m.div>
+          </m.div>
+        ) : null}
+      </AnimatePresence>
     </>
   );
 }
@@ -178,14 +290,29 @@ interface ProductNodeProps {
   readonly onOpen: (trigger: EventTarget | null) => void;
   readonly product: CatalogProductViewModel;
   readonly revealDelay: string;
+  readonly searchQuery: string;
 }
 
-function ProductNode({ onOpen, product, revealDelay }: ProductNodeProps) {
+function ProductNode({ onOpen, product, revealDelay, searchQuery }: ProductNodeProps) {
+  const { inView, ref } = useInView({
+    rootMargin: '220px 0px',
+    triggerOnce: true,
+  });
+
   return (
-    <button
+    <m.button
       aria-label={`Abrir ${product.name}`}
       className="product-node"
+      exit={{ opacity: 0, y: 18, scale: 0.98, filter: 'blur(8px)' }}
+      initial={{ opacity: 0, y: 18, scale: 0.98, filter: 'blur(8px)' }}
+      layout
       onClick={(event) => onOpen(event.currentTarget)}
+      ref={ref}
+      transition={{
+        delay: Number.parseFloat(revealDelay),
+        duration: 0.42,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       style={
         {
           '--delay': revealDelay,
@@ -195,18 +322,26 @@ function ProductNode({ onOpen, product, revealDelay }: ProductNodeProps) {
         } as CSSVars
       }
       type="button"
+      whileHover={{ y: -4 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+      whileTap={{ scale: 0.985 }}
     >
       <span className="product-figure" data-shape={product.shape ?? 'portrait'}>
-        <ProductMedia product={product} variant="grid" />
+        {inView ? (
+          <ProductMedia product={product} variant="grid" />
+        ) : (
+          <span aria-hidden="true" className="product-skeleton" />
+        )}
       </span>
 
       <span className="product-copy">
         <span className="product-brand">{product.brand}</span>
-        <span className="product-name">{product.name}</span>
-        <span className="product-note">{product.note}</span>
+        <span className="product-name">
+          <HighlightText query={searchQuery} text={product.name} />
+        </span>
       </span>
-      <span className="product-price">{product.price}</span>
-    </button>
+      <span className="product-price">{getDisplayPrice(product.price)}</span>
+    </m.button>
   );
 }
 
@@ -239,13 +374,20 @@ interface ProductImageProps {
 }
 
 function ProductImage({ asset, product, variant }: ProductImageProps) {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   return (
-    <img
+    <m.img
+      animate={{ opacity: isLoaded ? 1 : 0.01, scale: isLoaded ? 1 : 1.025 }}
       alt={product.name}
+      className={isLoaded ? 'is-loaded' : 'is-loading'}
       decoding="async"
+      exit={{ opacity: 0 }}
       fetchPriority={variant === 'lightbox' ? 'high' : 'low'}
       height={asset.height}
+      initial={{ opacity: 0, scale: 1.025 }}
       loading={variant === 'grid' ? 'lazy' : undefined}
+      onLoad={() => setIsLoaded(true)}
       sizes={
         variant === 'lightbox'
           ? (asset.lightboxSizes ?? asset.sizes ?? '92vw')
@@ -258,11 +400,46 @@ function ProductImage({ asset, product, variant }: ProductImageProps) {
         backgroundSize: asset.placeholder ? 'cover' : undefined,
         objectPosition: product.position ?? 'center center',
       }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       width={asset.width}
     />
   );
 }
 
+function HighlightText({ query, text }: { readonly query: string; readonly text: string }) {
+  const normalizedQuery = normalizeSearchValue(query);
+
+  if (!normalizedQuery) {
+    return <>{text}</>;
+  }
+
+  const normalizedText = normalizeSearchValue(text);
+  const matchIndex = normalizedText.indexOf(normalizedQuery);
+
+  if (matchIndex < 0) {
+    return <>{text}</>;
+  }
+
+  const matchEnd = matchIndex + normalizedQuery.length;
+
+  return (
+    <>
+      {text.slice(0, matchIndex)}
+      <mark>{text.slice(matchIndex, matchEnd)}</mark>
+      {text.slice(matchEnd)}
+    </>
+  );
+}
+
 function getDelay(index: number, step: number): string {
   return `${(index * step).toFixed(2)}s`;
+}
+
+function getDisplayPrice(price: string): string {
+  return price.replace(/\s+info$/i, '');
+}
+
+function getWhatsAppHref(product: CatalogProductViewModel): string {
+  const message = `Olá, gostaria de saber mais sobre ${product.name} da ${product.brand}.`;
+  return `https://wa.me/?text=${encodeURIComponent(message)}`;
 }

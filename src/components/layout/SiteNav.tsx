@@ -17,14 +17,13 @@ export function SiteNav({ menuOpen, onToggleMenu }: SiteNavProps) {
         </a>
 
         <div className="nav-links font-mono">
-          <a href="#curation">Curadoria</a>
           <a href="#categories">Categorias</a>
           <a href="#stores">Lojas</a>
         </div>
 
         <div className="nav-actions">
           <span className="nav-note font-mono">
-            inspirado em New York
+            Fale conosco
             <svg
               aria-hidden="true"
               className="nav-note-icon"
