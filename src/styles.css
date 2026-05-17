@@ -2807,7 +2807,7 @@ body.modal-open {
   height: 100%;
   object-fit: cover;
   filter: brightness(0.18) contrast(0.9) saturate(0.6);
-  opacity: 0.16;
+  opacity: 0.3;
   transform: scale(1.08);
   transition:
     transform 1.6s cubic-bezier(0.16, 1, 0.3, 1),
@@ -2816,7 +2816,7 @@ body.modal-open {
 }
 
 .site-footer.is-visible .footer-photo img {
-  opacity: 0.24;
+  opacity: 0.3;
   transform: scale(1);
   filter: brightness(0.2) contrast(0.94) saturate(0.68);
 }
@@ -2851,9 +2851,7 @@ body.modal-open {
   gap: 34px;
 }
 
-.footer-topline,
-.footer-brand-stage,
-.footer-pagination {
+.footer-brand-stage {
   opacity: 0;
   transform: translate3d(0, 48px, 0);
   transition:
@@ -2861,19 +2859,13 @@ body.modal-open {
     opacity 0.95s ease;
 }
 
-.site-footer.is-visible .footer-topline,
-.site-footer.is-visible .footer-brand-stage,
-.site-footer.is-visible .footer-pagination {
+.site-footer.is-visible .footer-brand-stage {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
 
 .site-footer.is-visible .footer-brand-stage {
   transition-delay: 0.08s;
-}
-
-.site-footer.is-visible .footer-pagination {
-  transition-delay: 0.16s;
 }
 
 .footer-kicker,
@@ -2979,9 +2971,9 @@ body.modal-open {
   position: relative;
   display: grid;
   justify-items: center;
-  gap: 18px;
+  gap: 22px;
   text-align: center;
-  padding: clamp(34px, 4vw, 52px) 0;
+  padding: clamp(24px, 3vw, 42px) 0;
 }
 
 .footer-brand-center::before {
@@ -3001,8 +2993,9 @@ body.modal-open {
 .footer-title {
   position: relative;
   margin: 0;
-  font-size: clamp(4.4rem, 13vw, 10.2rem);
-  line-height: 0.84;
+  max-width: 9ch;
+  font-size: clamp(3.9rem, 10vw, 8.6rem);
+  line-height: 0.86;
   letter-spacing: -0.065em;
   color: rgba(246, 241, 233, 0.96);
   text-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
@@ -3024,7 +3017,7 @@ body.modal-open {
   justify-content: center;
   align-items: center;
   gap: 14px 22px;
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 .footer-primary-link {
@@ -3298,7 +3291,7 @@ body.modal-open {
   }
 
   .footer-photo img {
-    opacity: 0.18;
+    opacity: 0.3;
   }
 
   .footer-shell {
@@ -4060,11 +4053,11 @@ textarea::placeholder {
 
 .footer-photo img {
   filter: brightness(1.08) contrast(0.9) saturate(0.72);
-  opacity: 0.08;
+  opacity: 0.3;
 }
 
 .site-footer.is-visible .footer-photo img {
-  opacity: 0.12;
+  opacity: 0.3;
   filter: brightness(1.08) contrast(0.92) saturate(0.74);
 }
 
