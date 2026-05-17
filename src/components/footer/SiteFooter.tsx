@@ -3,24 +3,10 @@ import { STORE_PANELS } from '../../data/stores.data';
 import { useFooterReveal } from '../../hooks/useFooterReveal';
 import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
 
-interface FooterPageLink {
-  readonly href: string;
-  readonly index: string;
-  readonly label: string;
-}
-
 interface FooterCompanyFact {
   readonly label: string;
   readonly value: string;
 }
-
-const pages: readonly FooterPageLink[] = [
-  { href: '#hero', index: '01', label: 'Inicio' },
-  { href: '#curation', index: '02', label: 'Curadoria' },
-  { href: '#categories', index: '03', label: 'Catalogo' },
-  { href: '#stores', index: '04', label: 'Lojas' },
-  { href: '#footer', index: '05', label: 'Fechamento' },
-];
 
 const companyFacts: readonly FooterCompanyFact[] = [
   { label: 'Marca', value: 'New York Freeshop' },
@@ -28,8 +14,6 @@ const companyFacts: readonly FooterCompanyFact[] = [
   { label: 'Contato', value: 'A informar' },
   { label: 'Atendimento', value: 'Centro de Uruguaiana - RS' },
 ];
-
-const pageCount = String(pages.length).padStart(2, '0');
 
 export function SiteFooter() {
   const footerRef = useRef<HTMLElement | null>(null);
@@ -56,11 +40,6 @@ export function SiteFooter() {
       <div aria-hidden="true" className="footer-veil" />
 
       <div className="footer-shell">
-        <div className="footer-topline">
-          <span className="footer-kicker font-mono">Institucional / New York Freeshop</span>
-          <span className="footer-topline-note font-mono">CNPJ, contato e enderecos oficiais</span>
-        </div>
-
         <div className="footer-brand-stage">
           <div className="footer-info-column">
             {companyFacts.map((fact) => (
@@ -72,19 +51,11 @@ export function SiteFooter() {
           </div>
 
           <div className="footer-brand-center">
-            <span className="footer-brand-kicker font-mono">Assinatura da marca</span>
-            <h2 className="footer-title display-font">NEW YORK</h2>
-            <p className="footer-brand-note">
-              Informacoes institucionais, contato e presenca fisica consolidados em uma dobra final
-              mais limpa.
-            </p>
+            <h2 className="footer-title display-font">New York Freeshop</h2>
 
             <div className="footer-actions">
               <a className="footer-primary-link display-font" href="#hero">
                 Voltar ao inicio
-              </a>
-              <a className="footer-secondary-link font-mono" href="#stores">
-                Rever lojas
               </a>
             </div>
           </div>
@@ -104,29 +75,6 @@ export function SiteFooter() {
             ))}
           </div>
         </div>
-
-        <aside aria-label="Paginacao do catalogo" className="footer-pagination">
-          <div className="footer-pagination-head">
-            <span className="footer-pagination-kicker font-mono">Paginacao</span>
-            <span className="footer-pagination-count font-mono">
-              {pageCount} / {pageCount}
-            </span>
-          </div>
-
-          <div aria-hidden="true" className="footer-pagination-track">
-            <span className="footer-pagination-fill" />
-            <span className="footer-pagination-dot" />
-          </div>
-
-          <div className="footer-steps">
-            {pages.map((page) => (
-              <a className="footer-step" href={page.href} key={page.href}>
-                <span className="footer-step-index font-mono">{page.index}</span>
-                <span className="footer-step-label">{page.label}</span>
-              </a>
-            ))}
-          </div>
-        </aside>
       </div>
     </footer>
   );
