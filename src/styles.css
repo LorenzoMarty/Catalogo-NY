@@ -3659,3 +3659,47 @@ body.product-detail-open .site-nav {
     font-size: 0.74rem;
   }
 }
+
+/* Reduced motion: stores showcase falls back to a vertical stack (no scroll-jack). */
+@media (prefers-reduced-motion: reduce) {
+  .stores-shell {
+    min-height: 0;
+    height: auto;
+  }
+
+  .stores-track-shell {
+    position: static;
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+  }
+
+  .stores-track {
+    display: block;
+    width: 100%;
+    min-height: 0;
+    height: auto;
+    transform: none !important;
+  }
+
+  .store-panel {
+    flex: none;
+    width: 100%;
+    min-height: var(--app-height);
+  }
+
+  .stores-progress {
+    display: none;
+  }
+
+  .store-editorial,
+  .store-note,
+  .store-marker-stack {
+    opacity: 1;
+    transform: none;
+  }
+
+  .store-image {
+    transform: none;
+  }
+}

@@ -1,5 +1,4 @@
 import { RefObject, useLayoutEffect } from 'react';
-import gsap from 'gsap';
 
 interface NetworkConnectionLike {
   readonly effectiveType?: string;
@@ -35,55 +34,12 @@ export function useHeroParallax(
       null;
 
     let heroVisible = true;
+    let frameId = 0;
 
     const shouldConserveData = (): boolean => {
       const effectiveType = connection?.effectiveType ?? '';
       return Boolean(connection?.saveData) || /^slow-?2g$|^2g$/.test(effectiveType);
     };
-
-    const ctx = gsap.context(() => {
-      if (reduceMotion.matches || shouldConserveData()) {
-        return;
-      }
-
-      const titleLines = heroStage.querySelectorAll('.hero-title-l, .hero-title-r');
-      const revealItems = heroStage.querySelectorAll('.hero-note, .hero-lead');
-
-      gsap.set(titleLines, {
-        autoAlpha: 0,
-        y: 34,
-        filter: 'blur(10px)',
-      });
-      gsap.set(revealItems, {
-        autoAlpha: 0,
-        y: 22,
-        filter: 'blur(12px)',
-      });
-
-      gsap
-        .timeline({ defaults: { ease: 'power3.out' } })
-        .to(titleLines, {
-          autoAlpha: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 1.05,
-          stagger: 0.08,
-        })
-        .to(
-          revealItems,
-          {
-            autoAlpha: 1,
-            y: 0,
-            filter: 'blur(0px)',
-            duration: 0.86,
-            stagger: 0.08,
-          },
-          '-=0.62',
-        );
-    }, heroStage);
-
-    const mediaY = gsap.quickSetter(heroMedia, '--hero-media-y');
-    const mediaScale = gsap.quickSetter(heroMedia, '--hero-media-scale');
 
     const resetHeroParallax = (): void => {
       heroMedia.style.removeProperty('--hero-media-y');
@@ -107,8 +63,8 @@ export function useHeroParallax(
       const translateY = progress * 34;
       const scale = 1.08 + progress * 0.04;
 
-      mediaY(`${translateY.toFixed(2)}px`);
-      mediaScale(scale.toFixed(4));
+      heroMedia.style.setProperty('--hero-media-y', `${translateY.toFixed(2)}px`);
+      heroMedia.style.setProperty('--hero-media-scale', scale.toFixed(4));
     };
 
     const scheduleHeroParallax = (): void => {
@@ -117,7 +73,14 @@ export function useHeroParallax(
         return;
       }
 
-      updateHeroParallax();
+      if (frameId !== 0) {
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0;
+        updateHeroParallax();
+      });
     };
 
     if ('IntersectionObserver' in window) {
@@ -147,17 +110,19 @@ export function useHeroParallax(
       scheduleHeroParallax();
     };
 
-    scheduleHeroParallax();
+    updateHeroParallax();
     window.addEventListener('scroll', handleViewportChange, { passive: true });
-    window.addEventListener('resize', scheduleHeroParallax, { passive: true });
+    window.addEventListener('resize', handleViewportChange, { passive: true });
     cleanups.push(() => window.removeEventListener('scroll', handleViewportChange));
-    cleanups.push(() => window.removeEventListener('resize', scheduleHeroParallax));
+    cleanups.push(() => window.removeEventListener('resize', handleViewportChange));
     listenToMediaQuery(reduceMotion, handleViewportChange, cleanups);
     listenToMediaQuery(wideMotion, handleViewportChange, cleanups);
 
     return () => {
       cleanups.forEach((cleanup) => cleanup());
-      ctx.revert();
+      if (frameId !== 0) {
+        window.cancelAnimationFrame(frameId);
+      }
       resetHeroParallax();
     };
   }, [heroMediaRef, heroStageRef]);
