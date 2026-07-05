@@ -1,4 +1,4 @@
-import { AnimatePresence, m } from 'framer-motion';
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion';
 import { useMemo, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useCatalog } from '../../context/CatalogContext';
@@ -14,6 +14,7 @@ const brandLaneCopies = [0, 1, 2, 3] as const;
 
 export function CatalogSection() {
   const { toggleSector, viewModel: vm } = useCatalog();
+  const reduceMotion = useReducedMotion();
   const lightboxCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const allProducts = useMemo(() => getCatalogSearchProducts(), []);
   const allProductMap = useMemo(
@@ -52,10 +53,10 @@ export function CatalogSection() {
         aria-labelledby="results-heading"
         className={`catalog-stage${isFocused ? ' is-searching' : ''}`}
         id="categories"
-        initial={{ opacity: 0, y: 24 }}
+        initial={reduceMotion ? false : { opacity: 0, y: 24 }}
         transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
         viewport={{ once: true, margin: '-8% 0px' }}
-        whileInView={{ opacity: 1, y: 0 }}
+        whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         style={
           {
             '--catalog-accent': vm.currentSector?.accent ?? '#8faeff',
@@ -71,16 +72,16 @@ export function CatalogSection() {
                   aria-label={`Selecionar ${sector.name}`}
                   aria-pressed={vm.currentSector?.id === sector.id}
                   className={`sector-pill${vm.currentSector?.id === sector.id ? ' is-active' : ''}`}
-                  initial={{ opacity: 0, y: 14, scale: 0.98 }}
+                  initial={reduceMotion ? false : { opacity: 0, y: 14, scale: 0.98 }}
                   key={sector.id}
                   onClick={() => toggleSector(sector.id)}
                   style={{ '--delay': getDelay(index, 0.05) } as CSSVars}
                   transition={{ delay: index * 0.035, duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
                   type="button"
                   viewport={{ once: true }}
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={reduceMotion ? undefined : { y: -3, scale: 1.02 }}
+                  whileInView={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+                  whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 >
                   <span
                     aria-hidden="true"
@@ -155,7 +156,7 @@ export function CatalogSection() {
             ) : null}
           </div>
 
-          <m.div className="product-grid" id="product-grid" layout>
+          <m.div className="product-grid" id="product-grid" layout={!reduceMotion}>
             <AnimatePresence mode="popLayout">
               {results.length > 0 ? (
                 results.map((product, index) => (
@@ -196,6 +197,7 @@ export function CatalogSection() {
             exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
             id="product-lightbox"
             initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            transition={{ duration: reduceMotion ? 0.16 : 0.42, ease: [0.16, 1, 0.3, 1] }}
             style={
               {
                 '--catalog-accent': activeProduct.accent,
@@ -206,15 +208,15 @@ export function CatalogSection() {
             <div className="lightbox-backdrop" data-close-lightbox onClick={closeLightbox} />
 
             <m.div
-              animate={{ y: 0, scale: 1, filter: 'blur(0px)' }}
+              animate={reduceMotion ? { opacity: 1 } : { y: 0, scale: 1, filter: 'blur(0px)' }}
               aria-describedby="lightbox-specs"
               aria-labelledby="lightbox-title"
               aria-modal="true"
               className="lightbox-sheet"
-              exit={{ y: 28, scale: 0.98, filter: 'blur(12px)' }}
-              initial={{ y: 28, scale: 0.98, filter: 'blur(12px)' }}
+              exit={reduceMotion ? { opacity: 0 } : { y: 28, scale: 0.98, filter: 'blur(12px)' }}
+              initial={reduceMotion ? { opacity: 0 } : { y: 28, scale: 0.98, filter: 'blur(12px)' }}
               role="dialog"
-              transition={{ duration: 0.44, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: reduceMotion ? 0.16 : 0.44, ease: [0.16, 1, 0.3, 1] }}
             >
               <button
                 aria-label="Fechar produto"
@@ -270,8 +272,8 @@ export function CatalogSection() {
                       href={getWhatsAppHref(activeProduct)}
                       rel="noreferrer"
                       target="_blank"
-                      whileHover={{ y: -2, scale: 1.01 }}
-                      whileTap={{ scale: 0.985 }}
+                      whileHover={reduceMotion ? undefined : { y: -2, scale: 1.01 }}
+                      whileTap={reduceMotion ? undefined : { scale: 0.985 }}
                     >
                       Entrar em contato no WhatsApp
                     </m.a>
@@ -294,6 +296,7 @@ interface ProductNodeProps {
 }
 
 function ProductNode({ onOpen, product, revealDelay, searchQuery }: ProductNodeProps) {
+  const reduceMotion = useReducedMotion();
   const { inView, ref } = useInView({
     rootMargin: '220px 0px',
     triggerOnce: true,
@@ -303,13 +306,17 @@ function ProductNode({ onOpen, product, revealDelay, searchQuery }: ProductNodeP
     <m.button
       aria-label={`Abrir ${product.name}`}
       className="product-node"
-      exit={{ opacity: 0, y: 18, scale: 0.98, filter: 'blur(8px)' }}
-      initial={{ opacity: 0, y: 18, scale: 0.98, filter: 'blur(8px)' }}
-      layout
+      exit={
+        reduceMotion
+          ? { opacity: 0, transition: { duration: 0.12 } }
+          : { opacity: 0, y: 18, scale: 0.98, filter: 'blur(8px)' }
+      }
+      initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.98, filter: 'blur(8px)' }}
+      layout={!reduceMotion}
       onClick={(event) => onOpen(event.currentTarget)}
       ref={ref}
       transition={{
-        delay: Number.parseFloat(revealDelay),
+        delay: reduceMotion ? 0 : Number.parseFloat(revealDelay),
         duration: 0.42,
         ease: [0.16, 1, 0.3, 1],
       }}
@@ -322,9 +329,9 @@ function ProductNode({ onOpen, product, revealDelay, searchQuery }: ProductNodeP
         } as CSSVars
       }
       type="button"
-      whileHover={{ y: -4 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-      whileTap={{ scale: 0.985 }}
+      whileHover={reduceMotion ? undefined : { y: -4 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+      whileTap={reduceMotion ? undefined : { scale: 0.985 }}
     >
       <span className="product-figure" data-shape={product.shape ?? 'portrait'}>
         {inView ? (
@@ -374,18 +381,22 @@ interface ProductImageProps {
 }
 
 function ProductImage({ asset, product, variant }: ProductImageProps) {
+  const reduceMotion = useReducedMotion();
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
     <m.img
-      animate={{ opacity: isLoaded ? 1 : 0.01, scale: isLoaded ? 1 : 1.025 }}
+      animate={{
+        opacity: isLoaded ? 1 : 0.01,
+        scale: reduceMotion ? 1 : isLoaded ? 1 : 1.025,
+      }}
       alt={product.name}
       className={isLoaded ? 'is-loaded' : 'is-loading'}
       decoding="async"
       exit={{ opacity: 0 }}
       fetchPriority={variant === 'lightbox' ? 'high' : 'low'}
       height={asset.height}
-      initial={{ opacity: 0, scale: 1.025 }}
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 1.025 }}
       loading={variant === 'grid' ? 'lazy' : undefined}
       onLoad={() => setIsLoaded(true)}
       sizes={

@@ -1,3 +1,4 @@
+import { useReducedMotion } from 'framer-motion';
 import { Dispatch, RefObject, SetStateAction, useEffect } from 'react';
 
 const DESKTOP_SCROLL_STRETCH = 1.45;
@@ -25,6 +26,8 @@ export function useStoresShowcase({
   trackRef,
   trackShellRef,
 }: StoresShowcaseOptions): void {
+  const reduceMotion = useReducedMotion();
+
   useEffect(() => {
     const stage = stageRef.current;
     const section = storesShellRef.current;
@@ -34,6 +37,18 @@ export function useStoresShowcase({
 
     if (!stage || !section || !shell || !track || !progressFill) {
       return undefined;
+    }
+
+    if (reduceMotion) {
+      const staticPanels = Array.from(track.querySelectorAll<HTMLElement>('.store-panel'));
+      staticPanels.forEach((panel) => panel.classList.add('is-active'));
+      progressFill.style.width = '100%';
+      setActiveIndex(0);
+
+      return () => {
+        staticPanels.forEach((panel) => panel.classList.remove('is-active'));
+        progressFill.style.removeProperty('width');
+      };
     }
 
     const cleanups: Array<() => void> = [];
@@ -284,7 +299,15 @@ export function useStoresShowcase({
       document.documentElement.style.removeProperty('--app-height');
       stage.style.removeProperty('--app-height');
     };
-  }, [progressFillRef, setActiveIndex, stageRef, storesShellRef, trackRef, trackShellRef]);
+  }, [
+    progressFillRef,
+    reduceMotion,
+    setActiveIndex,
+    stageRef,
+    storesShellRef,
+    trackRef,
+    trackShellRef,
+  ]);
 }
 
 function listenToMediaQuery(

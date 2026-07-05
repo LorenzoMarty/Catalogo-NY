@@ -1,11 +1,34 @@
-import { m, useScroll, useTransform } from 'framer-motion';
+import { m, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { useHeroParallax } from '../../hooks/useHeroParallax';
 import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
 
+const EASE_OUT = [0.16, 1, 0.3, 1] as const;
+
+const titleReveal = {
+  hidden: { opacity: 0, y: 34, filter: 'blur(10px)' },
+  visible: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 1.05, ease: EASE_OUT, delay },
+  }),
+};
+
+const copyReveal = {
+  hidden: { opacity: 0, y: 22, filter: 'blur(12px)' },
+  visible: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.86, ease: EASE_OUT, delay },
+  }),
+};
+
 export function HeroSection() {
   const heroStageRef = useRef<HTMLElement | null>(null);
   const heroMediaRef = useRef<HTMLImageElement | null>(null);
+  const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: heroStageRef,
     offset: ['start start', 'end start'],
@@ -20,9 +43,9 @@ export function HeroSection() {
       animate={{ opacity: 1 }}
       className="hero-stage"
       id="hero"
-      initial={{ opacity: 0 }}
+      initial={reduceMotion ? false : { opacity: 0 }}
       ref={heroStageRef}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, ease: EASE_OUT }}
     >
       <div className="hero-media parallax-media">
         <img
@@ -47,36 +70,68 @@ export function HeroSection() {
 
       <div className="hero-shell">
         <div className="hero-layout">
-          <m.div className="hero-copy" id="curation" style={{ y: copyY }}>
+          <m.div
+            className="hero-copy"
+            id="curation"
+            style={reduceMotion ? undefined : { y: copyY }}
+          >
             <div className="hero-title-group">
               <div className="hero-title-stack">
                 <div className="hero-line">
-                  <h1 className="hero-text-huge hero-title-l">New York</h1>
+                  <m.h1
+                    animate="visible"
+                    className="hero-text-huge hero-title-l"
+                    custom={0}
+                    initial={reduceMotion ? false : 'hidden'}
+                    variants={titleReveal}
+                  >
+                    New York
+                  </m.h1>
                 </div>
                 <div className="hero-line">
-                  <h1 className="hero-text-huge hero-title-r">Freeshop</h1>
+                  <m.h1
+                    animate="visible"
+                    className="hero-text-huge hero-title-r"
+                    custom={0.08}
+                    initial={reduceMotion ? false : 'hidden'}
+                    variants={titleReveal}
+                  >
+                    Freeshop
+                  </m.h1>
                 </div>
               </div>
             </div>
 
-            <p className="hero-note reveal">
+            <m.p
+              animate="visible"
+              className="hero-note"
+              custom={0.42}
+              initial={reduceMotion ? false : 'hidden'}
+              variants={copyReveal}
+            >
               Um freeshop internacional inspirado na eleg&acirc;ncia editorial e na energia
               cosmopolita de New York.
-            </p>
-            <p className="hero-lead reveal">
+            </m.p>
+            <m.p
+              animate="visible"
+              className="hero-lead"
+              custom={0.52}
+              initial={reduceMotion ? false : 'hidden'}
+              variants={copyReveal}
+            >
               Essa est&eacute;tica entra apenas como atmosfera: luz filtrada, contraste sutil,
               vitrine contempor&acirc;nea e leitura limpa em qualquer tela.
-            </p>
+            </m.p>
           </m.div>
 
           <aside aria-label="Notas editoriais" className="hero-rail" id="mood">
-            <m.div className="hero-rail-motion" style={{ y: railY }}>
+            <m.div className="hero-rail-motion" style={reduceMotion ? undefined : { y: railY }}>
               <figure className="hero-rail-figure">
                 <img
                   alt=""
                   aria-hidden="true"
                   decoding="async"
-                  fetchPriority="high"
+                  fetchPriority="low"
                   height="1080"
                   sizes="(min-width: 1360px) 720px, (min-width: 1040px) 48vw, (min-width: 768px) 64vw, 128vw"
                   src={resolveAssetPath('assets/ui/statue-360.webp')}
