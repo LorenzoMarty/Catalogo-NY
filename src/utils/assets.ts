@@ -1,4 +1,4 @@
-const rawAssetUrls = import.meta.glob('/src/assets/**/*', {
+const rawAssetUrls = import.meta.glob('/src/assets/{products,ui}/**/*.webp', {
   eager: true,
   import: 'default',
   query: '?url',

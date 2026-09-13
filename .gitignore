@@ -8,6 +8,11 @@ npm-debug.log
 yarn-error.log
 vite-dev*.log
 
+# Local environment
+.env
+.env.*
+!.env.example
+
 # IDEs and editors
 .idea/
 .project
@@ -25,6 +30,9 @@ vite-dev*.log
 !.vscode/extensions.json
 !.vscode/mcp.json
 .history/*
+
+# Claude knowledge cache (derived, not source of truth)
+.claude/knowledge/
 
 # Miscellaneous
 .sass-cache/
