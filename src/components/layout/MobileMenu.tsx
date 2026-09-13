@@ -1,4 +1,5 @@
 interface MobileMenuProps {
+  readonly open: boolean;
   readonly onNavigate: () => void;
 }
 
@@ -9,9 +10,9 @@ const mobileLinks = [
   { href: '#stores', index: '04', label: 'Lojas', note: '#stores' },
 ];
 
-export function MobileMenu({ onNavigate }: MobileMenuProps) {
+export function MobileMenu({ onNavigate, open }: MobileMenuProps) {
   return (
-    <div aria-hidden="true" id="mobile-menu">
+    <div aria-hidden={!open} id="mobile-menu">
       <div className="mobile-menu-shell">
         <div className="mobile-menu-head">
           <span className="mobile-menu-kicker">Dobras</span>

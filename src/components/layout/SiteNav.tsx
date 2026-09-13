@@ -17,12 +17,14 @@ export function SiteNav({ menuOpen, onToggleMenu }: SiteNavProps) {
         </a>
 
         <div className="nav-links font-mono">
+          <a href="#hero">Inicio</a>
           <a href="#categories">Categorias</a>
           <a href="#stores">Lojas</a>
+          <a href="#footer">Contato</a>
         </div>
 
         <div className="nav-actions">
-          <span className="nav-note font-mono">
+          <a className="nav-note font-mono" href="#footer">
             Fale conosco
             <svg
               aria-hidden="true"
@@ -37,10 +39,11 @@ export function SiteNav({ menuOpen, onToggleMenu }: SiteNavProps) {
               <path d="M7 17 17 7" />
               <path d="M7 7h10v10" />
             </svg>
-          </span>
+          </a>
           <button
             aria-controls="mobile-menu"
             aria-expanded={menuOpen}
+            aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
             className="menu-toggle"
             id="menu-btn"
             onClick={onToggleMenu}

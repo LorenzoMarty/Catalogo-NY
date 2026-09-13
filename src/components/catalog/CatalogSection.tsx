@@ -11,6 +11,7 @@ import { CSSVars } from '../../utils/styles';
 import { ProductSearch } from './ProductSearch';
 
 const brandLaneCopies = [0, 1, 2, 3] as const;
+const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER?.replace(/\D/g, '') ?? '';
 
 export function CatalogSection() {
   const { toggleSector, viewModel: vm } = useCatalog();
@@ -452,5 +453,7 @@ function getDisplayPrice(price: string): string {
 
 function getWhatsAppHref(product: CatalogProductViewModel): string {
   const message = `Olá, gostaria de saber mais sobre ${product.name} da ${product.brand}.`;
-  return `https://wa.me/?text=${encodeURIComponent(message)}`;
+  const recipient = whatsappNumber ? `/${whatsappNumber}` : '';
+
+  return `https://wa.me${recipient}?text=${encodeURIComponent(message)}`;
 }

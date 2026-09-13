@@ -25,7 +25,7 @@ export function HomePage() {
     <>
       <div aria-hidden="true" className="noise" />
 
-      <MobileMenu onNavigate={closeMenu} />
+      <MobileMenu onNavigate={closeMenu} open={menuOpen} />
       <SiteNav menuOpen={menuOpen} onToggleMenu={toggleMenu} />
 
       <div className="wrapper">
