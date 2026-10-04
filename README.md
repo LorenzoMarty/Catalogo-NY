@@ -9,6 +9,12 @@
 
 The site presents the brand, its physical stores and a searchable product catalog, with a focus on visual polish and performance on mobile. The UI is in Brazilian Portuguese.
 
+**Live site:** https://catalogo-ny.vercel.app
+
+![Walkthrough of the live site: hero with parallax, category browsing, product search, product detail, stores showcase and footer](docs/screenshots/demo.webp)
+
+<sub>Walkthrough of the live site (sped up 2x). [Full-quality video](docs/demo.mp4).</sub>
+
 ## Features
 
 - **Hero with parallax and ticker**, smooth scrolling powered by [Lenis](https://github.com/darkroomengineering/lenis).
