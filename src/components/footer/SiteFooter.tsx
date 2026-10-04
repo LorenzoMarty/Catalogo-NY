@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import logoFull from '../../assets/brand/logo-ny.svg';
 import { STORE_PANELS } from '../../data/stores.data';
 import { useFooterReveal } from '../../hooks/useFooterReveal';
 import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
@@ -51,7 +52,9 @@ export function SiteFooter() {
           </div>
 
           <div className="footer-brand-center">
-            <h2 className="footer-title display-font">New York Freeshop</h2>
+            <h2 className="footer-title display-font">
+              <img alt="New York Free Shop" className="footer-logo" height="392" src={logoFull} width="380" />
+            </h2>
 
             <div className="footer-actions">
               <a className="footer-primary-link display-font" href="#hero">
