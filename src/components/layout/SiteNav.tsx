@@ -1,3 +1,5 @@
+import logoMark from '../../assets/brand/logo-ny-mark.svg';
+
 interface SiteNavProps {
   readonly menuOpen: boolean;
   readonly onToggleMenu: () => void;
@@ -8,9 +10,7 @@ export function SiteNav({ menuOpen, onToggleMenu }: SiteNavProps) {
     <nav aria-label="Global" className="site-nav">
       <div className="nav-shell">
         <a className="nav-brand" href="#hero">
-          <span aria-hidden="true" className="brand-mark">
-            <span>NY</span>
-          </span>
+          <img alt="" className="brand-logo" height="40" src={logoMark} width="28" />
           <span className="brand-copy">
             <strong>New York Freeshop</strong>
           </span>
