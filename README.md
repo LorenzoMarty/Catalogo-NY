@@ -6,6 +6,7 @@
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 The site presents the brand, its physical stores and a searchable product catalog, with a focus on visual polish and performance on mobile. The UI is in Brazilian Portuguese.
 
@@ -15,7 +16,7 @@ The site presents the brand, its physical stores and a searchable product catalo
 
 <sub>Walkthrough of the live site (sped up 2x). [Full-quality video](docs/demo.mp4).</sub>
 
-## Features
+## What it does
 
 - **Hero with parallax and ticker**, smooth scrolling powered by [Lenis](https://github.com/darkroomengineering/lenis).
 - **Searchable catalog** organized by brand, with debounced search and an image lightbox.
@@ -23,11 +24,10 @@ The site presents the brand, its physical stores and a searchable product catalo
 - **Responsive navigation** with a mobile menu and a footer reveal animation.
 - **Image pipeline:** build-time scripts optimize UI images into responsive `srcset` WebP sets and sync product images against a manifest.
 
-## Tech stack
+## How it works
 
-React 19 · TypeScript · Vite · React Router 7 · Framer Motion · Lenis · Vitest · [sharp](https://sharp.pixelplumbing.com) (image processing) · deployed on Vercel as a static SPA.
+The app is a static single-page site. Catalog and store data are local TypeScript modules, a `CatalogContext` exposes them to the UI, and hooks hold the interactions (search, lightbox, parallax, smooth scroll, stores showcase).
 
-## Project structure
 
 ```text
 src/
@@ -43,6 +43,16 @@ src/
 scripts/        sync-product-images.cjs, optimize-ui-images.cjs
 data/           image manifest and product image sources
 ```
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| App | React 19, TypeScript, Vite, React Router 7 |
+| Motion | Framer Motion, [Lenis](https://github.com/darkroomengineering/lenis) smooth scroll |
+| Images | Build-time optimization with [sharp](https://sharp.pixelplumbing.com) (responsive `srcset` WebP) |
+| Tests | Vitest |
+| Hosting | Vercel (static SPA) |
 
 ## Getting started
 
@@ -60,10 +70,25 @@ npm run dev
 | `npm run sync:product-images` | Sync product images with the manifest |
 | `npm run optimize:ui-images` | Generate optimized responsive UI images |
 
+## Quality checks
+
+```bash
+npm test        # Vitest (catalog service)
+npm run build   # type-check + production build
+```
+
 ## Deployment
 
 The app is a static SPA: `vercel.json` publishes `dist/` and rewrites every route to `index.html`.
 
-## Roadmap
+## Status
 
-The catalog is currently static. The plan is to consume products (featured items, best sellers) directly from the companion inventory system (Estoque NY).
+In production at the link above. The catalog is currently static. The plan is to consume products (featured items, best sellers) directly from the companion inventory system (Estoque NY).
+
+## License
+
+[MIT](LICENSE)
+
+## Author
+
+**Lorenzo Marty** — [GitHub](https://github.com/LorenzoMarty)
