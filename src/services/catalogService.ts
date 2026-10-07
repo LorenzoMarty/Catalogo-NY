@@ -1,6 +1,7 @@
 import rawImageManifest from '../../data/catalog-image-manifest.json';
 import { CATALOG_FEATURED_MIX, CATALOG_SECTORS, getCatalogBrandMark } from '../data/catalog.data';
 import {
+  CatalogData,
   CatalogImageAsset,
   CatalogImageManifest,
   CatalogProductViewModel,
@@ -11,23 +12,51 @@ import { resolveAssetPath, resolveSrcSet } from '../utils/assets';
 
 type CatalogBaseProduct = Omit<CatalogProductViewModel, 'imageAsset'>;
 
-const sectors = CATALOG_SECTORS;
-const featuredMix = CATALOG_FEATURED_MIX;
-const baseProducts = buildBaseProducts();
-const baseProductMap = buildBaseProductMap();
-const imageManifest = normalizeImageManifest(rawImageManifest as CatalogImageManifest);
+interface DerivedCatalog {
+  readonly data: CatalogData;
+  readonly baseProducts: readonly CatalogBaseProduct[];
+  readonly baseProductMap: Readonly<Record<string, CatalogBaseProduct>>;
+}
+
+export const STATIC_CATALOG: CatalogData = {
+  sectors: CATALOG_SECTORS,
+  featuredMix: CATALOG_FEATURED_MIX,
+  images: normalizeImageManifest(rawImageManifest as CatalogImageManifest),
+};
+
+const derivedCache = new WeakMap<CatalogData, DerivedCatalog>();
+
+function derive(data: CatalogData): DerivedCatalog {
+  const cached = derivedCache.get(data);
+  if (cached) {
+    return cached;
+  }
+
+  const baseProducts = buildBaseProducts(data.sectors);
+  const derived = { data, baseProducts, baseProductMap: buildBaseProductMap(baseProducts) };
+  derivedCache.set(data, derived);
+  return derived;
+}
 
 export function createInitialCatalogViewModel(): CatalogSectionViewModel {
   return buildCatalogViewModel(null);
 }
 
-export function getCatalogSearchProducts(): readonly CatalogProductViewModel[] {
-  return baseProducts.map((product) => hydrateProduct(product));
+export function getCatalogSearchProducts(
+  data: CatalogData = STATIC_CATALOG,
+): readonly CatalogProductViewModel[] {
+  const catalog = derive(data);
+  return catalog.baseProducts.map((product) => hydrateProduct(product, data.images));
 }
 
-export function buildCatalogViewModel(sectorId: string | null): CatalogSectionViewModel {
-  const currentSector = getSectorById(sectorId);
-  const products = getVisibleProducts(currentSector);
+export function buildCatalogViewModel(
+  sectorId: string | null,
+  data: CatalogData = STATIC_CATALOG,
+): CatalogSectionViewModel {
+  const catalog = derive(data);
+  const { sectors } = data;
+  const currentSector = getSectorById(sectors, sectorId);
+  const products = getVisibleProducts(catalog, currentSector);
   const productMap = products.reduce<Record<string, CatalogProductViewModel>>(
     (mapById, product) => {
       mapById[product.id] = product;
@@ -47,7 +76,7 @@ export function buildCatalogViewModel(sectorId: string | null): CatalogSectionVi
   };
 }
 
-function buildBaseProducts(): readonly CatalogBaseProduct[] {
+function buildBaseProducts(sectors: readonly CatalogSector[]): readonly CatalogBaseProduct[] {
   return sectors.flatMap((sector) =>
     sector.products.map((product) => ({
       ...product,
@@ -80,7 +109,9 @@ function createProductTags(
     .filter(Boolean);
 }
 
-function buildBaseProductMap(): Readonly<Record<string, CatalogBaseProduct>> {
+function buildBaseProductMap(
+  baseProducts: readonly CatalogBaseProduct[],
+): Readonly<Record<string, CatalogBaseProduct>> {
   return baseProducts.reduce<Record<string, CatalogBaseProduct>>((productMap, product) => {
     productMap[product.id] = product;
     return productMap;
@@ -88,23 +119,32 @@ function buildBaseProductMap(): Readonly<Record<string, CatalogBaseProduct>> {
 }
 
 function getVisibleProducts(
+  catalog: DerivedCatalog,
   currentSector: CatalogSector | null,
 ): readonly CatalogProductViewModel[] {
   const visibleBaseProducts = currentSector
-    ? baseProducts.filter((product) => product.sectorId === currentSector.id)
-    : featuredMix.map((productId) => baseProductMap[productId]).filter(Boolean);
+    ? catalog.baseProducts.filter((product) => product.sectorId === currentSector.id)
+    : catalog.data.featuredMix
+        .map((productId) => catalog.baseProductMap[productId])
+        .filter(Boolean);
 
-  return visibleBaseProducts.map((product) => hydrateProduct(product));
+  return visibleBaseProducts.map((product) => hydrateProduct(product, catalog.data.images));
 }
 
-function hydrateProduct(product: CatalogBaseProduct): CatalogProductViewModel {
+function hydrateProduct(
+  product: CatalogBaseProduct,
+  images: CatalogImageManifest,
+): CatalogProductViewModel {
   return {
     ...product,
-    imageAsset: imageManifest[product.id] ?? null,
+    imageAsset: images[product.id] ?? null,
   };
 }
 
-function getSectorById(sectorId: string | null): CatalogSector | null {
+function getSectorById(
+  sectors: readonly CatalogSector[],
+  sectorId: string | null,
+): CatalogSector | null {
   return sectors.find((sector) => sector.id === sectorId) ?? null;
 }
 

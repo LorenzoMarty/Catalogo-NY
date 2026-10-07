@@ -6,7 +6,6 @@ import { useBodyClass } from '../../hooks/useBodyClass';
 import { useLightbox } from '../../hooks/useLightbox';
 import { normalizeSearchValue, useProductSearch } from '../../hooks/useProductSearch';
 import { CatalogImageAsset, CatalogProductViewModel } from '../../models/catalog.models';
-import { getCatalogSearchProducts } from '../../services/catalogService';
 import { CSSVars } from '../../utils/styles';
 import { ProductSearch } from './ProductSearch';
 
@@ -14,10 +13,9 @@ const brandLaneCopies = [0, 1, 2, 3] as const;
 const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER?.replace(/\D/g, '') ?? '';
 
 export function CatalogSection() {
-  const { toggleSector, viewModel: vm } = useCatalog();
+  const { toggleSector, viewModel: vm, searchProducts: allProducts } = useCatalog();
   const reduceMotion = useReducedMotion();
   const lightboxCloseButtonRef = useRef<HTMLButtonElement | null>(null);
-  const allProducts = useMemo(() => getCatalogSearchProducts(), []);
   const allProductMap = useMemo(
     () =>
       allProducts.reduce<Record<string, CatalogProductViewModel>>((productMap, product) => {
@@ -258,15 +256,17 @@ export function CatalogSection() {
                       <span>Marca</span>
                       <strong>{activeProduct.brand}</strong>
                     </li>
-                    <li>
-                      <span>Destaque</span>
-                      <strong>{activeProduct.note}</strong>
-                    </li>
+                    {activeProduct.note && (
+                      <li>
+                        <span>Destaque</span>
+                        <strong>{activeProduct.note}</strong>
+                      </li>
+                    )}
                   </ul>
 
                   <div className="lightbox-commerce">
                     <span className="lightbox-price" id="lightbox-price">
-                      {getDisplayPrice(activeProduct.price)}
+                      {getPriceLabel(activeProduct)}
                     </span>
                     <m.a
                       className="lightbox-whatsapp"
@@ -348,7 +348,9 @@ function ProductNode({ onOpen, product, revealDelay, searchQuery }: ProductNodeP
           <HighlightText query={searchQuery} text={product.name} />
         </span>
       </span>
-      <span className="product-price">{getDisplayPrice(product.price)}</span>
+      <span className={`product-price${product.inStock === false ? ' is-sold-out' : ''}`}>
+        {getPriceLabel(product)}
+      </span>
     </m.button>
   );
 }
@@ -447,8 +449,8 @@ function getDelay(index: number, step: number): string {
   return `${(index * step).toFixed(2)}s`;
 }
 
-function getDisplayPrice(price: string): string {
-  return price.replace(/\s+info$/i, '');
+function getPriceLabel(product: CatalogProductViewModel): string {
+  return product.inStock === false ? 'Esgotado' : product.price.replace(/\s+info$/i, '');
 }
 
 function getWhatsAppHref(product: CatalogProductViewModel): string {
