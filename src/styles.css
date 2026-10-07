@@ -1363,6 +1363,10 @@ body.modal-open {
   color: var(--accent);
 }
 
+.product-price.is-sold-out {
+  color: rgba(36, 47, 68, 0.66);
+}
+
 .product-lightbox {
   --catalog-accent: #8faeff;
   --catalog-accent-soft: rgba(143, 174, 255, 0.18);

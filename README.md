@@ -26,7 +26,7 @@ The site presents the brand, its physical stores and a searchable product catalo
 
 ## How it works
 
-The app is a static single-page site. Catalog and store data are local TypeScript modules, a `CatalogContext` exposes them to the UI, and hooks hold the interactions (search, lightbox, parallax, smooth scroll, stores showcase).
+The app is a single-page site. Store data and the fallback catalog are local TypeScript modules; when `VITE_API_URL` is set, the catalog is loaded from the Estoque API (`GET /public/catalog`) and replaces the fallback, which is used again if the API fails or takes over 4 s. A `CatalogContext` exposes the catalog to the UI, and hooks hold the interactions (search, lightbox, parallax, smooth scroll, stores showcase).
 
 
 ```text
@@ -60,6 +60,8 @@ data/           image manifest and product image sources
 npm install
 npm run dev
 ```
+
+Optional environment variables (see `.env.example`): `VITE_WHATSAPP_NUMBER` for the contact link and `VITE_API_URL` for the Estoque API base URL (for example `http://127.0.0.1:8010`). Without `VITE_API_URL` the site uses only the static catalog.
 
 | Command | Description |
 |---|---|

@@ -17,6 +17,7 @@ export interface CatalogProduct {
   readonly lift?: number;
   readonly art?: string;
   readonly brandMark?: string;
+  readonly inStock?: boolean;
 }
 
 export interface CatalogSector {
@@ -72,4 +73,10 @@ export interface CatalogSectionViewModel {
   readonly resultsKicker: string;
   readonly resultsHeading: string;
   readonly brandAnimationDuration: string;
+}
+
+export interface CatalogData {
+  readonly sectors: readonly CatalogSector[];
+  readonly featuredMix: readonly string[];
+  readonly images: CatalogImageManifest;
 }
