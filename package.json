@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "sync:product-images": "node scripts/sync-product-images.cjs",
-    "optimize:ui-images": "node scripts/optimize-ui-images.cjs"
+    "optimize:ui-images": "node scripts/optimize-ui-images.cjs",
+    "contract:sync": "node scripts/sync-contract.cjs"
   },
   "packageManager": "npm@10.9.4",
   "dependencies": {
