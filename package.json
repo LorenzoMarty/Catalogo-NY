@@ -13,7 +13,9 @@
     "optimize:ui-images": "node scripts/optimize-ui-images.cjs",
     "format:check": "prettier --check .",
     "test:ci": "vitest run",
-    "contract:sync": "node scripts/sync-contract.cjs"
+    "contract:sync": "node scripts/sync-contract.cjs",
+    "snapshot:catalog": "node scripts/snapshot-catalog.cjs",
+    "prebuild": "node scripts/snapshot-catalog.cjs"
   },
   "packageManager": "npm@10.9.4",
   "dependencies": {
@@ -25,6 +27,7 @@
     "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
+    "@types/node": "^22.20.5",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.1.1",
