@@ -1,4 +1,5 @@
 import rawImageManifest from '../../data/catalog-image-manifest.json';
+import rawSnapshot from '../../data/catalog-snapshot.json';
 import { CATALOG_FEATURED_MIX, CATALOG_SECTORS, getCatalogBrandMark } from '../data/catalog.data';
 import {
   CatalogData,
@@ -9,6 +10,7 @@ import {
   CatalogSector,
 } from '../models/catalog.models';
 import { resolveAssetPath, resolveSrcSet } from '../utils/assets';
+import { parseRemoteCatalog, toCatalogData } from './catalogApi';
 
 type CatalogBaseProduct = Omit<CatalogProductViewModel, 'imageAsset'>;
 
@@ -18,11 +20,26 @@ interface DerivedCatalog {
   readonly baseProductMap: Readonly<Record<string, CatalogBaseProduct>>;
 }
 
-export const STATIC_CATALOG: CatalogData = {
+const HAND_MADE_CATALOG: CatalogData = {
   sectors: CATALOG_SECTORS,
   featuredMix: CATALOG_FEATURED_MIX,
   images: normalizeImageManifest(rawImageManifest as CatalogImageManifest),
 };
+
+/**
+ * The bundled catalog: the snapshot `npm run build` takes from the API (data/catalog-snapshot.json)
+ * when it has products, otherwise the hand-made one, which also covers the committed empty seed
+ * and offline builds.
+ */
+export function pickBundledCatalog(snapshot: unknown): CatalogData {
+  // The snapshot is raw API output, so it goes through the same parser as a live response
+  // (which turns the API's nulls into the empty strings the UI expects).
+  const parsed = parseRemoteCatalog(snapshot);
+  const hasProducts = parsed?.sectors.some((sector) => sector.products.length > 0) ?? false;
+  return parsed && hasProducts ? toCatalogData(parsed) : HAND_MADE_CATALOG;
+}
+
+export const STATIC_CATALOG: CatalogData = pickBundledCatalog(rawSnapshot);
 
 const derivedCache = new WeakMap<CatalogData, DerivedCatalog>();
 
