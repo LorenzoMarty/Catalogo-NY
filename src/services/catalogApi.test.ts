@@ -31,7 +31,10 @@ describe('parseRemoteCatalog', () => {
     ['sectors not an array', { sectors: 'x' }],
     ['sector without name', { sectors: [{ products: [] }] }],
     ['product without name', { sectors: [{ name: 'A', products: [{ ...product(), name: 5 }] }] }],
-    ['product without id', { sectors: [{ name: 'A', products: [{ ...product(), id: undefined }] }] }],
+    [
+      'product without id',
+      { sectors: [{ name: 'A', products: [{ ...product(), id: undefined }] }] },
+    ],
   ])('rejects %s', (_label, body) => {
     expect(parseRemoteCatalog(body)).toBeNull();
   });
@@ -50,7 +53,9 @@ describe('toCatalogData', () => {
   });
 
   it('matches sector names ignoring case and accents', () => {
-    const data = toCatalogData(parseRemoteCatalog(payload([{ name: 'PERFUMARIA ', products: [product()] }]))!);
+    const data = toCatalogData(
+      parseRemoteCatalog(payload([{ name: 'PERFUMARIA ', products: [product()] }]))!,
+    );
 
     expect(data.sectors[0].id).toBe('perfumery');
   });
@@ -90,7 +95,9 @@ describe('toCatalogData', () => {
 
   it('keeps out-of-stock products and flags them', () => {
     const data = toCatalogData(
-      parseRemoteCatalog(payload([{ name: 'Perfumaria', products: [product({ in_stock: false })] }]))!,
+      parseRemoteCatalog(
+        payload([{ name: 'Perfumaria', products: [product({ in_stock: false })] }]),
+      )!,
     );
 
     expect(data.sectors[0].products[0].inStock).toBe(false);
@@ -162,16 +169,34 @@ describe('fetchRemoteCatalog', () => {
   it.each([
     ['http error', async () => jsonResponse({}, { ok: false, status: 500 })],
     ['invalid shape', async () => jsonResponse({ nope: true })],
-    ['invalid json', async () => ({ ok: true, json: async () => { throw new Error('bad json'); } }) as unknown as Response],
-    ['network failure', async () => { throw new TypeError('Failed to fetch'); }],
+    [
+      'invalid json',
+      async () =>
+        ({
+          ok: true,
+          json: async () => {
+            throw new Error('bad json');
+          },
+        }) as unknown as Response,
+    ],
+    [
+      'network failure',
+      async () => {
+        throw new TypeError('Failed to fetch');
+      },
+    ],
   ])('returns null on %s', async (_label, impl) => {
-    expect(await fetchRemoteCatalog('http://api.test', { fetchImpl: impl as unknown as typeof fetch })).toBeNull();
+    expect(
+      await fetchRemoteCatalog('http://api.test', { fetchImpl: impl as unknown as typeof fetch }),
+    ).toBeNull();
   });
 
   it('returns null when the request exceeds the timeout', async () => {
     const fetchImpl = ((_url: string, init?: RequestInit) =>
       new Promise((_resolve, reject) => {
-        init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+        init?.signal?.addEventListener('abort', () =>
+          reject(new DOMException('aborted', 'AbortError')),
+        );
       })) as unknown as typeof fetch;
 
     expect(await fetchRemoteCatalog('http://api.test', { fetchImpl, timeoutMs: 20 })).toBeNull();
