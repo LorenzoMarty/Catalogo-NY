@@ -53,7 +53,13 @@ export function SiteFooter() {
 
           <div className="footer-brand-center">
             <h2 className="footer-title display-font">
-              <img alt="New York Free Shop" className="footer-logo" height="392" src={logoFull} width="380" />
+              <img
+                alt="New York Free Shop"
+                className="footer-logo"
+                height="392"
+                src={logoFull}
+                width="380"
+              />
             </h2>
 
             <div className="footer-actions">
