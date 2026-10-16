@@ -20,12 +20,19 @@ export interface RemoteProduct {
 }
 
 export interface RemoteCatalog {
-  readonly sectors: readonly { readonly name: string; readonly products: readonly RemoteProduct[] }[];
+  readonly sectors: readonly {
+    readonly name: string;
+    readonly products: readonly RemoteProduct[];
+  }[];
 }
+
+export type FallbackReason = 'timeout' | 'network' | 'http' | 'invalid';
 
 interface FetchOptions {
   readonly fetchImpl?: typeof fetch;
   readonly timeoutMs?: number;
+  /** Called when the API was configured but could not provide the catalog. */
+  readonly onFailure?: (reason: FallbackReason) => void;
 }
 
 const DEFAULT_TIMEOUT_MS = 4000;
@@ -47,11 +54,7 @@ const NEUTRAL_STYLE = {
 } as const;
 
 export function normalizeName(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .trim()
-    .toLowerCase();
+  return value.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
 }
 
 function slugify(value: string): string {
@@ -185,7 +188,7 @@ export function toCatalogData(remote: RemoteCatalog): CatalogData {
 
 export async function fetchRemoteCatalog(
   baseUrl: string,
-  { fetchImpl = fetch, timeoutMs = DEFAULT_TIMEOUT_MS }: FetchOptions = {},
+  { fetchImpl = fetch, timeoutMs = DEFAULT_TIMEOUT_MS, onFailure }: FetchOptions = {},
 ): Promise<CatalogData | null> {
   const root = baseUrl.trim().replace(/\/+$/, '');
   if (!root) {
@@ -200,11 +203,17 @@ export async function fetchRemoteCatalog(
       signal: controller.signal,
     });
     if (!response.ok) {
+      onFailure?.('http');
       return null;
     }
     const remote = parseRemoteCatalog(await response.json());
-    return remote ? toCatalogData(remote) : null;
+    if (!remote) {
+      onFailure?.('invalid');
+      return null;
+    }
+    return toCatalogData(remote);
   } catch {
+    onFailure?.(controller.signal.aborted ? 'timeout' : 'network');
     return null;
   } finally {
     clearTimeout(timer);
