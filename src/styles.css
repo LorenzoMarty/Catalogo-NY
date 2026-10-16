@@ -843,6 +843,13 @@ body.modal-open {
     linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(244, 247, 251, 0.98) 100%);
 }
 
+.catalog-stale-hint {
+  margin: 0 0 14px;
+  font-size: 0.8rem;
+  color: #5b6b86;
+  text-align: center;
+}
+
 .stores-stage {
   scroll-margin-top: calc(var(--nav-h) + 28px);
   position: relative;
