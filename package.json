@@ -12,7 +12,8 @@
     "sync:product-images": "node scripts/sync-product-images.cjs",
     "optimize:ui-images": "node scripts/optimize-ui-images.cjs",
     "format:check": "prettier --check .",
-    "test:ci": "vitest run"
+    "test:ci": "vitest run",
+    "contract:sync": "node scripts/sync-contract.cjs"
   },
   "packageManager": "npm@10.9.4",
   "dependencies": {
