@@ -13,7 +13,7 @@ const brandLaneCopies = [0, 1, 2, 3] as const;
 const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER?.replace(/\D/g, '') ?? '';
 
 export function CatalogSection() {
-  const { toggleSector, viewModel: vm, searchProducts: allProducts } = useCatalog();
+  const { toggleSector, viewModel: vm, searchProducts: allProducts, source } = useCatalog();
   const reduceMotion = useReducedMotion();
   const lightboxCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const allProductMap = useMemo(
@@ -64,6 +64,11 @@ export function CatalogSection() {
         }
       >
         <div className="catalog-shell">
+          {source === 'fallback' && (
+            <p className="catalog-stale-hint" role="status">
+              Preços e disponibilidade podem estar desatualizados no momento.
+            </p>
+          )}
           <div aria-label="Setores do freeshop" className="sector-rail">
             <div className="sector-list" id="sector-list">
               {vm.sectors.map((sector, index) => (
