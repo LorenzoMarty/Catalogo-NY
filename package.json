@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "test": "vitest",
     "sync:product-images": "node scripts/sync-product-images.cjs",
-    "optimize:ui-images": "node scripts/optimize-ui-images.cjs"
+    "optimize:ui-images": "node scripts/optimize-ui-images.cjs",
+    "format:check": "prettier --check .",
+    "test:ci": "vitest run"
   },
   "packageManager": "npm@10.9.4",
   "dependencies": {

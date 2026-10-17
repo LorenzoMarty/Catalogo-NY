@@ -20,7 +20,10 @@ export interface RemoteProduct {
 }
 
 export interface RemoteCatalog {
-  readonly sectors: readonly { readonly name: string; readonly products: readonly RemoteProduct[] }[];
+  readonly sectors: readonly {
+    readonly name: string;
+    readonly products: readonly RemoteProduct[];
+  }[];
 }
 
 interface FetchOptions {
@@ -47,11 +50,7 @@ const NEUTRAL_STYLE = {
 } as const;
 
 export function normalizeName(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .trim()
-    .toLowerCase();
+  return value.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
 }
 
 function slugify(value: string): string {

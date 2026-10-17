@@ -1,40 +1,42 @@
-const crypto = require("node:crypto");
-const fs = require("node:fs/promises");
-const path = require("node:path");
-const sharp = require("sharp");
+const crypto = require('node:crypto');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const sharp = require('sharp');
 
-const sourceEntries = require("../data/product-image-sources.json");
+const sourceEntries = require('../data/product-image-sources.json');
 
-const OUTPUT_DIR = path.resolve(__dirname, "../src/assets/products");
-const MANIFEST_JSON_PATH = path.resolve(__dirname, "../data/catalog-image-manifest.json");
+const OUTPUT_DIR = path.resolve(__dirname, '../src/assets/products');
+const MANIFEST_JSON_PATH = path.resolve(__dirname, '../data/catalog-image-manifest.json');
 const CONCURRENCY = 4;
 const MAX_WIDTH = 1200;
 const THUMB_WIDTH = 480;
 const WEBP_QUALITY = 74;
 const THUMB_QUALITY = 62;
 const PLACEHOLDER_WIDTH = 32;
-const VERSION = "v1";
+const VERSION = 'v1';
 
 function slugify(value) {
-  return String(value || "")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 72) || "product";
+  return (
+    String(value || '')
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 72) || 'product'
+  );
 }
 
 function hash(value) {
-  return crypto.createHash("sha1").update(String(value)).digest("hex");
+  return crypto.createHash('sha1').update(String(value)).digest('hex');
 }
 
 async function readJsonIfExists(filePath, fallback) {
   try {
-    const raw = await fs.readFile(filePath, "utf8");
+    const raw = await fs.readFile(filePath, 'utf8');
     return JSON.parse(raw);
   } catch (error) {
-    if (error && error.code === "ENOENT") {
+    if (error && error.code === 'ENOENT') {
       return fallback;
     }
 
@@ -82,7 +84,7 @@ async function fileExists(filePath) {
     await fs.access(filePath);
     return true;
   } catch (error) {
-    if (error && error.code === "ENOENT") {
+    if (error && error.code === 'ENOENT') {
       return false;
     }
 
@@ -99,20 +101,20 @@ async function fetchWithTimeout(url, timeoutMs) {
   try {
     const response = await fetch(url, {
       headers: {
-        "user-agent": "catalogo-ny-image-sync/1.0",
-        "accept": "image/avif,image/webp,image/*,*/*;q=0.8"
+        'user-agent': 'catalogo-ny-image-sync/1.0',
+        accept: 'image/avif,image/webp,image/*,*/*;q=0.8',
       },
-      redirect: "follow",
-      signal: controller.signal
+      redirect: 'follow',
+      signal: controller.signal,
     });
 
     if (!response.ok) {
-      throw new Error("download failed with status " + response.status);
+      throw new Error('download failed with status ' + response.status);
     }
 
-    const contentType = response.headers.get("content-type") || "";
-    if (contentType && !contentType.startsWith("image/")) {
-      throw new Error("unexpected content-type " + contentType);
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType && !contentType.startsWith('image/')) {
+      throw new Error('unexpected content-type ' + contentType);
     }
 
     const arrayBuffer = await response.arrayBuffer();
@@ -123,7 +125,7 @@ async function fetchWithTimeout(url, timeoutMs) {
 }
 
 function relativeAssetPath(fileName) {
-  return "assets/products/" + fileName;
+  return 'assets/products/' + fileName;
 }
 
 function normalizeManifestEntry(entry) {
@@ -133,15 +135,25 @@ function normalizeManifestEntry(entry) {
 
   return {
     ...entry,
-    src: entry.src ? entry.src.replace(/^public\/products\//, "assets/products/") : entry.src,
-    thumb: entry.thumb ? entry.thumb.replace(/^public\/products\//, "assets/products/") : entry.thumb,
-    srcset: entry.srcset ? entry.srcset.replace(/public\/products\//g, "assets/products/") : entry.srcset
+    src: entry.src ? entry.src.replace(/^public\/products\//, 'assets/products/') : entry.src,
+    thumb: entry.thumb
+      ? entry.thumb.replace(/^public\/products\//, 'assets/products/')
+      : entry.thumb,
+    srcset: entry.srcset
+      ? entry.srcset.replace(/public\/products\//g, 'assets/products/')
+      : entry.srcset,
   };
 }
 
 function createFallbackSvg(entry) {
-  const brand = String(entry.brand || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const name = String(entry.name || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const brand = String(entry.brand || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const name = String(entry.name || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
   return `
     <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="${name}">
@@ -172,18 +184,18 @@ function createFallbackSvg(entry) {
 async function writeDerivativeAssets(entry, buffer, fileNames, sourceHash, flags) {
   const largePath = path.join(OUTPUT_DIR, fileNames.largeName);
   const thumbPath = path.join(OUTPUT_DIR, fileNames.thumbName);
-  const pipeline = sharp(buffer, { failOn: "warning" }).rotate();
+  const pipeline = sharp(buffer, { failOn: 'warning' }).rotate();
   const metadata = await pipeline.metadata();
   const largeInfo = await pipeline
     .clone()
     .resize({
       width: MAX_WIDTH,
-      fit: "inside",
-      withoutEnlargement: true
+      fit: 'inside',
+      withoutEnlargement: true,
     })
     .webp({
       quality: WEBP_QUALITY,
-      effort: 6
+      effort: 6,
     })
     .toFile(largePath);
 
@@ -193,19 +205,19 @@ async function writeDerivativeAssets(entry, buffer, fileNames, sourceHash, flags
       .clone()
       .resize({
         width: THUMB_WIDTH,
-        fit: "inside",
-        withoutEnlargement: true
+        fit: 'inside',
+        withoutEnlargement: true,
       })
       .webp({
         quality: THUMB_QUALITY,
-        effort: 6
+        effort: 6,
       })
       .toFile(thumbPath);
 
     thumb = {
       src: relativeAssetPath(fileNames.thumbName),
       width: thumbInfo.width,
-      height: thumbInfo.height
+      height: thumbInfo.height,
     };
   } else if (await fileExists(thumbPath)) {
     await fs.unlink(thumbPath);
@@ -215,12 +227,12 @@ async function writeDerivativeAssets(entry, buffer, fileNames, sourceHash, flags
     .clone()
     .resize({
       width: PLACEHOLDER_WIDTH,
-      fit: "inside",
-      withoutEnlargement: true
+      fit: 'inside',
+      withoutEnlargement: true,
     })
     .webp({
       quality: 42,
-      effort: 6
+      effort: 6,
     })
     .toBuffer();
 
@@ -235,26 +247,35 @@ async function writeDerivativeAssets(entry, buffer, fileNames, sourceHash, flags
     thumb: thumb ? thumb.src : null,
     thumbWidth: thumb ? thumb.width : largeInfo.width,
     thumbHeight: thumb ? thumb.height : largeInfo.height,
-    placeholder: "data:image/webp;base64," + blurBuffer.toString("base64"),
+    placeholder: 'data:image/webp;base64,' + blurBuffer.toString('base64'),
     srcset: thumb
-      ? thumb.src + " " + thumb.width + "w, " + relativeAssetPath(fileNames.largeName) + " " + largeInfo.width + "w"
-      : relativeAssetPath(fileNames.largeName) + " " + largeInfo.width + "w",
-    sizes: "(max-width: 767px) 74vw, (max-width: 1039px) 31vw, 22vw",
-    lightboxSizes: "(max-width: 767px) 92vw, (max-width: 1280px) 56vw, 720px",
-    aspectRatio: largeInfo.width + " / " + largeInfo.height,
+      ? thumb.src +
+        ' ' +
+        thumb.width +
+        'w, ' +
+        relativeAssetPath(fileNames.largeName) +
+        ' ' +
+        largeInfo.width +
+        'w'
+      : relativeAssetPath(fileNames.largeName) + ' ' + largeInfo.width + 'w',
+    sizes: '(max-width: 767px) 74vw, (max-width: 1039px) 31vw, 22vw',
+    lightboxSizes: '(max-width: 767px) 92vw, (max-width: 1280px) 56vw, 720px',
+    aspectRatio: largeInfo.width + ' / ' + largeInfo.height,
     originalWidth: metadata.width || largeInfo.width,
     originalHeight: metadata.height || largeInfo.height,
-    fallback: Boolean(flags && flags.fallback)
+    fallback: Boolean(flags && flags.fallback),
   };
 }
 
 async function processEntry(entry, previousManifest) {
   const safeSlug = slugify(entry.name);
-  const basename = entry.id + "-" + safeSlug;
-  const sourceHash = hash([entry.imageUrl, VERSION, MAX_WIDTH, THUMB_WIDTH, WEBP_QUALITY, THUMB_QUALITY].join("|"));
+  const basename = entry.id + '-' + safeSlug;
+  const sourceHash = hash(
+    [entry.imageUrl, VERSION, MAX_WIDTH, THUMB_WIDTH, WEBP_QUALITY, THUMB_QUALITY].join('|'),
+  );
   const fileNames = {
-    largeName: basename + ".webp",
-    thumbName: basename + "-thumb.webp"
+    largeName: basename + '.webp',
+    thumbName: basename + '-thumb.webp',
   };
   const largePath = path.join(OUTPUT_DIR, fileNames.largeName);
   const thumbPath = path.join(OUTPUT_DIR, fileNames.thumbName);
@@ -263,49 +284,57 @@ async function processEntry(entry, previousManifest) {
   if (
     previous &&
     previous.sourceHash === sourceHash &&
-    await fileExists(largePath) &&
-    (!previous.thumb || await fileExists(thumbPath))
+    (await fileExists(largePath)) &&
+    (!previous.thumb || (await fileExists(thumbPath)))
   ) {
     return {
       entryId: entry.id,
-      status: "cached",
-      manifestEntry: normalizeManifestEntry(previous)
+      status: 'cached',
+      manifestEntry: normalizeManifestEntry(previous),
     };
   }
 
   try {
     const buffer = await fetchWithTimeout(entry.imageUrl, 20000);
-    const manifestEntry = await writeDerivativeAssets(entry, buffer, fileNames, sourceHash, { fallback: false });
+    const manifestEntry = await writeDerivativeAssets(entry, buffer, fileNames, sourceHash, {
+      fallback: false,
+    });
     return {
       entryId: entry.id,
-      status: previous ? "updated" : "created",
-      manifestEntry: manifestEntry
+      status: previous ? 'updated' : 'created',
+      manifestEntry: manifestEntry,
     };
   } catch (error) {
-    if (previous && await fileExists(largePath)) {
+    if (previous && (await fileExists(largePath))) {
       return {
         entryId: entry.id,
-        status: "stale-cache",
+        status: 'stale-cache',
         manifestEntry: normalizeManifestEntry(previous),
-        error: error.message
+        error: error.message,
       };
     }
 
     try {
       const fallbackBuffer = Buffer.from(createFallbackSvg(entry));
-      const manifestEntry = await writeDerivativeAssets(entry, fallbackBuffer, fileNames, sourceHash, { fallback: true });
+      const manifestEntry = await writeDerivativeAssets(
+        entry,
+        fallbackBuffer,
+        fileNames,
+        sourceHash,
+        { fallback: true },
+      );
       return {
         entryId: entry.id,
-        status: "fallback",
+        status: 'fallback',
         manifestEntry: manifestEntry,
-        error: error.message
+        error: error.message,
       };
     } catch (fallbackError) {
       return {
         entryId: entry.id,
-        status: "failed",
+        status: 'failed',
         manifestEntry: null,
-        error: error.message + " / fallback: " + fallbackError.message
+        error: error.message + ' / fallback: ' + fallbackError.message,
       };
     }
   }
@@ -316,11 +345,13 @@ async function main() {
 
   const previousManifest = await readJsonIfExists(MANIFEST_JSON_PATH, {});
   const limit = createLimiter(CONCURRENCY);
-  const results = await Promise.all(sourceEntries.map(function (entry) {
-    return limit(function () {
-      return processEntry(entry, previousManifest);
-    });
-  }));
+  const results = await Promise.all(
+    sourceEntries.map(function (entry) {
+      return limit(function () {
+        return processEntry(entry, previousManifest);
+      });
+    }),
+  );
 
   const nextManifest = {};
   const failures = [];
@@ -330,27 +361,29 @@ async function main() {
       nextManifest[result.entryId] = result.manifestEntry;
     }
 
-    if (result.status === "failed") {
+    if (result.status === 'failed') {
       failures.push(result);
     }
   });
 
-  await fs.writeFile(MANIFEST_JSON_PATH, JSON.stringify(nextManifest, null, 2) + "\n", "utf8");
+  await fs.writeFile(MANIFEST_JSON_PATH, JSON.stringify(nextManifest, null, 2) + '\n', 'utf8');
 
   const summary = results.reduce(function (accumulator, result) {
     accumulator[result.status] = (accumulator[result.status] || 0) + 1;
     return accumulator;
   }, {});
 
-  console.log("product image sync summary");
-  Object.keys(summary).sort().forEach(function (key) {
-    console.log(" - " + key + ": " + summary[key]);
-  });
+  console.log('product image sync summary');
+  Object.keys(summary)
+    .sort()
+    .forEach(function (key) {
+      console.log(' - ' + key + ': ' + summary[key]);
+    });
 
   if (failures.length > 0) {
-    console.error("failed downloads");
+    console.error('failed downloads');
     failures.forEach(function (failure) {
-      console.error(" - " + failure.entryId + ": " + failure.error);
+      console.error(' - ' + failure.entryId + ': ' + failure.error);
     });
     process.exitCode = 1;
   }

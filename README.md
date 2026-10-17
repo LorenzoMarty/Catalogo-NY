@@ -28,7 +28,6 @@ The site presents the brand, its physical stores and a searchable product catalo
 
 The app is a single-page site. Store data and the fallback catalog are local TypeScript modules; when `VITE_API_URL` is set, the catalog is loaded from the Estoque API (`GET /public/catalog`) and replaces the fallback, which is used again if the API fails or takes over 4 s. A `CatalogContext` exposes the catalog to the UI, and hooks hold the interactions (search, lightbox, parallax, smooth scroll, stores showcase).
 
-
 ```text
 src/
   components/   hero, catalog, stores, layout (nav, mobile menu), footer
@@ -46,13 +45,13 @@ data/           image manifest and product image sources
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
-| App | React 19, TypeScript, Vite, React Router 7 |
-| Motion | Framer Motion, [Lenis](https://github.com/darkroomengineering/lenis) smooth scroll |
-| Images | Build-time optimization with [sharp](https://sharp.pixelplumbing.com) (responsive `srcset` WebP) |
-| Tests | Vitest |
-| Hosting | Vercel (static SPA) |
+| Layer   | Technology                                                                                       |
+| ------- | ------------------------------------------------------------------------------------------------ |
+| App     | React 19, TypeScript, Vite, React Router 7                                                       |
+| Motion  | Framer Motion, [Lenis](https://github.com/darkroomengineering/lenis) smooth scroll               |
+| Images  | Build-time optimization with [sharp](https://sharp.pixelplumbing.com) (responsive `srcset` WebP) |
+| Tests   | Vitest                                                                                           |
+| Hosting | Vercel (static SPA)                                                                              |
 
 ## Getting started
 
@@ -63,14 +62,14 @@ npm run dev
 
 Optional environment variables (see `.env.example`): `VITE_WHATSAPP_NUMBER` for the contact link and `VITE_API_URL` for the Estoque API base URL (for example `http://127.0.0.1:8010`). Without `VITE_API_URL` the site uses only the static catalog.
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start the Vite dev server |
-| `npm run build` | Type-check and build for production |
-| `npm run preview` | Preview the production build |
-| `npm test` | Run the Vitest suite |
-| `npm run sync:product-images` | Sync product images with the manifest |
-| `npm run optimize:ui-images` | Generate optimized responsive UI images |
+| Command                       | Description                             |
+| ----------------------------- | --------------------------------------- |
+| `npm run dev`                 | Start the Vite dev server               |
+| `npm run build`               | Type-check and build for production     |
+| `npm run preview`             | Preview the production build            |
+| `npm test`                    | Run the Vitest suite                    |
+| `npm run sync:product-images` | Sync product images with the manifest   |
+| `npm run optimize:ui-images`  | Generate optimized responsive UI images |
 
 ## Quality checks
 
