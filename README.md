@@ -84,7 +84,7 @@ The app is a static SPA: `vercel.json` publishes `dist/` and rewrites every rout
 
 ## Status
 
-In production at the link above. The catalog is currently static. The plan is to consume products (featured items, best sellers) directly from the companion inventory system (Estoque NY).
+In production at the link above. Products come from the companion inventory system (Estoque NY) through a read-only public feed, with the bundled catalog as a fallback. Who owns what, what is public, how the contract is versioned and what happens when the API fails are in [ADR 0001](https://github.com/LorenzoMarty/Estoque-NY/blob/master/docs/adr/0001-catalog-contract.md).
 
 ## License
 
