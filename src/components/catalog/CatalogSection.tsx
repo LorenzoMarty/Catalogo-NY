@@ -77,6 +77,7 @@ export function CatalogSection() {
   useEffect(() => {
     const fromUrl = params.get('sector');
     if (fromUrl && vm.sectors.some((s) => s.id === fromUrl)) setSector(fromUrl);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot flag so the URL write waits for the sector restore
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
   }, []);
