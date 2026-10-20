@@ -3,6 +3,10 @@ import { StorePanel } from '../models/store.models';
 export const STORE_PANELS: readonly StorePanel[] = [
   {
     id: 'store-bento',
+    mapUrl:
+      'https://www.google.com/maps/search/?api=1&query=R.%20Gen.%20Bento%20Martins%2C%202968%2C%20Uruguaiana%20-%20RS',
+    timeZone: 'America/Sao_Paulo',
+    // phone / hours: not provided yet (no real data in repo); fill here or via the Estoque API.
     displayIndex: '01',
     name: 'New York Filial Bento',
     status: 'Uruguaiana - RS',
@@ -26,6 +30,10 @@ export const STORE_PANELS: readonly StorePanel[] = [
   },
   {
     id: 'store-duque',
+    mapUrl:
+      'https://www.google.com/maps/search/?api=1&query=Rua%20Duque%20de%20Caxias%2C%201518%2C%20Uruguaiana%20-%20RS',
+    timeZone: 'America/Sao_Paulo',
+    // phone / hours: not provided yet (no real data in repo); fill here or via the Estoque API.
     displayIndex: '02',
     name: 'New York Filial Duque',
     status: 'Uruguaiana - RS',
@@ -49,6 +57,10 @@ export const STORE_PANELS: readonly StorePanel[] = [
   },
   {
     id: 'store-matriz',
+    mapUrl:
+      'https://www.google.com/maps/search/?api=1&query=R.%20Domingos%20de%20Almeida%2C%202006%2C%20Uruguaiana%20-%20RS',
+    timeZone: 'America/Sao_Paulo',
+    // phone / hours: not provided yet (no real data in repo); fill here or via the Estoque API.
     displayIndex: '03',
     name: 'New York Matriz',
     status: 'Uruguaiana - RS',
