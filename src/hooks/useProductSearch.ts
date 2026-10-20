@@ -16,14 +16,16 @@ interface UseProductSearchOptions {
   readonly allProducts: readonly CatalogProductViewModel[];
   readonly currentProducts: readonly CatalogProductViewModel[];
   readonly currentSector: CatalogSector | null;
+  readonly initialQuery?: string;
 }
 
 export function useProductSearch({
   allProducts,
   currentProducts,
   currentSector,
+  initialQuery = '',
 }: UseProductSearchOptions) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [isFocused, setIsFocused] = useState(false);
   const [recentSearches, setRecentSearches] = useState<readonly string[]>([]);
   const debouncedQuery = useDebouncedValue(query, 90);

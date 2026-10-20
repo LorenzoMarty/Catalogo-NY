@@ -1,5 +1,6 @@
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useInView } from 'react-intersection-observer';
 import { useCatalog } from '../../context/CatalogContext';
 import { useBodyClass } from '../../hooks/useBodyClass';
@@ -7,13 +8,26 @@ import { useLightbox } from '../../hooks/useLightbox';
 import { normalizeSearchValue, useProductSearch } from '../../hooks/useProductSearch';
 import { CatalogImageAsset, CatalogProductViewModel } from '../../models/catalog.models';
 import { CSSVars } from '../../utils/styles';
+import {
+  applyFilters,
+  EMPTY_FILTERS,
+  filtersFromParams,
+  filtersToParams,
+} from '../../utils/catalogFilters';
+import { CatalogFilters } from './CatalogFilters';
 import { ProductSearch } from './ProductSearch';
 
 const brandLaneCopies = [0, 1, 2, 3] as const;
 const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER?.replace(/\D/g, '') ?? '';
 
 export function CatalogSection() {
-  const { toggleSector, viewModel: vm, searchProducts: allProducts, source } = useCatalog();
+  const {
+    setSector,
+    toggleSector,
+    viewModel: vm,
+    searchProducts: allProducts,
+    source,
+  } = useCatalog();
   const reduceMotion = useReducedMotion();
   const lightboxCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const allProductMap = useMemo(
@@ -24,11 +38,13 @@ export function CatalogSection() {
       }, {}),
     [allProducts],
   );
+  const [params, setParams] = useSearchParams();
+  const filters = useMemo(() => filtersFromParams(params), [params]);
   const {
     clearSearch,
     isFocused,
     query,
-    results,
+    results: searchResults,
     saveRecentSearch,
     selectSuggestion,
     setIsFocused,
@@ -38,7 +54,54 @@ export function CatalogSection() {
     allProducts,
     currentProducts: vm.products,
     currentSector: vm.currentSector,
+    initialQuery: params.get('q') ?? '',
   });
+  const results = useMemo(() => applyFilters(searchResults, filters), [searchResults, filters]);
+  const brands = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          allProducts
+            .filter((p) => !vm.currentSector || p.sectorId === vm.currentSector.id)
+            .map((p) => p.brand),
+        ),
+      ).sort((a, b) => a.localeCompare(b)),
+    [allProducts, vm.currentSector],
+  );
+
+  // URL is the source of truth for filters/sort; sector and query are mirrored into it.
+  // The sector is restored once on mount, then written back on change.
+  const [hydrated, setHydrated] = useState(false);
+  const sectorId = vm.currentSector?.id ?? null;
+  useEffect(() => {
+    const fromUrl = params.get('sector');
+    if (fromUrl && vm.sectors.some((s) => s.id === fromUrl)) setSector(fromUrl);
+    setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
+  }, []);
+  useEffect(() => {
+    if (!hydrated) return;
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (sectorId) next.set('sector', sectorId);
+        else next.delete('sector');
+        if (query.trim()) next.set('q', query);
+        else next.delete('q');
+        return next.toString() === current.toString() ? current : next;
+      },
+      { replace: true },
+    );
+  }, [hydrated, sectorId, query, setParams]);
+  const updateFilters = (next: typeof filters) =>
+    setParams(
+      (current) => {
+        const copy = new URLSearchParams(current);
+        filtersToParams(copy, next);
+        return copy;
+      },
+      { replace: true },
+    );
   const { activeProduct, closeLightbox, openLightbox } = useLightbox(
     allProductMap,
     lightboxCloseButtonRef,
@@ -110,6 +173,13 @@ export function CatalogSection() {
             setQuery={setQuery}
             suggestions={suggestions}
             totalCount={vm.currentSector ? vm.products.length : allProducts.length}
+          />
+
+          <CatalogFilters
+            brands={brands}
+            filters={filters}
+            onChange={updateFilters}
+            onReset={() => updateFilters(EMPTY_FILTERS)}
           />
 
           <div
