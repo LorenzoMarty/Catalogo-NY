@@ -108,6 +108,10 @@ export function CatalogSection() {
   );
   useBodyClass('product-detail-open', Boolean(activeProduct));
   const hasSearchQuery = query.trim().length > 0;
+  // While the API is loading, hold the grid's space with skeletons instead of painting the
+  // bundled catalog and swapping it (avoids a visible content jump).
+  const isLoading = source === 'loading';
+  const skeletonCount = Math.min(Math.max(vm.products.length, 4), 12);
 
   return (
     <>
@@ -232,7 +236,11 @@ export function CatalogSection() {
 
           <m.div className="product-grid" id="product-grid" layout={!reduceMotion}>
             <AnimatePresence mode="popLayout">
-              {results.length > 0 ? (
+              {isLoading ? (
+                Array.from({ length: skeletonCount }, (_, index) => (
+                  <ProductSkeleton key={`skeleton-${index}`} />
+                ))
+              ) : results.length > 0 ? (
                 results.map((product, index) => (
                   <ProductNode
                     key={product.id}
@@ -254,7 +262,40 @@ export function CatalogSection() {
                   key="empty"
                 >
                   <span className="font-mono">Sem resultados</span>
-                  <p>Ajuste a busca ou troque o escopo para revelar mais produtos.</p>
+                  <p>
+                    {hasSearchQuery
+                      ? `Não encontramos nada para "${query.trim()}". Confira a grafia ou tente uma destas opções.`
+                      : 'Não há produtos neste setor no momento. Tente outra opção.'}
+                  </p>
+                  <div className="catalog-empty-actions">
+                    {hasSearchQuery && (
+                      <button className="catalog-empty-chip" onClick={clearSearch} type="button">
+                        Limpar busca
+                      </button>
+                    )}
+                    {vm.currentSector && (
+                      <button
+                        className="catalog-empty-chip"
+                        onClick={() => toggleSector(vm.currentSector!.id)}
+                        type="button"
+                      >
+                        Ver todos os setores
+                      </button>
+                    )}
+                    {vm.sectors
+                      .filter((sector) => sector.id !== vm.currentSector?.id)
+                      .slice(0, 4)
+                      .map((sector) => (
+                        <button
+                          className="catalog-empty-chip"
+                          key={sector.id}
+                          onClick={() => toggleSector(sector.id)}
+                          type="button"
+                        >
+                          {sector.name}
+                        </button>
+                      ))}
+                  </div>
                 </m.div>
               )}
             </AnimatePresence>
@@ -362,6 +403,21 @@ export function CatalogSection() {
         ) : null}
       </AnimatePresence>
     </>
+  );
+}
+
+function ProductSkeleton() {
+  return (
+    <div aria-hidden="true" className="product-node product-node-skeleton">
+      <span className="product-figure">
+        <span className="product-skeleton" />
+      </span>
+      <span className="product-copy">
+        <span className="product-brand">&nbsp;</span>
+        <span className="product-name">&nbsp;</span>
+      </span>
+      <span className="product-price">&nbsp;</span>
+    </div>
   );
 }
 

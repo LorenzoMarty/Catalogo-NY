@@ -3799,3 +3799,26 @@ body.product-detail-open .site-nav {
   font: inherit;
   cursor: pointer;
 }
+
+.product-node-skeleton::before {
+  display: none;
+}
+
+.catalog-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.catalog-empty-chip {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(20, 31, 52, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--accent);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
