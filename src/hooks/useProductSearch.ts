@@ -35,6 +35,7 @@ export function useProductSearch({
       const parsedSearches = rawSearches ? JSON.parse(rawSearches) : [];
 
       if (Array.isArray(parsedSearches)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate from localStorage after mount
         setRecentSearches(
           parsedSearches
             .filter((item): item is string => typeof item === 'string')
