@@ -209,6 +209,7 @@ export function CatalogSection() {
               } as CSSVars
             }
           >
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- pointer-only backdrop dismiss; keyboard closes via Escape */}
             <div className="lightbox-backdrop" data-close-lightbox onClick={closeLightbox} />
 
             <m.div

@@ -12,6 +12,7 @@
     "sync:product-images": "node scripts/sync-product-images.cjs",
     "optimize:ui-images": "node scripts/optimize-ui-images.cjs",
     "format:check": "prettier --check .",
+    "lint": "eslint .",
     "test:ci": "vitest run",
     "contract:sync": "node scripts/sync-contract.cjs",
     "snapshot:catalog": "node scripts/snapshot-catalog.cjs",
@@ -27,14 +28,20 @@
     "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/node": "^22.20.5",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.1.1",
+    "eslint": "^9.39.5",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
     "jsdom": "^28.1.0",
     "prettier": "^3.8.3",
     "sharp": "^0.35.4",
     "typescript": "~5.9.2",
+    "typescript-eslint": "^8.72.0",
     "vite": "^8.3.0",
     "vitest": "^4.1.6"
   }

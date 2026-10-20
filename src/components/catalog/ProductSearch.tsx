@@ -42,6 +42,7 @@ export function ProductSearch({
   const showSuggestions = isFocused && suggestions.length > 0;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset highlight when results change
     setActiveIndex(-1);
   }, [query, suggestions]);
 
