@@ -35,6 +35,7 @@ interface CatalogContextValue {
   readonly viewModel: CatalogSectionViewModel;
   readonly searchProducts: readonly CatalogProductViewModel[];
   readonly toggleSector: (sectorId: string) => void;
+  readonly setSector: (sectorId: string | null) => void;
   readonly source: CatalogSource;
 }
 
@@ -80,15 +81,18 @@ export function CatalogProvider({ children, apiBaseUrl = apiUrl }: CatalogProvid
     setSelectedSectorId((currentSectorId) => (currentSectorId === sectorId ? null : sectorId));
   }, []);
 
+  const setSector = setSelectedSectorId;
+
   const value = useMemo(
     () => ({
       selectedSectorId,
       viewModel,
       searchProducts,
       toggleSector,
+      setSector,
       source,
     }),
-    [selectedSectorId, toggleSector, viewModel, searchProducts, source],
+    [selectedSectorId, toggleSector, setSector, viewModel, searchProducts, source],
   );
 
   return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>;

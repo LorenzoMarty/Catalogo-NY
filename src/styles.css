@@ -3746,3 +3746,56 @@ body.product-detail-open .site-nav {
   height: auto;
   margin-inline: auto;
 }
+
+.catalog-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px 16px;
+  margin: 8px 0 20px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(36, 47, 68, 0.7);
+}
+
+.catalog-filters label {
+  display: grid;
+  gap: 4px;
+}
+
+.catalog-filters select,
+.catalog-filters input[type='number'] {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(20, 31, 52, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  color: rgba(18, 27, 45, 0.9);
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.catalog-filters input[type='number'] {
+  width: 7.5rem;
+}
+
+.catalog-filters .catalog-filters-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.catalog-filters-reset {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(20, 31, 52, 0.14);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
