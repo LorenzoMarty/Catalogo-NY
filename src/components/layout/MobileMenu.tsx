@@ -12,7 +12,7 @@ const mobileLinks = [
 
 export function MobileMenu({ onNavigate, open }: MobileMenuProps) {
   return (
-    <div aria-hidden={!open} id="mobile-menu">
+    <div id="mobile-menu" inert={!open}>
       <div className="mobile-menu-shell">
         <div className="mobile-menu-head">
           <span className="mobile-menu-kicker">Dobras</span>

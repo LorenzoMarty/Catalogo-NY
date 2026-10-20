@@ -206,9 +206,9 @@ export function CatalogSection() {
                   ? `${results.length} resultados / busca instantânea`
                   : vm.resultsKicker}
               </p>
-              <h3 className="catalog-results-title display-font" id="results-heading">
+              <h2 className="catalog-results-title display-font" id="results-heading">
                 {hasSearchQuery ? 'Seleção encontrada' : vm.resultsHeading}
-              </h3>
+              </h2>
             </div>
           </div>
 
@@ -371,9 +371,9 @@ export function CatalogSection() {
                     </span>
                   </div>
 
-                  <h3 className="lightbox-title display-font" id="lightbox-title">
+                  <h2 className="lightbox-title display-font" id="lightbox-title">
                     {activeProduct.name}
-                  </h3>
+                  </h2>
 
                   <ul className="lightbox-specs" id="lightbox-specs">
                     <li>
@@ -448,7 +448,6 @@ function ProductNode({ onOpen, product, revealDelay, searchQuery }: ProductNodeP
 
   return (
     <m.button
-      aria-label={`Abrir ${product.name}`}
       className="product-node"
       exit={
         reduceMotion
@@ -513,7 +512,10 @@ function ProductMedia({ product, variant }: ProductMediaProps) {
       ) : product.art ? (
         <div className="product-illustration" dangerouslySetInnerHTML={{ __html: product.art }} />
       ) : null}
-      <span className={`product-brand-mark${variant === 'lightbox' ? ' lightbox-watermark' : ''}`}>
+      <span
+        aria-hidden="true"
+        className={`product-brand-mark${variant === 'lightbox' ? ' lightbox-watermark' : ''}`}
+      >
         {product.brandMark}
       </span>
     </>

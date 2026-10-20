@@ -28,13 +28,13 @@ export function HomePage() {
       <MobileMenu onNavigate={closeMenu} open={menuOpen} />
       <SiteNav menuOpen={menuOpen} onToggleMenu={toggleMenu} />
 
-      <div className="wrapper">
+      <main className="wrapper">
         <HeroSection />
         <HeroTicker />
         <CatalogProvider>
           <CatalogSection />
         </CatalogProvider>
-      </div>
+      </main>
 
       <Suspense fallback={<div className="section-lazy-shell" aria-hidden="true" />}>
         <StoresSection />
