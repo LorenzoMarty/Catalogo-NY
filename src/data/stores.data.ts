@@ -1,12 +1,25 @@
-import { StorePanel } from '../models/store.models';
+import { StoreHours, StorePanel } from '../models/store.models';
+
+// FICTITIOUS PLACEHOLDER — replace with real data before launch
+const WEEK_HOURS: StoreHours = {
+  1: ['09:00', '18:00'],
+  2: ['09:00', '18:00'],
+  3: ['09:00', '18:00'],
+  4: ['09:00', '18:00'],
+  5: ['09:00', '18:00'],
+  6: ['09:00', '13:00'],
+};
 
 export const STORE_PANELS: readonly StorePanel[] = [
   {
     id: 'store-bento',
+    // FICTITIOUS PLACEHOLDER — replace with real data before launch
+    phone: '+55 55 90000-0001',
+    // FICTITIOUS PLACEHOLDER — replace with real data before launch
+    hours: WEEK_HOURS,
     mapUrl:
       'https://www.google.com/maps/search/?api=1&query=R.%20Gen.%20Bento%20Martins%2C%202968%2C%20Uruguaiana%20-%20RS',
     timeZone: 'America/Sao_Paulo',
-    // phone / hours: not provided yet (no real data in repo); fill here or via the Estoque API.
     displayIndex: '01',
     name: 'New York Filial Bento',
     status: 'Uruguaiana - RS',
@@ -30,10 +43,13 @@ export const STORE_PANELS: readonly StorePanel[] = [
   },
   {
     id: 'store-duque',
+    // FICTITIOUS PLACEHOLDER — replace with real data before launch
+    phone: '+55 55 90000-0002',
+    // FICTITIOUS PLACEHOLDER — replace with real data before launch
+    hours: WEEK_HOURS,
     mapUrl:
       'https://www.google.com/maps/search/?api=1&query=Rua%20Duque%20de%20Caxias%2C%201518%2C%20Uruguaiana%20-%20RS',
     timeZone: 'America/Sao_Paulo',
-    // phone / hours: not provided yet (no real data in repo); fill here or via the Estoque API.
     displayIndex: '02',
     name: 'New York Filial Duque',
     status: 'Uruguaiana - RS',
@@ -57,10 +73,13 @@ export const STORE_PANELS: readonly StorePanel[] = [
   },
   {
     id: 'store-matriz',
+    // FICTITIOUS PLACEHOLDER — replace with real data before launch
+    phone: '+55 55 90000-0003',
+    // FICTITIOUS PLACEHOLDER — replace with real data before launch
+    hours: WEEK_HOURS,
     mapUrl:
       'https://www.google.com/maps/search/?api=1&query=R.%20Domingos%20de%20Almeida%2C%202006%2C%20Uruguaiana%20-%20RS',
     timeZone: 'America/Sao_Paulo',
-    // phone / hours: not provided yet (no real data in repo); fill here or via the Estoque API.
     displayIndex: '03',
     name: 'New York Matriz',
     status: 'Uruguaiana - RS',
