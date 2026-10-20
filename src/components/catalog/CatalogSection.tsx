@@ -13,6 +13,7 @@ import {
   EMPTY_FILTERS,
   filtersFromParams,
   filtersToParams,
+  hasActiveFilters,
 } from '../../utils/catalogFilters';
 import { CatalogFilters } from './CatalogFilters';
 import { ProductSearch } from './ProductSearch';
@@ -271,6 +272,15 @@ export function CatalogSection() {
                     {hasSearchQuery && (
                       <button className="catalog-empty-chip" onClick={clearSearch} type="button">
                         Limpar busca
+                      </button>
+                    )}
+                    {hasActiveFilters(filters) && (
+                      <button
+                        className="catalog-empty-chip"
+                        onClick={() => updateFilters(EMPTY_FILTERS)}
+                        type="button"
+                      >
+                        Limpar filtros
                       </button>
                     )}
                     {vm.currentSector && (
