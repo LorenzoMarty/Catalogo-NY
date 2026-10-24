@@ -23,4 +23,9 @@ describe('isOpenNow', () => {
     // Tue 01:00Z is still Mon 22:00 BRT -> closed, but Mon
     expect(isOpenNow(hours, TZ, new Date('2026-01-06T01:00:00Z'))).toBe(false);
   });
+  it('opens on Sunday (index 0) when listed', () => {
+    const all = { 0: ['09:00', '18:00'] } as const;
+    // Sun 2026-01-04 11:00 BRT = 14:00Z
+    expect(isOpenNow(all, TZ, new Date('2026-01-04T14:00:00Z'))).toBe(true);
+  });
 });

@@ -1,13 +1,14 @@
 import { StoreHours, StorePanel } from '../models/store.models';
 
-// FICTITIOUS PLACEHOLDER — replace with real data before launch
-const WEEK_HOURS: StoreHours = {
+// FICTITIOUS PLACEHOLDER — replace with real data before launch (stores open every day, holidays included)
+const ALL_WEEK_HOURS: StoreHours = {
   1: ['09:00', '18:00'],
   2: ['09:00', '18:00'],
   3: ['09:00', '18:00'],
   4: ['09:00', '18:00'],
   5: ['09:00', '18:00'],
-  6: ['09:00', '13:00'],
+  6: ['09:00', '18:00'],
+  0: ['09:00', '18:00'],
 };
 
 export const STORE_PANELS: readonly StorePanel[] = [
@@ -16,9 +17,7 @@ export const STORE_PANELS: readonly StorePanel[] = [
     // FICTITIOUS PLACEHOLDER — replace with real data before launch
     phone: '+55 55 90000-0001',
     // FICTITIOUS PLACEHOLDER — replace with real data before launch
-    hours: WEEK_HOURS,
-    mapUrl:
-      'https://www.google.com/maps/search/?api=1&query=R.%20Gen.%20Bento%20Martins%2C%202968%2C%20Uruguaiana%20-%20RS',
+    hours: ALL_WEEK_HOURS,
     timeZone: 'America/Sao_Paulo',
     displayIndex: '01',
     name: 'New York Filial Bento',
@@ -46,9 +45,7 @@ export const STORE_PANELS: readonly StorePanel[] = [
     // FICTITIOUS PLACEHOLDER — replace with real data before launch
     phone: '+55 55 90000-0002',
     // FICTITIOUS PLACEHOLDER — replace with real data before launch
-    hours: WEEK_HOURS,
-    mapUrl:
-      'https://www.google.com/maps/search/?api=1&query=Rua%20Duque%20de%20Caxias%2C%201518%2C%20Uruguaiana%20-%20RS',
+    hours: ALL_WEEK_HOURS,
     timeZone: 'America/Sao_Paulo',
     displayIndex: '02',
     name: 'New York Filial Duque',
@@ -76,9 +73,7 @@ export const STORE_PANELS: readonly StorePanel[] = [
     // FICTITIOUS PLACEHOLDER — replace with real data before launch
     phone: '+55 55 90000-0003',
     // FICTITIOUS PLACEHOLDER — replace with real data before launch
-    hours: WEEK_HOURS,
-    mapUrl:
-      'https://www.google.com/maps/search/?api=1&query=R.%20Domingos%20de%20Almeida%2C%202006%2C%20Uruguaiana%20-%20RS',
+    hours: ALL_WEEK_HOURS,
     timeZone: 'America/Sao_Paulo',
     displayIndex: '03',
     name: 'New York Matriz',

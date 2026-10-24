@@ -29,7 +29,6 @@ export type StoreHours = Readonly<
 /** Contact facts. All optional: shown only when known (future source: Estoque public API). */
 export interface StoreContact {
   readonly phone?: string;
-  readonly mapUrl?: string;
   readonly hours?: StoreHours;
   /** IANA timezone used to compute "open now". */
   readonly timeZone?: string;
