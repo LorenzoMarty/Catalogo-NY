@@ -1,7 +1,9 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { StorePanel } from '../../models/store.models';
 import { STORE_PANELS } from '../../data/stores.data';
 import { useStoresShowcase } from '../../hooks/useStoresShowcase';
 import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
+import { isOpenNow } from '../../utils/storeHours';
 import { CSSVars } from '../../utils/styles';
 
 export function StoresSection() {
@@ -103,6 +105,7 @@ export function StoresSection() {
                     <div className="store-note-meta">
                       <span>{store.noteMeta}</span>
                     </div>
+                    <StoreActions store={store} />
                   </div>
 
                   <span aria-hidden="true" className="store-number">
@@ -115,5 +118,32 @@ export function StoresSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+const mapUrlFor = (store: StorePanel) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${store.noteLocation}, ${store.status}`)}`;
+
+function StoreActions({ store }: { readonly store: StorePanel }) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  const open = store.timeZone ? isOpenNow(store.hours, store.timeZone, now) : null;
+  return (
+    <ul className="store-actions">
+      {open !== null && <li className="store-open">{open ? 'Aberto agora' : 'Fechado agora'}</li>}
+      {store.phone && (
+        <li>
+          <a href={`tel:${store.phone.replace(/[^\d+]/g, '')}`}>{store.phone}</a>
+        </li>
+      )}
+      <li>
+        <a href={mapUrlFor(store)} rel="noopener noreferrer" target="_blank">
+          Ver no mapa<span className="sr-only"> de {store.name} (abre em nova aba)</span>
+        </a>
+      </li>
+    </ul>
   );
 }

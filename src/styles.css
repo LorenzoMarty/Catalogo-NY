@@ -3822,3 +3822,19 @@ body.product-detail-open .site-nav {
   font-size: 0.82rem;
   cursor: pointer;
 }
+
+.store-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+}
+
+.store-actions a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
