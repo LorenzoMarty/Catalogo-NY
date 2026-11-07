@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StorePanel } from '../../models/store.models';
-import { STORE_PANELS } from '../../data/stores.data';
+import { useStorePanels } from '../../hooks/useStorePanels';
 import { useStoresShowcase } from '../../hooks/useStoresShowcase';
 import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
 import { isOpenNow } from '../../utils/storeHours';
@@ -17,7 +17,8 @@ export function StoresSection() {
   const trackShellRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const progressFillRef = useRef<HTMLSpanElement | null>(null);
-  const currentStore = useMemo(() => STORE_PANELS[activeIndex] ?? STORE_PANELS[0], [activeIndex]);
+  const storePanels = useStorePanels();
+  const currentStore = storePanels[activeIndex] ?? storePanels[0];
 
   useStoresShowcase({
     progressFillRef,
@@ -55,7 +56,7 @@ export function StoresSection() {
           </div>
 
           <div className="stores-track" id="stores-track" ref={trackRef}>
-            {STORE_PANELS.map((store, index) => (
+            {storePanels.map((store, index) => (
               <article
                 className={`store-panel${index === activeIndex ? ' is-active' : ''}`}
                 data-store-index={index}
