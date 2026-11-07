@@ -1,0 +1,66 @@
+name: E2E
+
+# Smoke suite (e2e/*.e2e.ts). On pull requests it runs against the local production build; when
+# Vercel reports a successful preview deployment it runs against that preview URL.
+on:
+  pull_request:
+    branches: [main]
+  deployment_status:
+
+jobs:
+  local-build:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+
+  vercel-preview:
+    if: github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success' && github.event.deployment.environment != 'Production'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Check the preview is reachable
+        id: reach
+        env:
+          URL: ${{ github.event.deployment_status.environment_url }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "x-vercel-protection-bypass: $BYPASS" "$URL")
+          echo "preview answered $code"
+          if [ "$code" = "200" ]; then echo ok=true >> "$GITHUB_OUTPUT"; else
+            echo "::warning::Preview not reachable ($code). If it is behind Vercel Deployment Protection, add the VERCEL_AUTOMATION_BYPASS_SECRET repo secret. E2E on the preview skipped."
+          fi
+      - if: steps.reach.outputs.ok == 'true'
+        run: npm ci
+      - if: steps.reach.outputs.ok == 'true'
+        run: npx playwright install --with-deps chromium
+      - if: steps.reach.outputs.ok == 'true'
+        run: npx playwright test
+        env:
+          # Only needed if the preview is behind Vercel Deployment Protection.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+      - uses: actions/upload-artifact@v4
+        if: failure() && steps.reach.outputs.ok == 'true'
+        with:
+          name: playwright-report-preview
+          path: playwright-report
