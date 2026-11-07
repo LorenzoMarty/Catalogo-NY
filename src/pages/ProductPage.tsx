@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { getPriceLabel, getWhatsAppHref, ProductMedia } from '../components/catalog/CatalogSection';
+import { getPriceLabel, ProductMedia } from '../components/catalog/CatalogSection';
+import { ProductWhatsApp } from '../components/catalog/ProductWhatsApp';
 import { CatalogProvider, useCatalog } from '../context/CatalogContext';
 import { applyProductMeta, buildProductMeta } from '../seo/productMeta';
 import { productIdFromSlug } from '../utils/productSlug';
@@ -79,14 +80,7 @@ function ProductDetail() {
           {product.description && <p>{product.description}</p>}
           <div className="lightbox-commerce">
             <span className="lightbox-price">{getPriceLabel(product)}</span>
-            <a
-              className="lightbox-whatsapp"
-              href={getWhatsAppHref(product)}
-              rel="noreferrer"
-              target="_blank"
-            >
-              Entrar em contato no WhatsApp
-            </a>
+            <ProductWhatsApp product={product} />
           </div>
         </div>
       </div>

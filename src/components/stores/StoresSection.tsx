@@ -5,6 +5,8 @@ import { useStoresShowcase } from '../../hooks/useStoresShowcase';
 import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
 import { isOpenNow } from '../../utils/storeHours';
 import { CSSVars } from '../../utils/styles';
+import { track } from '../../services/track';
+import { branchNumber, storeMessage, whatsappHref } from '../../utils/whatsapp';
 
 export function StoresSection() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -130,6 +132,7 @@ function StoreActions({ store }: { readonly store: StorePanel }) {
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
   }, []);
+  const whatsapp = branchNumber(store.id);
   const open = store.timeZone ? isOpenNow(store.hours, store.timeZone, now) : null;
   return (
     <ul className="store-actions">
@@ -137,6 +140,18 @@ function StoreActions({ store }: { readonly store: StorePanel }) {
       {store.phone && (
         <li>
           <a href={`tel:${store.phone.replace(/[^\d+]/g, '')}`}>{store.phone}</a>
+        </li>
+      )}
+      {whatsapp && (
+        <li>
+          <a
+            href={whatsappHref(whatsapp, storeMessage(store))}
+            onClick={() => track('whatsapp_click', { target: store.id })}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            WhatsApp<span className="sr-only"> da {store.name} (abre em nova aba)</span>
+          </a>
         </li>
       )}
       <li>
