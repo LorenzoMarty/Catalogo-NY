@@ -139,7 +139,12 @@ function StoreActions({ store }: { readonly store: StorePanel }) {
       {open !== null && <li className="store-open">{open ? 'Aberto agora' : 'Fechado agora'}</li>}
       {store.phone && (
         <li>
-          <a href={`tel:${store.phone.replace(/[^\d+]/g, '')}`}>{store.phone}</a>
+          <a
+            href={`tel:${store.phone.replace(/[^\d+]/g, '')}`}
+            onClick={() => track('store_click', { store: store.id, action: 'phone' })}
+          >
+            {store.phone}
+          </a>
         </li>
       )}
       {whatsapp && (
@@ -155,7 +160,12 @@ function StoreActions({ store }: { readonly store: StorePanel }) {
         </li>
       )}
       <li>
-        <a href={mapUrlFor(store)} rel="noopener noreferrer" target="_blank">
+        <a
+          href={mapUrlFor(store)}
+          onClick={() => track('store_click', { store: store.id, action: 'map' })}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
           Ver no mapa<span className="sr-only"> de {store.name} (abre em nova aba)</span>
         </a>
       </li>

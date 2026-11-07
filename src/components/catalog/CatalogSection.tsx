@@ -4,8 +4,10 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useInView } from 'react-intersection-observer';
 import { useCatalog } from '../../context/CatalogContext';
 import { useBodyClass } from '../../hooks/useBodyClass';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLightbox } from '../../hooks/useLightbox';
 import { normalizeSearchValue, useProductSearch } from '../../hooks/useProductSearch';
+import { track } from '../../services/track';
 import { CatalogImageAsset, CatalogProductViewModel } from '../../models/catalog.models';
 import { productPath } from '../../utils/productSlug';
 import { CSSVars } from '../../utils/styles';
@@ -58,6 +60,10 @@ export function CatalogSection() {
     currentSector: vm.currentSector,
     initialQuery: params.get('q') ?? '',
   });
+  const trackedQuery = useDebouncedValue(query.trim(), 1200);
+  useEffect(() => {
+    if (trackedQuery.length >= 2) track('search', { q: trackedQuery.slice(0, 40).toLowerCase() });
+  }, [trackedQuery]);
   const results = useMemo(() => applyFilters(searchResults, filters), [searchResults, filters]);
   const brands = useMemo(
     () =>
@@ -249,6 +255,7 @@ export function CatalogSection() {
                     key={product.id}
                     onOpen={(trigger) => {
                       saveRecentSearch(query);
+                      track('open_product', { product: product.id });
                       openLightbox(product, trigger);
                     }}
                     product={product}
