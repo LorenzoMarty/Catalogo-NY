@@ -17,10 +17,10 @@ import {
   hasActiveFilters,
 } from '../../utils/catalogFilters';
 import { CatalogFilters } from './CatalogFilters';
+import { ProductWhatsApp } from './ProductWhatsApp';
 import { ProductSearch } from './ProductSearch';
 
 const brandLaneCopies = [0, 1, 2, 3] as const;
-const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER?.replace(/\D/g, '') ?? '';
 
 export function CatalogSection() {
   const {
@@ -397,16 +397,7 @@ export function CatalogSection() {
                     <span className="lightbox-price" id="lightbox-price">
                       {getPriceLabel(activeProduct)}
                     </span>
-                    <m.a
-                      className="lightbox-whatsapp"
-                      href={getWhatsAppHref(activeProduct)}
-                      rel="noreferrer"
-                      target="_blank"
-                      whileHover={reduceMotion ? undefined : { y: -2, scale: 1.01 }}
-                      whileTap={reduceMotion ? undefined : { scale: 0.985 }}
-                    >
-                      Entrar em contato no WhatsApp
-                    </m.a>
+                    <ProductWhatsApp product={activeProduct} />
                     <Link className="lightbox-page-link" to={productPath(activeProduct)}>
                       Ver página do produto
                     </Link>
@@ -600,11 +591,4 @@ function getDelay(index: number, step: number): string {
 
 export function getPriceLabel(product: CatalogProductViewModel): string {
   return product.inStock === false ? 'Esgotado' : product.price.replace(/\s+info$/i, '');
-}
-
-export function getWhatsAppHref(product: CatalogProductViewModel): string {
-  const message = `Olá, gostaria de saber mais sobre ${product.name} da ${product.brand}.`;
-  const recipient = whatsappNumber ? `/${whatsappNumber}` : '';
-
-  return `https://wa.me${recipient}?text=${encodeURIComponent(message)}`;
 }
