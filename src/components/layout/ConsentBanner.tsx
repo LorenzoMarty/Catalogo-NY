@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { analyticsConfigured, startAnalytics } from '../../services/analytics';
 import { CONSENT_RESET_EVENT, getConsent, setConsent } from '../../services/consent';
+import { useI18n } from '../../i18n/I18nProvider';
 
 /**
  * LGPD consent for analytics. Shown only when an analytics provider is configured and the visitor
@@ -8,6 +9,7 @@ import { CONSENT_RESET_EVENT, getConsent, setConsent } from '../../services/cons
  * visitors). The footer link reopens it. Revoking reloads the page so a running tracker is gone.
  */
 export function ConsentBanner() {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(() => analyticsConfigured() && getConsent() === null);
 
   useEffect(() => {
@@ -27,17 +29,14 @@ export function ConsentBanner() {
   };
 
   return (
-    <section aria-label="Privacidade" className="consent-banner">
-      <p>
-        Usamos estatísticas de visita sem cookies para entender o que interessa aos clientes. Só
-        ativamos com a sua permissão.
-      </p>
+    <section aria-label={t('consent.aria')} className="consent-banner">
+      <p>{t('consent.text')}</p>
       <div className="consent-actions">
         <button onClick={() => choose('denied')} type="button">
-          Recusar
+          {t('consent.reject')}
         </button>
         <button className="consent-accept" onClick={() => choose('granted')} type="button">
-          Aceitar
+          {t('consent.accept')}
         </button>
       </div>
     </section>
@@ -46,6 +45,7 @@ export function ConsentBanner() {
 
 /** Footer link to change the choice; renders nothing when no analytics is configured. */
 export function ConsentPreferencesLink() {
+  const { t } = useI18n();
   if (!analyticsConfigured()) return null;
   return (
     <button
@@ -53,7 +53,7 @@ export function ConsentPreferencesLink() {
       onClick={() => window.dispatchEvent(new Event(CONSENT_RESET_EVENT))}
       type="button"
     >
-      Preferências de privacidade
+      {t('consent.preferences')}
     </button>
   );
 }

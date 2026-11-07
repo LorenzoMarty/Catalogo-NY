@@ -2,6 +2,8 @@ import { AnimatePresence, m, useReducedMotion } from 'framer-motion';
 import { FocusEvent, FormEvent, KeyboardEvent, useEffect, useState } from 'react';
 import { CatalogSector } from '../../models/catalog.models';
 import { ProductSearchSuggestion } from '../../hooks/useProductSearch';
+import { useI18n } from '../../i18n/I18nProvider';
+import { translateSectorName } from '../../i18n/core';
 
 interface ProductSearchProps {
   readonly currentSector: CatalogSector | null;
@@ -36,6 +38,7 @@ export function ProductSearch({
   suggestions,
   totalCount,
 }: ProductSearchProps) {
+  const { lang, t, tOr } = useI18n();
   const reduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(-1);
   const hasQuery = query.trim().length > 0;
@@ -105,7 +108,7 @@ export function ProductSearch({
         </span>
 
         <label className="sr-only" htmlFor="catalog-product-search">
-          Buscar produtos
+          {t('search.label')}
         </label>
         <input
           aria-activedescendant={activeIndex >= 0 ? getOptionId(activeIndex) : undefined}
@@ -118,7 +121,11 @@ export function ProductSearch({
           onFocus={() => setIsFocused(true)}
           onKeyDown={handleInputKeyDown}
           placeholder={
-            currentSector ? `Buscar em ${currentSector.name}` : 'Buscar produto, marca ou categoria'
+            currentSector
+              ? t('search.placeholderIn', {
+                  name: tOr(`sector.${currentSector.id}`, currentSector.name),
+                })
+              : t('search.placeholder')
           }
           role="combobox"
           type="search"
@@ -129,7 +136,7 @@ export function ProductSearch({
           {hasQuery ? (
             <m.button
               animate={{ opacity: 1, scale: 1 }}
-              aria-label="Limpar busca"
+              aria-label={t('search.clear')}
               className="catalog-search-clear"
               exit={{ opacity: 0, scale: reduceMotion ? 1 : 0.82 }}
               initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.82 }}
@@ -142,7 +149,7 @@ export function ProductSearch({
 
       {hasQuery ? (
         <div className="catalog-search-meta">
-          <span>{`${resultCount} de ${totalCount} resultados`}</span>
+          <span>{t('search.count', { n: resultCount, total: totalCount })}</span>
         </div>
       ) : null}
 
@@ -175,7 +182,11 @@ export function ProductSearch({
               >
                 <span>{suggestion.label}</span>
                 <small>
-                  {suggestion.type} / {suggestion.meta}
+                  {tOr(`search.type.${suggestion.type}`, suggestion.type)} /{' '}
+                  {tOr(
+                    `search.type.${suggestion.meta}`,
+                    translateSectorName(lang, suggestion.meta),
+                  )}
                 </small>
               </m.button>
             ))}

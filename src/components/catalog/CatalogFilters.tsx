@@ -3,6 +3,8 @@ import {
   hasActiveFilters,
   SORT_OPTIONS,
 } from '../../utils/catalogFilters';
+import { useI18n } from '../../i18n/I18nProvider';
+import type { MessageKey } from '../../i18n/pt';
 
 interface CatalogFiltersProps {
   readonly brands: readonly string[];
@@ -12,6 +14,7 @@ interface CatalogFiltersProps {
 }
 
 export function CatalogFilters({ brands, filters, onChange, onReset }: CatalogFiltersProps) {
+  const { t } = useI18n();
   const parse = (value: string): number | null => {
     const n = value === '' ? NaN : Number(value);
     return Number.isFinite(n) && n >= 0 ? n : null;
@@ -19,17 +22,17 @@ export function CatalogFilters({ brands, filters, onChange, onReset }: CatalogFi
 
   return (
     <form
-      aria-label="Filtros e ordenação"
+      aria-label={t('filters.aria')}
       className="catalog-filters"
       onSubmit={(event) => event.preventDefault()}
     >
       <label>
-        <span>Marca</span>
+        <span>{t('filters.brand')}</span>
         <select
           onChange={(event) => onChange({ ...filters, brand: event.target.value })}
           value={filters.brand}
         >
-          <option value="">Todas</option>
+          <option value="">{t('filters.all')}</option>
           {brands.map((brand) => (
             <option key={brand} value={brand}>
               {brand}
@@ -38,7 +41,7 @@ export function CatalogFilters({ brands, filters, onChange, onReset }: CatalogFi
         </select>
       </label>
       <label>
-        <span>Preço mín. (US$)</span>
+        <span>{t('filters.minPrice')}</span>
         <input
           inputMode="decimal"
           min="0"
@@ -48,7 +51,7 @@ export function CatalogFilters({ brands, filters, onChange, onReset }: CatalogFi
         />
       </label>
       <label>
-        <span>Preço máx. (US$)</span>
+        <span>{t('filters.maxPrice')}</span>
         <input
           inputMode="decimal"
           min="0"
@@ -63,10 +66,10 @@ export function CatalogFilters({ brands, filters, onChange, onReset }: CatalogFi
           onChange={(event) => onChange({ ...filters, inStockOnly: event.target.checked })}
           type="checkbox"
         />
-        <span>Somente em estoque</span>
+        <span>{t('filters.inStock')}</span>
       </label>
       <label>
-        <span>Ordenar por</span>
+        <span>{t('filters.sort')}</span>
         <select
           onChange={(event) =>
             onChange({ ...filters, sort: event.target.value as Filters['sort'] })
@@ -75,14 +78,14 @@ export function CatalogFilters({ brands, filters, onChange, onReset }: CatalogFi
         >
           {SORT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {t(`sort.${option.value}` as MessageKey)}
             </option>
           ))}
         </select>
       </label>
       {hasActiveFilters(filters) && (
         <button className="catalog-filters-reset" onClick={onReset} type="button">
-          Limpar filtros
+          {t('catalog.clearFilters')}
         </button>
       )}
     </form>

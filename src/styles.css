@@ -3916,3 +3916,28 @@ body.product-detail-open .site-nav {
   text-decoration: underline;
   cursor: pointer;
 }
+
+.lang-switcher {
+  display: inline-flex;
+  gap: 2px;
+  margin-right: 10px;
+}
+
+.lang-switcher button {
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.lang-switcher button.is-active {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

@@ -21,6 +21,9 @@ import {
 import { CatalogFilters } from './CatalogFilters';
 import { ProductWhatsApp } from './ProductWhatsApp';
 import { ProductSearch } from './ProductSearch';
+import { useI18n } from '../../i18n/I18nProvider';
+import { localizedText } from '../../i18n/product';
+import type { Translate } from '../../i18n/core';
 
 const brandLaneCopies = [0, 1, 2, 3] as const;
 
@@ -32,6 +35,7 @@ export function CatalogSection() {
     searchProducts: allProducts,
     source,
   } = useCatalog();
+  const { lang, t, tOr } = useI18n();
   const reduceMotion = useReducedMotion();
   const lightboxCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const allProductMap = useMemo(
@@ -142,14 +146,16 @@ export function CatalogSection() {
         <div className="catalog-shell">
           {source === 'fallback' && (
             <p className="catalog-stale-hint" role="status">
-              Preços e disponibilidade podem estar desatualizados no momento.
+              {t('catalog.stale')}
             </p>
           )}
-          <div aria-label="Setores do freeshop" className="sector-rail">
+          <div aria-label={t('catalog.sectors')} className="sector-rail">
             <div className="sector-list" id="sector-list">
               {vm.sectors.map((sector, index) => (
                 <m.button
-                  aria-label={`Selecionar ${sector.name}`}
+                  aria-label={t('catalog.selectSector', {
+                    name: tOr(`sector.${sector.id}`, sector.name),
+                  })}
                   aria-pressed={vm.currentSector?.id === sector.id}
                   className={`sector-pill${vm.currentSector?.id === sector.id ? ' is-active' : ''}`}
                   initial={reduceMotion ? false : { opacity: 0, y: 14, scale: 0.98 }}
@@ -168,7 +174,7 @@ export function CatalogSection() {
                     className="sector-icon"
                     dangerouslySetInnerHTML={{ __html: sector.icon }}
                   />
-                  <span className="sector-name">{sector.name}</span>
+                  <span className="sector-name">{tOr(`sector.${sector.id}`, sector.name)}</span>
                 </m.button>
               ))}
             </div>
@@ -202,7 +208,7 @@ export function CatalogSection() {
             id="brand-shell"
           >
             <p className="brand-prompt" hidden={Boolean(vm.currentSector)} id="brand-prompt">
-              Selecione um setor para revelar as marcas.
+              {t('catalog.brandPrompt')}
             </p>
           </div>
 
@@ -210,11 +216,15 @@ export function CatalogSection() {
             <div>
               <p className="catalog-results-kicker font-mono" id="results-kicker">
                 {hasSearchQuery
-                  ? `${results.length} resultados / busca instantânea`
+                  ? t('catalog.resultsInstant', { n: results.length })
                   : vm.resultsKicker}
               </p>
               <h2 className="catalog-results-title display-font" id="results-heading">
-                {hasSearchQuery ? 'Seleção encontrada' : vm.resultsHeading}
+                {hasSearchQuery
+                  ? t('catalog.found')
+                  : vm.currentSector
+                    ? tOr(`sector.${vm.currentSector.id}`, vm.currentSector.name)
+                    : t('catalog.heading')}
               </h2>
             </div>
           </div>
@@ -271,16 +281,16 @@ export function CatalogSection() {
                   initial={{ opacity: 0, y: 12 }}
                   key="empty"
                 >
-                  <span className="font-mono">Sem resultados</span>
+                  <span className="font-mono">{t('catalog.emptyLabel')}</span>
                   <p>
                     {hasSearchQuery
-                      ? `Não encontramos nada para "${query.trim()}". Confira a grafia ou tente uma destas opções.`
-                      : 'Não há produtos neste setor no momento. Tente outra opção.'}
+                      ? t('catalog.emptyQuery', { q: query.trim() })
+                      : t('catalog.emptySector')}
                   </p>
                   <div className="catalog-empty-actions">
                     {hasSearchQuery && (
                       <button className="catalog-empty-chip" onClick={clearSearch} type="button">
-                        Limpar busca
+                        {t('catalog.clearSearch')}
                       </button>
                     )}
                     {hasActiveFilters(filters) && (
@@ -289,7 +299,7 @@ export function CatalogSection() {
                         onClick={() => updateFilters(EMPTY_FILTERS)}
                         type="button"
                       >
-                        Limpar filtros
+                        {t('catalog.clearFilters')}
                       </button>
                     )}
                     {vm.currentSector && (
@@ -298,7 +308,7 @@ export function CatalogSection() {
                         onClick={() => toggleSector(vm.currentSector!.id)}
                         type="button"
                       >
-                        Ver todos os setores
+                        {t('catalog.allSectors')}
                       </button>
                     )}
                     {vm.sectors
@@ -311,7 +321,7 @@ export function CatalogSection() {
                           onClick={() => toggleSector(sector.id)}
                           type="button"
                         >
-                          {sector.name}
+                          {tOr(`sector.${sector.id}`, sector.name)}
                         </button>
                       ))}
                   </div>
@@ -354,14 +364,14 @@ export function CatalogSection() {
               transition={{ duration: reduceMotion ? 0.16 : 0.44, ease: [0.16, 1, 0.3, 1] }}
             >
               <button
-                aria-label="Fechar produto"
+                aria-label={t('product.close')}
                 className="lightbox-close"
                 id="lightbox-close"
                 onClick={closeLightbox}
                 ref={lightboxCloseButtonRef}
                 type="button"
               >
-                <span className="sr-only">Fechar produto</span>
+                <span className="sr-only">{t('product.close')}</span>
               </button>
 
               <div className="lightbox-shell">
@@ -372,7 +382,7 @@ export function CatalogSection() {
                 <div className="lightbox-copy">
                   <div className="lightbox-head">
                     <p className="lightbox-sector font-mono" id="lightbox-sector">
-                      {activeProduct.sectorName}
+                      {tOr(`sector.${activeProduct.sectorId}`, activeProduct.sectorName)}
                     </p>
                     <span className="lightbox-brand" id="lightbox-brand">
                       {activeProduct.brand}
@@ -380,21 +390,23 @@ export function CatalogSection() {
                   </div>
 
                   <h2 className="lightbox-title display-font" id="lightbox-title">
-                    {activeProduct.name}
+                    {localizedText(activeProduct, lang).name}
                   </h2>
 
                   <ul className="lightbox-specs" id="lightbox-specs">
                     <li>
-                      <span>Categoria</span>
-                      <strong>{activeProduct.sectorName}</strong>
+                      <span>{t('product.category')}</span>
+                      <strong>
+                        {tOr(`sector.${activeProduct.sectorId}`, activeProduct.sectorName)}
+                      </strong>
                     </li>
                     <li>
-                      <span>Marca</span>
+                      <span>{t('product.brand')}</span>
                       <strong>{activeProduct.brand}</strong>
                     </li>
                     {activeProduct.note && (
                       <li>
-                        <span>Destaque</span>
+                        <span>{t('product.highlight')}</span>
                         <strong>{activeProduct.note}</strong>
                       </li>
                     )}
@@ -402,11 +414,11 @@ export function CatalogSection() {
 
                   <div className="lightbox-commerce">
                     <span className="lightbox-price" id="lightbox-price">
-                      {getPriceLabel(activeProduct)}
+                      {getPriceLabel(activeProduct, t)}
                     </span>
                     <ProductWhatsApp product={activeProduct} />
                     <Link className="lightbox-page-link" to={productPath(activeProduct)}>
-                      Ver página do produto
+                      {t('product.viewPage')}
                     </Link>
                   </div>
                 </div>
@@ -442,6 +454,7 @@ interface ProductNodeProps {
 }
 
 function ProductNode({ onOpen, product, revealDelay, searchQuery }: ProductNodeProps) {
+  const { lang, t } = useI18n();
   const reduceMotion = useReducedMotion();
   const { inView, ref } = useInView({
     rootMargin: '220px 0px',
@@ -489,11 +502,11 @@ function ProductNode({ onOpen, product, revealDelay, searchQuery }: ProductNodeP
       <span className="product-copy">
         <span className="product-brand">{product.brand}</span>
         <span className="product-name">
-          <HighlightText query={searchQuery} text={product.name} />
+          <HighlightText query={searchQuery} text={localizedText(product, lang).name} />
         </span>
       </span>
       <span className={`product-price${product.inStock === false ? ' is-sold-out' : ''}`}>
-        {getPriceLabel(product)}
+        {getPriceLabel(product, t)}
       </span>
     </m.button>
   );
@@ -596,6 +609,13 @@ function getDelay(index: number, step: number): string {
   return `${(index * step).toFixed(2)}s`;
 }
 
-export function getPriceLabel(product: CatalogProductViewModel): string {
-  return product.inStock === false ? 'Esgotado' : product.price.replace(/\s+info$/i, '');
+export function getPriceLabel(product: CatalogProductViewModel, t: Translate): string {
+  if (product.inStock === false) return t('product.soldOut');
+  const price = product.price.replace(/\s+info$/i, '');
+  if (price === 'Consulte') return t('product.ask');
+  // The API/seed formats "a partir de US$ 10"; only the prefix is language dependent.
+  if (price.startsWith('a partir de ')) {
+    return `${t('product.from')} ${price.slice('a partir de '.length)}`;
+  }
+  return price;
 }

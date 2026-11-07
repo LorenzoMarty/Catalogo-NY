@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { translate } from '../i18n/core';
 import {
   branchNumber,
   productMessage,
@@ -6,6 +7,8 @@ import {
   storeMessage,
   whatsappHref,
 } from './whatsapp';
+
+const t = (key: string, vars?: Record<string, string | number>) => translate('pt', key, vars);
 
 describe('whatsapp', () => {
   it('uses the general number for products when set', () => {
@@ -28,12 +31,12 @@ describe('whatsapp', () => {
   });
 
   it('builds wa.me links with the pre-filled message and product link', () => {
-    const text = productMessage({ name: 'Sauvage', brand: 'Dior' }, 'https://x/produto/s-1');
+    const text = productMessage({ name: 'Sauvage', brand: 'Dior' }, 'https://x/produto/s-1', t);
     const href = whatsappHref('55', text);
     expect(href.startsWith('https://wa.me/55?text=')).toBe(true);
     expect(decodeURIComponent(href)).toContain('Sauvage da Dior');
     expect(decodeURIComponent(href)).toContain('https://x/produto/s-1');
     expect(whatsappHref('', 'a')).toBe('https://wa.me?text=a');
-    expect(storeMessage({ name: 'Matriz' })).toContain('Matriz');
+    expect(storeMessage({ name: 'Matriz' }, t)).toContain('Matriz');
   });
 });

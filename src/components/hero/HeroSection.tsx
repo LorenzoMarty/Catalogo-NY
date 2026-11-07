@@ -2,6 +2,7 @@ import { m, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { useHeroParallax } from '../../hooks/useHeroParallax';
 import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
+import { useI18n } from '../../i18n/I18nProvider';
 
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 
@@ -26,6 +27,7 @@ const copyReveal = {
 };
 
 export function HeroSection() {
+  const { t } = useI18n();
   const heroStageRef = useRef<HTMLElement | null>(null);
   const heroMediaRef = useRef<HTMLImageElement | null>(null);
   const reduceMotion = useReducedMotion();
@@ -109,8 +111,7 @@ export function HeroSection() {
               initial={reduceMotion ? false : 'hidden'}
               variants={copyReveal}
             >
-              Um freeshop internacional inspirado na eleg&acirc;ncia editorial e na energia
-              cosmopolita de New York.
+              {t('hero.note')}
             </m.p>
             <m.p
               animate="visible"
@@ -119,12 +120,11 @@ export function HeroSection() {
               initial={reduceMotion ? false : 'hidden'}
               variants={copyReveal}
             >
-              Essa est&eacute;tica entra apenas como atmosfera: luz filtrada, contraste sutil,
-              vitrine contempor&acirc;nea e leitura limpa em qualquer tela.
+              {t('hero.lead')}
             </m.p>
           </m.div>
 
-          <aside aria-label="Notas editoriais" className="hero-rail" id="mood">
+          <aside aria-label={t('hero.rail')} className="hero-rail" id="mood">
             <m.div className="hero-rail-motion" style={reduceMotion ? undefined : { y: railY }}>
               <figure className="hero-rail-figure">
                 <img

@@ -1,3 +1,5 @@
+import type { Translate } from '../i18n/core';
+
 export interface WhatsAppTarget {
   /** 'general' or a store id. */
   readonly id: string;
@@ -44,11 +46,15 @@ export function whatsappHref(number: string, text: string): string {
   return `https://wa.me${number ? `/${number}` : ''}?text=${encodeURIComponent(text)}`;
 }
 
-export function productMessage(product: { name: string; brand: string }, url: string): string {
-  const brand = product.brand ? ` da ${product.brand}` : '';
-  return `Olá, gostaria de saber mais sobre ${product.name}${brand}.\n${url}`;
+export function productMessage(
+  product: { name: string; brand: string },
+  url: string,
+  t: Translate,
+): string {
+  const brand = product.brand ? t('whatsapp.brandOf', { brand: product.brand }) : '';
+  return `${t('whatsapp.productMessage', { name: product.name, brand })}\n${url}`;
 }
 
-export function storeMessage(store: { name: string }): string {
-  return `Olá, gostaria de falar com a ${store.name}.`;
+export function storeMessage(store: { name: string }, t: Translate): string {
+  return t('whatsapp.storeMessage', { name: store.name });
 }

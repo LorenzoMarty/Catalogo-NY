@@ -1,4 +1,6 @@
 import logoMark from '../../assets/brand/logo-ny-mark.svg';
+import { useI18n } from '../../i18n/I18nProvider';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface SiteNavProps {
   readonly menuOpen: boolean;
@@ -6,6 +8,7 @@ interface SiteNavProps {
 }
 
 export function SiteNav({ menuOpen, onToggleMenu }: SiteNavProps) {
+  const { t } = useI18n();
   return (
     <nav aria-label="Global" className="site-nav">
       <div className="nav-shell">
@@ -17,15 +20,16 @@ export function SiteNav({ menuOpen, onToggleMenu }: SiteNavProps) {
         </a>
 
         <div className="nav-links font-mono">
-          <a href="#hero">Inicio</a>
-          <a href="#categories">Categorias</a>
-          <a href="#stores">Lojas</a>
-          <a href="#footer">Contato</a>
+          <a href="#hero">{t('nav.home')}</a>
+          <a href="#categories">{t('nav.categories')}</a>
+          <a href="#stores">{t('nav.stores')}</a>
+          <a href="#footer">{t('nav.contact')}</a>
         </div>
 
         <div className="nav-actions">
+          <LanguageSwitcher />
           <a className="nav-note font-mono" href="#footer">
-            Fale conosco
+            {t('nav.talk')}
             <svg
               aria-hidden="true"
               className="nav-note-icon"
@@ -43,7 +47,7 @@ export function SiteNav({ menuOpen, onToggleMenu }: SiteNavProps) {
           <button
             aria-controls="mobile-menu"
             aria-expanded={menuOpen}
-            aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-label={menuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
             className="menu-toggle"
             id="menu-btn"
             onClick={onToggleMenu}
