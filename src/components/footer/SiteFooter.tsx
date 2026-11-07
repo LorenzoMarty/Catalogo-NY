@@ -4,6 +4,7 @@ import { STORE_PANELS } from '../../data/stores.data';
 import { ConsentPreferencesLink } from '../layout/ConsentBanner';
 import { useFooterReveal } from '../../hooks/useFooterReveal';
 import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
+import { useI18n } from '../../i18n/I18nProvider';
 
 interface FooterCompanyFact {
   readonly label: string;
@@ -11,13 +12,14 @@ interface FooterCompanyFact {
 }
 
 const companyFacts: readonly FooterCompanyFact[] = [
-  { label: 'Marca', value: 'New York Freeshop' },
-  { label: 'CNPJ', value: 'A informar' },
-  { label: 'Contato', value: 'A informar' },
-  { label: 'Atendimento', value: 'Centro de Uruguaiana - RS' },
+  { label: 'footer.brand', value: 'New York Freeshop' },
+  { label: 'CNPJ', value: 'footer.tbd' },
+  { label: 'footer.contact', value: 'footer.tbd' },
+  { label: 'footer.service', value: 'footer.serviceValue' },
 ];
 
 export function SiteFooter() {
+  const { t, tOr } = useI18n();
   const footerRef = useRef<HTMLElement | null>(null);
 
   useFooterReveal(footerRef);
@@ -46,8 +48,8 @@ export function SiteFooter() {
           <div className="footer-info-column">
             {companyFacts.map((fact) => (
               <article className="footer-info-card" key={fact.label}>
-                <span className="footer-info-label font-mono">{fact.label}</span>
-                <p className="footer-info-value">{fact.value}</p>
+                <span className="footer-info-label font-mono">{tOr(fact.label, fact.label)}</span>
+                <p className="footer-info-value">{tOr(fact.value, fact.value)}</p>
               </article>
             ))}
           </div>
@@ -65,14 +67,14 @@ export function SiteFooter() {
 
             <div className="footer-actions">
               <a className="footer-primary-link display-font" href="#hero">
-                Voltar ao inicio
+                {t('footer.backHome')}
               </a>
               <ConsentPreferencesLink />
             </div>
           </div>
 
           <div className="footer-address-column">
-            <span className="footer-address-kicker font-mono">Enderecos oficiais</span>
+            <span className="footer-address-kicker font-mono">{t('footer.addresses')}</span>
 
             {STORE_PANELS.map((store) => (
               <article className="footer-address-item" key={store.id}>

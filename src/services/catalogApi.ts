@@ -4,6 +4,7 @@ import {
   CatalogData,
   CatalogImageManifest,
   CatalogProduct,
+  ProductTranslation,
   CatalogSector,
 } from '../models/catalog.models';
 
@@ -17,6 +18,8 @@ export interface RemoteProduct {
   readonly featured: boolean;
   readonly image_url: string | null;
   readonly in_stock: boolean;
+  /** Proposed for Estoque-NY#66: `{ es: { name, description }, en: {...} }`. Optional. */
+  readonly translations?: Readonly<Record<string, ProductTranslation>>;
 }
 
 export interface RemoteCatalog {
@@ -66,6 +69,18 @@ function slugify(value: string): string {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
+function parseTranslations(value: unknown): Record<string, ProductTranslation> | undefined {
+  if (!isRecord(value)) return undefined;
+  const result: Record<string, ProductTranslation> = {};
+  for (const [lang, entry] of Object.entries(value)) {
+    if (!isRecord(entry)) continue;
+    const name = typeof entry.name === 'string' ? entry.name : undefined;
+    const description = typeof entry.description === 'string' ? entry.description : undefined;
+    if (name || description) result[lang] = { name, description };
+  }
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
 function parseProduct(value: unknown): RemoteProduct | null {
   if (!isRecord(value) || typeof value.id !== 'number' || typeof value.name !== 'string') {
     return null;
@@ -81,6 +96,7 @@ function parseProduct(value: unknown): RemoteProduct | null {
     featured: value.featured === true,
     image_url: typeof value.image_url === 'string' ? value.image_url : null,
     in_stock: value.in_stock !== false,
+    translations: parseTranslations(value.translations),
   };
 }
 
@@ -162,6 +178,7 @@ export function toCatalogData(remote: RemoteCatalog): CatalogData {
         description: product.description,
         tone: style.soft,
         inStock: product.in_stock,
+        translations: product.translations,
       };
     });
 

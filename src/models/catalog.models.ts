@@ -18,6 +18,13 @@ export interface CatalogProduct {
   readonly art?: string;
   readonly brandMark?: string;
   readonly inStock?: boolean;
+  /** Per-language name/description from the API; absent fields fall back to pt. */
+  readonly translations?: Readonly<Record<string, ProductTranslation>>;
+}
+
+export interface ProductTranslation {
+  readonly name?: string;
+  readonly description?: string;
 }
 
 export interface CatalogSector {

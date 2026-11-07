@@ -7,8 +7,10 @@ import { isOpenNow } from '../../utils/storeHours';
 import { CSSVars } from '../../utils/styles';
 import { track } from '../../services/track';
 import { branchNumber, storeMessage, whatsappHref } from '../../utils/whatsapp';
+import { useI18n } from '../../i18n/I18nProvider';
 
 export function StoresSection() {
+  const { t, tOr } = useI18n();
   const [activeIndex, setActiveIndex] = useState(0);
   const stageRef = useRef<HTMLElement | null>(null);
   const storesShellRef = useRef<HTMLDivElement | null>(null);
@@ -29,15 +31,13 @@ export function StoresSection() {
   return (
     <section aria-labelledby="stores-heading" className="stores-stage" id="stores" ref={stageRef}>
       <h2 className="sr-only" id="stores-heading">
-        Tr&ecirc;s lojas f&iacute;sicas do New York Freeshop no Centro de Uruguaiana
+        {t('stores.heading')}
       </h2>
 
       <div className="stores-shell" ref={storesShellRef}>
         <div className="stores-track-shell" id="stores-track-shell" ref={trackShellRef}>
           <div aria-hidden="true" className="stores-progress">
-            <span className="stores-progress-kicker">
-              Centro de Uruguaiana / 3 endere&ccedil;os
-            </span>
+            <span className="stores-progress-kicker">{t('stores.kicker')}</span>
             <p className="stores-progress-name display-font" id="stores-progress-name">
               {currentStore.name}
             </p>
@@ -71,7 +71,7 @@ export function StoresSection() {
               >
                 <div className="store-scene">
                   <img
-                    alt={store.imageAlt}
+                    alt={tOr(`store.${store.id}.imageAlt`, store.imageAlt)}
                     className="store-image"
                     decoding="async"
                     draggable="false"
@@ -89,7 +89,7 @@ export function StoresSection() {
 
                 <div className="store-layout">
                   <div className="store-topline">
-                    <span>{store.displayIndex} / centro de uruguaiana</span>
+                    <span>{t('stores.topline', { index: store.displayIndex })}</span>
                     <span className="store-status">{store.status}</span>
                   </div>
 
@@ -97,15 +97,17 @@ export function StoresSection() {
                     <span className="store-district">{store.district}</span>
                     <h3 className="store-title display-font">{store.title}</h3>
                     <p className="store-mobile-signature">{store.mobileSignature}</p>
-                    <p className="store-tagline">{store.tagline}</p>
+                    <p className="store-tagline">
+                      {tOr(`store.${store.id}.tagline`, store.tagline)}
+                    </p>
                   </div>
 
                   <div className="store-note">
-                    <span className="store-note-label">Endere&ccedil;o oficial</span>
+                    <span className="store-note-label">{t('stores.address')}</span>
                     <p className="store-note-location">{store.noteLocation}</p>
                     <p className="store-address">{store.address}</p>
                     <div className="store-note-meta">
-                      <span>{store.noteMeta}</span>
+                      <span>{tOr(`store.${store.id}.noteMeta`, store.noteMeta)}</span>
                     </div>
                     <StoreActions store={store} />
                   </div>
@@ -127,6 +129,7 @@ const mapUrlFor = (store: StorePanel) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${store.noteLocation}, ${store.status}`)}`;
 
 function StoreActions({ store }: { readonly store: StorePanel }) {
+  const { t } = useI18n();
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
@@ -136,7 +139,9 @@ function StoreActions({ store }: { readonly store: StorePanel }) {
   const open = store.timeZone ? isOpenNow(store.hours, store.timeZone, now) : null;
   return (
     <ul className="store-actions">
-      {open !== null && <li className="store-open">{open ? 'Aberto agora' : 'Fechado agora'}</li>}
+      {open !== null && (
+        <li className="store-open">{open ? t('stores.open') : t('stores.closed')}</li>
+      )}
       {store.phone && (
         <li>
           <a
@@ -150,12 +155,13 @@ function StoreActions({ store }: { readonly store: StorePanel }) {
       {whatsapp && (
         <li>
           <a
-            href={whatsappHref(whatsapp, storeMessage(store))}
+            href={whatsappHref(whatsapp, storeMessage(store, t))}
             onClick={() => track('whatsapp_click', { target: store.id })}
             rel="noopener noreferrer"
             target="_blank"
           >
-            WhatsApp<span className="sr-only"> da {store.name} (abre em nova aba)</span>
+            {t('stores.whatsapp')}
+            <span className="sr-only">{t('stores.whatsappOf', { name: store.name })}</span>
           </a>
         </li>
       )}
@@ -166,7 +172,8 @@ function StoreActions({ store }: { readonly store: StorePanel }) {
           rel="noopener noreferrer"
           target="_blank"
         >
-          Ver no mapa<span className="sr-only"> de {store.name} (abre em nova aba)</span>
+          {t('stores.map')}
+          <span className="sr-only">{t('stores.mapOf', { name: store.name })}</span>
         </a>
       </li>
     </ul>

@@ -28,6 +28,7 @@ const server = await createServer({
 try {
   const { listProductPages } = await server.ssrLoadModule('/src/seo/prerenderData.ts');
   const { metaTags } = await server.ssrLoadModule('/src/seo/productMeta.ts');
+  const { hreflangLinks } = await server.ssrLoadModule('/src/i18n/hreflang.ts');
   const builtAssets = fs.existsSync(path.join(dist, 'assets'))
     ? fs.readdirSync(path.join(dist, 'assets'))
     : [];
@@ -46,7 +47,7 @@ try {
     const meta = { ...page.meta, image: publicImage(page.image) };
     let html = template
       .replace(/<title>.*?<\/title>/s, `<title>${meta.title}</title>`)
-      .replace('</head>', `    ${metaTags(meta)}\n  </head>`)
+      .replace('</head>', `    ${metaTags(meta)}\n    ${hreflangLinks(meta.url)}\n  </head>`)
       .replace(
         '<div id="root"></div>',
         `<div id="root"><main><h1>${page.name}</h1><p>${page.brand}</p><p>${page.description}</p><p>${page.price}</p></main></div>`,
@@ -54,6 +55,13 @@ try {
     const dir = path.join(dist, 'produto', page.slug);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, 'index.html'), html);
+  }
+  // Home page: language alternates (needs an absolute URL, so only with an origin).
+  if (origin) {
+    fs.writeFileSync(
+      path.join(dist, 'index.html'),
+      template.replace('</head>', () => `    ${hreflangLinks(`${origin}/`)}\n  </head>`),
+    );
   }
   console.log(`prerender-products: ${pages.length} product pages`);
 } finally {
