@@ -1,11 +1,13 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { startAnalytics } from './services/analytics';
 import { initErrorReporting } from './services/errorReporting';
 import './assets/css/fonts.css';
 import './styles.css';
 
 void initErrorReporting();
+startAnalytics();
 
 const rootElement = document.getElementById('root');
 
