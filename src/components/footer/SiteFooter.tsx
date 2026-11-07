@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import logoFull from '../../assets/brand/logo-ny.svg';
 import { STORE_PANELS } from '../../data/stores.data';
+import { ConsentPreferencesLink } from '../layout/ConsentBanner';
 import { useFooterReveal } from '../../hooks/useFooterReveal';
 import { resolveAssetPath, resolveSrcSet } from '../../utils/assets';
 
@@ -66,6 +67,7 @@ export function SiteFooter() {
               <a className="footer-primary-link display-font" href="#hero">
                 Voltar ao inicio
               </a>
+              <ConsentPreferencesLink />
             </div>
           </div>
 
