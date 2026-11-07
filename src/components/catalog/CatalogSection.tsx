@@ -1,12 +1,13 @@
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useInView } from 'react-intersection-observer';
 import { useCatalog } from '../../context/CatalogContext';
 import { useBodyClass } from '../../hooks/useBodyClass';
 import { useLightbox } from '../../hooks/useLightbox';
 import { normalizeSearchValue, useProductSearch } from '../../hooks/useProductSearch';
 import { CatalogImageAsset, CatalogProductViewModel } from '../../models/catalog.models';
+import { productPath } from '../../utils/productSlug';
 import { CSSVars } from '../../utils/styles';
 import {
   applyFilters,
@@ -406,6 +407,9 @@ export function CatalogSection() {
                     >
                       Entrar em contato no WhatsApp
                     </m.a>
+                    <Link className="lightbox-page-link" to={productPath(activeProduct)}>
+                      Ver página do produto
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -502,7 +506,7 @@ interface ProductMediaProps {
   readonly variant: 'grid' | 'lightbox';
 }
 
-function ProductMedia({ product, variant }: ProductMediaProps) {
+export function ProductMedia({ product, variant }: ProductMediaProps) {
   const asset = product.imageAsset;
 
   return (
@@ -594,11 +598,11 @@ function getDelay(index: number, step: number): string {
   return `${(index * step).toFixed(2)}s`;
 }
 
-function getPriceLabel(product: CatalogProductViewModel): string {
+export function getPriceLabel(product: CatalogProductViewModel): string {
   return product.inStock === false ? 'Esgotado' : product.price.replace(/\s+info$/i, '');
 }
 
-function getWhatsAppHref(product: CatalogProductViewModel): string {
+export function getWhatsAppHref(product: CatalogProductViewModel): string {
   const message = `Olá, gostaria de saber mais sobre ${product.name} da ${product.brand}.`;
   const recipient = whatsappNumber ? `/${whatsappNumber}` : '';
 

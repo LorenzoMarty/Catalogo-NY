@@ -16,7 +16,8 @@
     "test:ci": "vitest run",
     "contract:sync": "node scripts/sync-contract.cjs",
     "snapshot:catalog": "node scripts/snapshot-catalog.cjs",
-    "prebuild": "node scripts/snapshot-catalog.cjs"
+    "prebuild": "node scripts/snapshot-catalog.cjs",
+    "postbuild": "node scripts/prerender-products.mjs"
   },
   "packageManager": "npm@10.9.4",
   "dependencies": {
