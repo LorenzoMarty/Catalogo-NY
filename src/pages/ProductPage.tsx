@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getPriceLabel, getWhatsAppHref, ProductMedia } from '../components/catalog/CatalogSection';
 import { CatalogProvider, useCatalog } from '../context/CatalogContext';
+import { productJsonLd } from '../seo/jsonLd';
 import { applyProductMeta, buildProductMeta } from '../seo/productMeta';
 import { productIdFromSlug } from '../utils/productSlug';
 import { CSSVars } from '../utils/styles';
@@ -26,14 +27,17 @@ function ProductDetail() {
     if (!product) return;
     const image = product.imageAsset?.src;
     const origin = window.location.origin;
-    return applyProductMeta(
-      buildProductMeta(
-        { ...product, price: getPriceLabel(product) },
-        origin,
-        pathname,
-        image ? new URL(image, origin).href : undefined,
-      ),
+    const price = getPriceLabel(product);
+    const meta = buildProductMeta(
+      { ...product, price },
+      origin,
+      pathname,
+      image ? new URL(image, origin).href : undefined,
     );
+    return applyProductMeta({
+      ...meta,
+      jsonLd: productJsonLd({ ...product, price }, meta.url, meta.image, product.inStock !== false),
+    });
   }, [product, pathname]);
 
   // Back returns to the previous page (the catalog with its filters in the URL); a direct

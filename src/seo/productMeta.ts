@@ -3,6 +3,8 @@ export interface ProductMeta {
   readonly description: string;
   readonly url: string;
   readonly image?: string;
+  /** schema.org object, emitted as a JSON-LD script. */
+  readonly jsonLd?: object;
 }
 
 const SITE = 'New York Freeshop';
@@ -44,7 +46,9 @@ export function metaTags(meta: ProductMeta): string {
     tags.push(['property', 'og:image', meta.image], ['name', 'twitter:image', meta.image]);
   }
   const metas = tags.map(([k, n, c]) => `<meta data-seo ${k}="${n}" content="${esc(c)}" />`);
-  return [...metas, `<link data-seo rel="canonical" href="${esc(meta.url)}" />`].join('\n    ');
+  const extra = [`<link data-seo rel="canonical" href="${esc(meta.url)}" />`];
+  if (meta.jsonLd) extra.push(jsonLdScript(meta.jsonLd));
+  return [...metas, ...extra].join('\n    ');
 }
 
 /** Applies the meta to the live document (client-side navigation, JS-capable crawlers). */
@@ -61,4 +65,10 @@ export function applyProductMeta(meta: ProductMeta, doc: Document = document): (
     doc.title = previousTitle;
     nodes.forEach((node) => node.remove());
   };
+}
+
+/** JSON-LD <script>; "<" is escaped so the payload can never close the tag. */
+export function jsonLdScript(data: object): string {
+  const json = JSON.stringify(data).replace(/</g, '\\u003c');
+  return `<script data-seo type="application/ld+json">${json}</script>`;
 }
