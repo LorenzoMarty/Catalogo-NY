@@ -21,3 +21,16 @@ jobs:
       - run: npx tsc --noEmit
       - run: npx vitest run
       - run: npx vite build
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # Budgets live in lighthouserc.json (mobile emulation); the job fails below them.
+      - run: npx --yes @lhci/cli@0.15.1 autorun

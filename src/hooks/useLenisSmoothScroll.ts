@@ -10,6 +10,21 @@ interface ExtendedNavigator extends Navigator {
   readonly connection?: NetworkConnectionLike;
   readonly mozConnection?: NetworkConnectionLike;
   readonly webkitConnection?: NetworkConnectionLike;
+  readonly deviceMemory?: number;
+}
+
+/**
+ * Smooth scrolling runs a requestAnimationFrame loop for the whole visit, which costs frames on
+ * weak phones for a purely cosmetic gain. Skip it on devices reporting <= 2 GB RAM or <= 2 cores
+ * (native scrolling is used instead; hash links just jump).
+ */
+export function isLowEndDevice(
+  nav: Pick<ExtendedNavigator, 'deviceMemory' | 'hardwareConcurrency'>,
+) {
+  return (
+    (nav.deviceMemory !== undefined && nav.deviceMemory <= 2) ||
+    (nav.hardwareConcurrency !== undefined && nav.hardwareConcurrency <= 2)
+  );
 }
 
 export function useLenisSmoothScroll(): void {
@@ -25,7 +40,7 @@ export function useLenisSmoothScroll(): void {
     const shouldConserveData =
       Boolean(connection?.saveData) || /^slow-?2g$|^2g$/.test(effectiveType);
 
-    if (reduceMotion.matches || shouldConserveData) {
+    if (reduceMotion.matches || shouldConserveData || isLowEndDevice(navigatorRef)) {
       return undefined;
     }
 
